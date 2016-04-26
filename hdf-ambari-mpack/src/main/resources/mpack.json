@@ -1,0 +1,23 @@
+{
+  "type" : "full-release",
+  "name" : "hdf-ambari-mpack",
+  "version": "${project.version}",
+  "description" : "HDF Ambari Management Pack",
+  "prerequisites": {
+    "min-ambari-version" : "${minAmbariVersion}",
+    "max-ambari-version" : "${maxAmbariVersion}"
+  },
+  "artifacts": [
+    {
+      "name" : "hdf-service-definitions",
+      "type" : "service-definitions",
+      "source_dir": "common-services"
+    },
+    {
+      "name" : "hdf-stack-definitions",
+      "type" : "stack-definitions",
+      "source_dir": "stacks"
+    }
+  ]
+}
+

@@ -1,0 +1,9 @@
+<metainfo>
+  <schemaVersion>2.0</schemaVersion>
+  <services>
+    <service>
+      <name>KAFKA</name>
+      <version>0.9.0.1.2</version>
+    </service>
+  </services>
+</metainfo>

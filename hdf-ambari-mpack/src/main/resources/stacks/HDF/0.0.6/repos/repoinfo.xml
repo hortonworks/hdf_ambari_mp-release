@@ -1,0 +1,26 @@
+<reposinfo>
+  <os family="redhat6">
+    <repo>
+      <baseurl>http://SET_REPO_URL</baseurl>
+      <repoid>HDF-0.0.6</repoid>
+      <reponame>HDF</reponame>
+    </repo>
+    <repo>
+      <baseurl>http://SET_REPO_URL</baseurl>
+      <repoid>HDF-UTILS-1.1.0.17</repoid>
+      <reponame>HDF-UTILS</reponame>
+    </repo>
+  </os>
+  <os family="suse11">
+    <repo>
+      <baseurl>http://SET_REPO_URL</baseurl>
+      <repoid>HDF-0.0.6</repoid>
+      <reponame>HDF</reponame>
+      <repo>
+        <baseurl>http://SET_REPO_URL</baseurl>
+        <repoid>HDF-UTILS-1.1.0.17</repoid>
+        <reponame>HDF-UTILS</reponame>
+      </repo>
+    </repo>
+  </os>
+</reposinfo>

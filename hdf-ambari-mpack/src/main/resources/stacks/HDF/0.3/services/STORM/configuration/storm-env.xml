@@ -1,0 +1,33 @@
+<configuration supports_adding_forbidden="true">
+  <property>
+    <name>nimbus_seeds_supported</name>
+    <value>true</value>
+    <description />
+  </property>
+  <property>
+    <name>storm_logs_supported</name>
+    <value>true</value>
+    <description />
+  </property>
+  
+  <property>
+    <name>content</name>
+    <description>This is the jinja template for storm-env.sh file</description>
+    <value>
+      #!/bin/bash
+
+      # Set Storm specific environment variables here.
+
+      # The java implementation to use.
+      export JAVA_HOME={{java64_home}}
+
+      export STORM_CONF_DIR={{conf_dir}}
+      export STORM_HOME={{storm_component_home_dir}}
+
+      export STORM_JAR_JVM_OPTS={{jar_jvm_opts}}
+    </value>
+    <value-attributes>
+      <type>content</type>
+    </value-attributes>
+  </property>
+</configuration>
