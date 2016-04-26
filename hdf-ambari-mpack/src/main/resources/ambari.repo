@@ -1,0 +1,8 @@
+#VERSION_NUMBER=2.4.0.0-4910
+[AMBARI-trunk-2.x]
+name=Ambari 2.x
+baseurl=http://s3.amazonaws.com/dev.hortonworks.com/ambari/centos6/2.x/BUILDS/trunk-4910/
+gpgcheck=1
+gpgkey=http://s3.amazonaws.com/dev.hortonworks.com/ambari/centos6/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins
+enabled=1
+priority=1
