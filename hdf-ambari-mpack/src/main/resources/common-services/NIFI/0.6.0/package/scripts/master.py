@@ -50,7 +50,7 @@ class Master(Script):
     Directory([status_params.nifi_pid_dir, params.nifi_log_dir],
             owner=params.nifi_user,
             group=params.nifi_group,
-            recursive=True
+            create_parents=True
     )   
          
     Execute('touch ' +  params.nifi_log_file, user=params.nifi_user)    
@@ -61,7 +61,7 @@ class Master(Script):
     Directory([params.nifi_dir],
             owner=params.nifi_user,
             group=params.nifi_group,
-            recursive=True
+            create_parents=True
     )  
         
     #User selected option to use prebuilt nifi package 
