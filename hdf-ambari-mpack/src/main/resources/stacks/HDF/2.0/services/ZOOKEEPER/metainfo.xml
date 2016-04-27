@@ -1,0 +1,9 @@
+<metainfo>
+  <schemaVersion>2.0</schemaVersion>
+  <services>
+    <service>
+      <name>ZOOKEEPER</name>
+      <version>3.4.6.2.0</version>
+    </service>
+  </services>
+</metainfo>

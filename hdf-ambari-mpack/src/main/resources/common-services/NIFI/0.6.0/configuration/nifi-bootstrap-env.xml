@@ -4,11 +4,17 @@
 <configuration>
 
   <property>
-    <name>nifi_log_dir</name>
-    <value>/var/log/nifi</value>    
-    <description>NiFi Log dir</description>
+    <name>nifi_master_log_dir</name>
+    <value>/var/log/nifi_master</value>    
+    <description>NiFi Master Log dir</description>
   </property> 
-
+  
+  <property>
+    <name>nifi_node_log_dir</name>
+    <value>/var/log/nifi_node</value>    
+    <description>NiFi Node Log dir</description>
+  </property> 
+  
  <property>
     <name>nifi_pid_dir</name>
     <value>/var/run/nifi</value>
