@@ -23,7 +23,7 @@
                 <component>
                   <name>NIFI_NODE</name>
                   <displayName>NiFi node</displayName>
-                  <category>MASTER</category>
+                  <category>SLAVE</category>
                   <cardinality>0+</cardinality>
                   <timelineAppid>NIFI_NODE</timelineAppid>
                   <commandScript>
@@ -32,7 +32,6 @@
                     <timeout>10000</timeout>
                   </commandScript>
                 </component>
-                                
             </components>
             <osSpecifics>
               <osSpecific>
@@ -49,7 +48,7 @@
       	    </configuration-dependencies>
             <restartRequiredAfterChange>false</restartRequiredAfterChange>
             <widgetsFileName>widgets.json</widgetsFileName>
-      		<metricsFileName>metrics.json</metricsFileName>        
+            <metricsFileName>metrics.json</metricsFileName>        
         </service>
     </services>
 </metainfo>

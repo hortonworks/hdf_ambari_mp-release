@@ -1,0 +1,21 @@
+<configuration>
+
+  <property>
+    <name>ranger.usersync.kerberos.principal</name>
+    <value />
+    <description />
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+  </property>
+
+  <property>
+    <name>ranger.usersync.kerberos.keytab</name>
+    <value />
+    <description />
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+  </property>
+
+</configuration>

@@ -1,0 +1,18 @@
+<configuration>
+
+  <property>
+    <name>audit_db_name</name>
+    <deleted>true</deleted>
+  </property>
+
+  <property>
+    <name>audit_db_user</name>
+    <deleted>true</deleted>
+  </property>
+
+  <property>
+    <name>audit_db_password</name>
+    <deleted>true</deleted>
+  </property>
+
+</configuration>

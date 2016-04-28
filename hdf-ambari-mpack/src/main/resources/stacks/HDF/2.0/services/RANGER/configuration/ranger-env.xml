@@ -1,0 +1,8 @@
+<configuration>
+
+  <property>
+    <name>xasecure.audit.destination.db</name>
+    <deleted>true</deleted>
+  </property>
+
+</configuration>

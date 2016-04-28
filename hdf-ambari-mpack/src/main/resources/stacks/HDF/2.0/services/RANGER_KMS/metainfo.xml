@@ -1,0 +1,17 @@
+<metainfo>
+  <schemaVersion>2.0</schemaVersion>
+  <services>
+    <service>
+      <name>RANGER_KMS</name>
+      <version>0.6.0.2.0</version>
+
+      <themes>
+        <theme>
+          <fileName>theme_version_2.json</fileName>
+          <default>true</default>
+        </theme>
+      </themes>
+
+    </service>
+  </services>
+</metainfo>

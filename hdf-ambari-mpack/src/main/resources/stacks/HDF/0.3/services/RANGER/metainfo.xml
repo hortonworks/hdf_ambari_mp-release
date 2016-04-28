@@ -1,0 +1,30 @@
+<metainfo>
+  <schemaVersion>2.0</schemaVersion>
+  <services>
+    <service>
+      <name>RANGER</name>
+      <displayName>Ranger</displayName>
+      <comment>Comprehensive security for Hadoop</comment>
+      <version>0.5.0.0.3</version>
+
+      <themes>
+        <theme>
+          <fileName>theme_version_2.json</fileName>
+          <default>true</default>
+        </theme>
+      </themes>
+
+      <configuration-dependencies>
+        <config-type>ranger-admin-site</config-type>
+        <config-type>ranger-ugsync-site</config-type>
+      </configuration-dependencies>
+
+      <quickLinksConfigurations>
+        <quickLinksConfiguration>
+          <fileName>quicklinks.json</fileName>
+          <default>true</default>
+        </quickLinksConfiguration>
+      </quickLinksConfigurations>
+    <osSpecifics><osSpecific><osFamily>redhat6,redhat7,suse11</osFamily><packages><package><name>ranger_${stack_version}-admin</name></package><package><name>ranger_${stack_version}-usersync</name></package></packages></osSpecific></osSpecifics></service>
+  </services>
+</metainfo>

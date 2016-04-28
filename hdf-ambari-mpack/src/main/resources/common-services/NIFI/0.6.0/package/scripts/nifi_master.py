@@ -152,12 +152,12 @@ class Master(Script):
     File(format("{params.conf_dir}/nifi.properties"), content=properties_content, owner=params.nifi_user, group=params.nifi_group) # , mode=0777)    
 
     #write out flow.xml.gz only during install
-    #if isInstall:
-    #  Execute('echo "First time setup so generating flow.xml.gz" >> ' + params.nifi_master_log_file)    
-    #  flow_content=InlineTemplate(params.nifi_flow_content)
-    #  File(format("{params.conf_dir}/flow.xml"), content=flow_content, owner=params.nifi_user, group=params.nifi_group)
-    #  Execute(format("cd {params.conf_dir}; mv flow.xml.gz flow_$(date +%d-%m-%Y).xml.gz ;"), user=params.nifi_user, ignore_failures=True)
-    #  Execute(format("cd {params.conf_dir}; gzip flow.xml;"), user=params.nifi_user)
+    if isInstall:
+      Execute('echo "First time setup so generating flow.xml.gz" >> ' + params.nifi_master_log_file)    
+      flow_content=InlineTemplate(params.nifi_flow_content)
+      File(format("{params.conf_dir}/flow.xml"), content=flow_content, owner=params.nifi_user, group=params.nifi_group)
+      Execute(format("cd {params.conf_dir}; mv flow.xml.gz flow_$(date +%d-%m-%Y).xml.gz ;"), user=params.nifi_user, ignore_failures=True)
+      Execute(format("cd {params.conf_dir}; gzip flow.xml;"), user=params.nifi_user)
 
     #write out boostrap.conf
     bootstrap_content=InlineTemplate(params.nifi_boostrap_content)
@@ -173,7 +173,8 @@ class Master(Script):
     import params
     import status_params    
     self.set_conf_bin(env)    
-    Execute (params.bin_dir+'/nifi.sh stop >> ' + params.nifi_master_log_file, user=params.nifi_user)
+    Execute('echo JAVA_HOME=' + params.jdk64_home)
+    Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh stop >> ' + params.nifi_master_log_file, user=params.nifi_user)
     Execute ('rm ' + status_params.nifi_master_pid_file)
  
       

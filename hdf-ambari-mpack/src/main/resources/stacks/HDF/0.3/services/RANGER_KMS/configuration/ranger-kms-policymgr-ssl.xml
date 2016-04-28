@@ -1,0 +1,15 @@
+<configuration>
+  
+  <property>
+    <name>xasecure.policymgr.clientssl.keystore</name>
+    <value>/usr/hdf/current/ranger-kms/conf/ranger-plugin-keystore.jks</value>
+    <description>Java Keystore files</description>
+  </property>
+
+  <property>
+    <name>xasecure.policymgr.clientssl.truststore</name>
+    <value>/usr/hdf/current/ranger-kms/conf/ranger-plugin-truststore.jks</value>
+    <description>java truststore file</description>
+  </property>
+  
+</configuration>

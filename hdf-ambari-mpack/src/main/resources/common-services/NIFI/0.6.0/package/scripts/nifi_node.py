@@ -174,7 +174,8 @@ class Master(Script):
     import params
     import status_params    
     self.set_conf_bin(env)    
-    Execute (params.bin_dir+'/nifi.sh stop >> ' + params.nifi_node_log_file, user=params.nifi_user)
+    Execute('echo JAVA_HOME=' + params.jdk64_home)
+    Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh stop >> ' + params.nifi_node_log_file, user=params.nifi_user)
     Execute ('rm ' + status_params.nifi_node_pid_file)
  
       
