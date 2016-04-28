@@ -26,7 +26,7 @@ ambari-server setup -s
 ```
 - Install HDF mpack
 ```
-ambari-server install-mpack=/path/to/hdf-ambari-mpack-${HDF_MPACK_VERSION}.tar.gz --purge --verbose
+ambari-server install-mpack --mpack=/path/to/hdf-ambari-mpack-${HDF_MPACK_VERSION}.tar.gz --purge --verbose
 ```
 - Start ambari-server
 ```
