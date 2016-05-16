@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -18,22 +18,18 @@
  * limitations under the License.
  */
 -->
-
-<configuration supports_final="true">
-
+<configuration>
+  
   <property>
-    <name>ranger.tagsync.dest.ranger.ssl.config.filename</name>
-    <value>/usr/hdf/current/ranger-tagsync/conf/mytruststore.jks</value>
-    <description>Truststore used for tagsync, required if tagsync -&gt; ranger admin communication is SSL enabled</description>
+    <name>xasecure.policymgr.clientssl.keystore</name>
+    <value>/usr/hdf/current/storm-client/conf/ranger-plugin-keystore.jks</value>
+    <description>Java Keystore files</description>
   </property>
 
   <property>
-    <name>ranger.tagsync.keystore.filename</name>
-    <value>/usr/hdf/current/ranger-tagsync/conf/rangertagsync.jceks</value>
-    <description>Keystore file</description>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
+    <name>xasecure.policymgr.clientssl.truststore</name>
+    <value>/usr/hdf/current/storm-client/conf/ranger-plugin-truststore.jks</value>
+    <description>java truststore file</description>
   </property>
 
 </configuration>
