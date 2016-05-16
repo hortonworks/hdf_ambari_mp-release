@@ -40,7 +40,8 @@ class HDF02StackAdvisor(HDF01StackAdvisor):
       "YARN": self.recommendYARNConfigurations,
       "STORM": self.recommendStormConfigurations,
       "KNOX": self.recommendKnoxConfigurations,
-      "RANGER": self.recommendRangerConfigurations
+      "RANGER": self.recommendRangerConfigurations,
+      "LOGSEARCH" : self.recommendLogsearchConfigurations
     }
     parentRecommendConfDict.update(childRecommendConfDict)
     return parentRecommendConfDict
@@ -78,6 +79,12 @@ class HDF02StackAdvisor(HDF01StackAdvisor):
           putYarnPropertyAttribute('yarn.scheduler.maximum-allocation-vcores', 'maximum', services["configurations"]["yarn-site"]["properties"]["yarn.nodemanager.resource.cpu-vcores"])
           putYarnPropertyAttribute('yarn.scheduler.minimum-allocation-vcores', 'maximum', services["configurations"]["yarn-site"]["properties"]["yarn.nodemanager.resource.cpu-vcores"])
 
+      kerberos_authentication_enabled = False
+      if "core-site" in services["configurations"] and "hadoop.security.authentication" in services["configurations"]["core-site"]["properties"]:
+        if services["configurations"]["core-site"]["properties"]["hadoop.security.authentication"].lower() == "kerberos" :
+          kerberos_authentication_enabled = True
+          putYarnProperty('yarn.nodemanager.container-executor.class', 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor')
+
       if "yarn-env" in services["configurations"] and "yarn_cgroups_enabled" in services["configurations"]["yarn-env"]["properties"]:
         yarn_cgroups_enabled = services["configurations"]["yarn-env"]["properties"]["yarn_cgroups_enabled"].lower() == "true"
         if yarn_cgroups_enabled:
@@ -88,7 +95,8 @@ class HDF02StackAdvisor(HDF01StackAdvisor):
           putYarnProperty('yarn.nodemanager.container-executor.cgroups.mount', 'true')
           putYarnProperty('yarn.nodemanager.linux-container-executor.cgroups.mount-path', '/cgroup')
         else:
-          putYarnProperty('yarn.nodemanager.container-executor.class', 'org.apache.hadoop.yarn.server.nodemanager.DefaultContainerExecutor')
+          if not kerberos_authentication_enabled:
+            putYarnProperty('yarn.nodemanager.container-executor.class', 'org.apache.hadoop.yarn.server.nodemanager.DefaultContainerExecutor')
           putYarnPropertyAttribute('yarn.nodemanager.container-executor.resources-handler.class', 'delete', 'true')
           putYarnPropertyAttribute('yarn.nodemanager.container-executor.cgroups.hierarchy', 'delete', 'true')
           putYarnPropertyAttribute('yarn.nodemanager.container-executor.cgroups.mount', 'delete', 'true')
@@ -936,6 +944,30 @@ class HDF02StackAdvisor(HDF01StackAdvisor):
     }
     self.mergeValidators(parentValidators, childValidators)
     return parentValidators
+
+  def recommendLogsearchConfigurations(self, configurations, clusterData, services, hosts):
+    putLogsearchProperty = self.putProperty(configurations, "logsearch-properties", services)
+    logsearchSolrHosts = self.getComponentHostNames(services, "LOGSEARCH", "LOGSEARCH_SOLR")
+
+    if logsearchSolrHosts is not None and len(logsearchSolrHosts) > 0 \
+      and "logsearch-properties" in services["configurations"]:
+      recommendedMinShards = len(logsearchSolrHosts)
+      recommendedShards = 2 * len(logsearchSolrHosts)
+      recommendedMaxShards = 3 * len(logsearchSolrHosts)
+      # recommend number of shard
+      putLogsearchAttribute = self.putPropertyAttribute(configurations, "logsearch-properties")
+      putLogsearchAttribute('logsearch.collection.service.logs.numshards', 'minimum', recommendedMinShards)
+      putLogsearchAttribute('logsearch.collection.service.logs.numshards', 'maximum', recommendedMaxShards)
+      putLogsearchProperty("logsearch.collection.service.logs.numshards", recommendedShards)
+
+      putLogsearchAttribute('logsearch.collection.audit.logs.numshards', 'minimum', recommendedMinShards)
+      putLogsearchAttribute('logsearch.collection.audit.logs.numshards', 'maximum', recommendedMaxShards)
+      putLogsearchProperty("logsearch.collection.audit.logs.numshards", recommendedShards)
+      # recommend replication factor
+      replicationReccomendFloat = math.log(len(logsearchSolrHosts), 5)
+      recommendedReplicationFactor = int(1 + math.floor(replicationReccomendFloat))
+      putLogsearchProperty("logsearch.collection.service.logs.replication.factor", recommendedReplicationFactor)
+      putLogsearchProperty("logsearch.collection.audit.logs.replication.factor", recommendedReplicationFactor)
 
   def validateTezConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
     validationItems = [ {"config-name": 'tez.am.resource.memory.mb', "item": self.validatorLessThenDefaultValue(properties, recommendedDefaults, 'tez.am.resource.memory.mb')},
