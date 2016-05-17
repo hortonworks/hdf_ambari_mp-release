@@ -1,8 +1,0 @@
-<metainfo>
-    <versions>
-	  <active>false</active>
-    </versions>
-    <extends>0.0.6</extends>
-    <minJdk>1.7</minJdk>
-    <maxJdk>1.7</maxJdk>
-</metainfo>

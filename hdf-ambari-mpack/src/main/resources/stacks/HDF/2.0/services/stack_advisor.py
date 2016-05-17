@@ -17,1026 +17,480 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import math
-import traceback
+import re
+import os
+import sys
+from math import ceil, floor
 
-from resource_management.core.logger import Logger
-from resource_management.core.exceptions import Fail
+from stack_advisor import DefaultStackAdvisor
 
-class HDF20StackAdvisor(HDF12StackAdvisor):
+DB_TYPE_DEFAULT_PORT_MAP = {"MYSQL":"3306", "ORACLE":"1521", "POSTGRES":"5432", "MSSQL":"1433", "SQLA":"2638"}
 
-  def __init__(self):
-    super(HDF20StackAdvisor, self).__init__()
-    Logger.initialize_logger()
-    self.HIVE_INTERACTIVE_SITE = 'hive-interactive-site'
-
-  def createComponentLayoutRecommendations(self, services, hosts):
-    parentComponentLayoutRecommendations = super(HDF20StackAdvisor, self).createComponentLayoutRecommendations(
-      services, hosts)
-    return parentComponentLayoutRecommendations
+class HDF20StackAdvisor(DefaultStackAdvisor):
 
   def getComponentLayoutValidations(self, services, hosts):
-    parentItems = super(HDF20StackAdvisor, self).getComponentLayoutValidations(services, hosts)
-    childItems = []
+    """Returns array of Validation objects about issues with hostnames components assigned to"""
+    items = super(HDF20StackAdvisor, self).getComponentLayoutValidations(services, hosts)
 
-    hsi_hosts = self.__getHostsForComponent(services, "HIVE", "HIVE_SERVER_INTERACTIVE")
-    if len(hsi_hosts) > 1:
-      message = "Only one host can install HIVE_SERVER_INTERACTIVE. "
-      childItems.append(
-        {"type": 'host-component', "level": 'ERROR', "message": message, "component-name": 'HIVE_SERVER_INTERACTIVE'})
+    # Use a set for fast lookup
+    hostsSet =  set(super(HDF20StackAdvisor, self).getActiveHosts([host["Hosts"] for host in hosts["items"]]))  #[host["Hosts"]["host_name"] for host in hosts["items"]]
+    hostsCount = len(hostsSet)
 
-    parentItems.extend(childItems)
-    return parentItems
-
-  def getServiceConfigurationValidators(self):
-    parentValidators = super(HDF20StackAdvisor, self).getServiceConfigurationValidators()
-    childValidators = {
-      "HIVE": {"hive-interactive-env": self.validateHiveInteractiveEnvConfigurations},
-      "YARN": {"yarn-site": self.validateYarnConfigurations},
-      "RANGER": {"ranger-tagsync-site": self.validateRangerTagsyncConfigurations}
-    }
-    self.mergeValidators(parentValidators, childValidators)
-    return parentValidators
-
-  def validateYarnConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
-    parentValidationProblems = super(HDF20StackAdvisor, self).validateYARNConfigurations(properties, recommendedDefaults, configurations, services, hosts)
-    yarn_site_properties = getSiteProperties(configurations, "yarn-site")
-    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
     componentsListList = [service["components"] for service in services["services"]]
-    componentsList = [item["StackServiceComponents"] for sublist in componentsListList for item in sublist]
-    validationItems = []
+    componentsList = [item for sublist in componentsListList for item in sublist]
 
-    hsi_hosts = self.__getHostsForComponent(services, "HIVE", "HIVE_SERVER_INTERACTIVE")
-    if len(hsi_hosts) > 0:
-      # HIVE_SERVER_INTERACTIVE is mapped to a host
-      if 'yarn.resourcemanager.work-preserving-recovery.enabled' not in yarn_site_properties or \
-              'true' != yarn_site_properties['yarn.resourcemanager.work-preserving-recovery.enabled']:
-        validationItems.append({"config-name": "yarn.resourcemanager.work-preserving-recovery.enabled",
-                                    "item": self.getWarnItem(
-                                      "While enabling HIVE_SERVER_INTERACTIVE it is recommended that you enable work preserving restart in YARN.")})
+    # Validating cardinality
+    for component in componentsList:
+      if component["StackServiceComponents"]["cardinality"] is not None:
+         componentName = component["StackServiceComponents"]["component_name"]
+         componentDisplayName = component["StackServiceComponents"]["display_name"]
+         componentHosts = []
+         if component["StackServiceComponents"]["hostnames"] is not None:
+           componentHosts = [componentHost for componentHost in component["StackServiceComponents"]["hostnames"] if componentHost in hostsSet]
+         componentHostsCount = len(componentHosts)
+         cardinality = str(component["StackServiceComponents"]["cardinality"])
+         # cardinality types: null, 1+, 1-2, 1, ALL
+         message = None
+         if "+" in cardinality:
+           hostsMin = int(cardinality[:-1])
+           if componentHostsCount < hostsMin:
+             message = "At least {0} {1} components should be installed in cluster.".format(hostsMin, componentDisplayName)
+         elif "-" in cardinality:
+           nums = cardinality.split("-")
+           hostsMin = int(nums[0])
+           hostsMax = int(nums[1])
+           if componentHostsCount > hostsMax or componentHostsCount < hostsMin:
+             message = "Between {0} and {1} {2} components should be installed in cluster.".format(hostsMin, hostsMax, componentDisplayName)
+         elif "ALL" == cardinality:
+           if componentHostsCount != hostsCount:
+             message = "{0} component should be installed on all hosts in cluster.".format(componentDisplayName)
+         else:
+           if componentHostsCount != int(cardinality):
+             message = "Exactly {0} {1} components should be installed in cluster.".format(int(cardinality), componentDisplayName)
 
-    validationProblems = self.toConfigurationValidationProblems(validationItems, "yarn-site")
-    validationProblems.extend(parentValidationProblems)
-    return validationProblems
+         if message is not None:
+           items.append({"type": 'host-component', "level": 'ERROR', "message": message, "component-name": componentName})
 
-  def validateHiveInteractiveEnvConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
-    hive_site_env_properties = getSiteProperties(configurations, "hive-interactive-env")
-    validationItems = []
-    hsi_hosts = self.__getHostsForComponent(services, "HIVE", "HIVE_SERVER_INTERACTIVE")
-    if len(hsi_hosts) > 0:
-      # HIVE_SERVER_INTERACTIVE is mapped to a host
-      if 'enable_hive_interactive' not in hive_site_env_properties or (
-            'enable_hive_interactive' in hive_site_env_properties and hive_site_env_properties[
-          'enable_hive_interactive'].lower() != 'true'):
-        validationItems.append({"config-name": "enable_hive_interactive",
-                                "item": self.getErrorItem(
-                                  "HIVE_SERVER_INTERACTIVE requires enable_hive_interactive in hive-interactive-env set to true.")})
-      if 'hive_server_interactive_host' in hive_site_env_properties:
-        hsi_host = hsi_hosts[0]
-        if hive_site_env_properties['hive_server_interactive_host'].lower() != hsi_host.lower():
-          validationItems.append({"config-name": "hive_server_interactive_host",
-                                  "item": self.getErrorItem(
-                                    "HIVE_SERVER_INTERACTIVE requires hive_server_interactive_host in hive-interactive-env set to its host name.")})
-        pass
-      if 'hive_server_interactive_host' not in hive_site_env_properties:
-        validationItems.append({"config-name": "hive_server_interactive_host",
-                                "item": self.getErrorItem(
-                                  "HIVE_SERVER_INTERACTIVE requires hive_server_interactive_host in hive-interactive-env set to its host name.")})
-        pass
+    # Validating host-usage
+    usedHostsListList = [component["StackServiceComponents"]["hostnames"] for component in componentsList if not self.isComponentNotValuable(component)]
+    usedHostsList = [item for sublist in usedHostsListList for item in sublist]
+    nonUsedHostsList = [item for item in hostsSet if item not in usedHostsList]
+    for host in nonUsedHostsList:
+      items.append( { "type": 'host-component', "level": 'ERROR', "message": 'Host is not used', "host": str(host) } )
 
-    else:
-      # no  HIVE_SERVER_INTERACTIVE
-      if 'enable_hive_interactive' in hive_site_env_properties and hive_site_env_properties[
-        'enable_hive_interactive'].lower() != 'false':
-        validationItems.append({"config-name": "enable_hive_interactive",
-                                "item": self.getErrorItem(
-                                  "enable_hive_interactive in hive-interactive-env should be set to false.")})
-        pass
-      pass
-
-    validationProblems = self.toConfigurationValidationProblems(validationItems, "hive-interactive-env")
-    return validationProblems
+    return items
 
   def getServiceConfigurationRecommenderDict(self):
-    parentRecommendConfDict = super(HDF20StackAdvisor, self).getServiceConfigurationRecommenderDict()
-    childRecommendConfDict = {
-      "RANGER": self.recommendRangerConfigurations,
-      "HIVE": self.recommendHIVEConfigurations,
-      "ATLAS": self.recommendAtlasConfigurations
+    return {
+      "KAFKA": self.recommendKAFKAConfigurations,
+      "STORM": self.recommendStormConfigurations,
+      "AMBARI_METRICS": self.recommendAmsConfigurations,
+      "RANGER": self.recommendRangerConfigurations
     }
-    parentRecommendConfDict.update(childRecommendConfDict)
-    return parentRecommendConfDict
 
-  def recommendAtlasConfigurations(self, configurations, clusterData, services, hosts):
-    putAtlasApplicationProperty = self.putProperty(configurations, "application-properties", services)
-
-    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
-
-    include_logsearch = "LOGSEARCH" in servicesList
-    if include_logsearch and "logsearch-solr-env" in services["configurations"]:
-      putAtlasApplicationProperty('atlas.graph.index.search.solr.zookeeper-url', '{{solr_zookeeper_url}}')
-
-  def recommendHIVEConfigurations(self, configurations, clusterData, services, hosts):
-    super(HDF20StackAdvisor, self).recommendHIVEConfigurations(configurations, clusterData, services, hosts)
-    putHiveInteractiveEnvProperty = self.putProperty(configurations, "hive-interactive-env", services)
-    putHiveInteractiveSiteProperty = self.putProperty(configurations, self.HIVE_INTERACTIVE_SITE, services)
-
-    # For 'Hive Server Interactive', if the component exists.
-    hsi_hosts = self.__getHostsForComponent(services, "HIVE", "HIVE_SERVER_INTERACTIVE")
-    if len(hsi_hosts) > 0:
-      hsi_host = hsi_hosts[0]
-      putHiveInteractiveEnvProperty('enable_hive_interactive', 'true')
-      putHiveInteractiveEnvProperty('hive_server_interactive_host', hsi_host)
-
-      # Update 'hive.llap.daemon.queue.name' if capacity scheduler is changed.
-      if 'hive.llap.daemon.queue.name' in services['configurations'][self.HIVE_INTERACTIVE_SITE]['properties']:
-        self.setLlapDaemonQueueName(services, configurations)
-
-      # Check to see if 'cache' config HS2 'hive.llap.io.memory.size' has been modified by user.
-      # 'cache' size >= 64m implies config 'hive.llap.io.enabled' set to true, else false
-      cache_size_per_node_in_changed_configs = self.are_config_props_in_changed_configs(services,
-                                                                                        "hive-interactive-site",
-                                                                                        set(['hive.llap.io.memory.size']),
-                                                                                        False)
-      if cache_size_per_node_in_changed_configs:
-        cache_size_per_node = self.get_cache_size_per_node_for_llap_nodes(services)
-        llap_io_enabled = 'false'
-        if cache_size_per_node >= 64:
-          llap_io_enabled = 'true'
-        putHiveInteractiveSiteProperty('hive.llap.io.enabled', llap_io_enabled)
-        Logger.info("Updated 'Hive Server interactive' config 'hive.llap.io.enabled' to '{0}'.".format(llap_io_enabled))
-    else:
-      putHiveInteractiveEnvProperty('enable_hive_interactive', 'false')
-
-    if self.HIVE_INTERACTIVE_SITE in services['configurations'] and \
-        'hive.llap.zk.sm.connectionString' in services['configurations'][self.HIVE_INTERACTIVE_SITE]['properties']:
-      # Fill the property 'hive.llap.zk.sm.connectionString' required by Hive Server Interactive (HiveServer2)
-      zookeeper_host_port = self.getZKHostPortString(services)
-      if zookeeper_host_port:
-        putHiveInteractiveSiteProperty("hive.llap.zk.sm.connectionString", zookeeper_host_port)
-    pass
-
-
-
-  def recommendYARNConfigurations(self, configurations, clusterData, services, hosts):
-    super(HDF20StackAdvisor, self).recommendYARNConfigurations(configurations, clusterData, services, hosts)
-
-    # Queue 'llap' creation/removal logic (Used by Hive Interactive server and associated LLAP)
-    if 'hive-interactive-env' in services['configurations'] and \
-        'enable_hive_interactive' in services['configurations']['hive-interactive-env']['properties']:
-      enable_hive_interactive = services['configurations']['hive-interactive-env']['properties']['enable_hive_interactive']
-      LLAP_QUEUE_NAME = 'llap'
-
-      # Hive Server interactive is already added or getting added
-      if enable_hive_interactive == 'true':
-        self.checkAndManageLlapQueue(services, configurations, hosts, LLAP_QUEUE_NAME)
-        self.updateLlapConfigs(configurations, services, hosts, LLAP_QUEUE_NAME)
-      else:  # When Hive Interactive Server is in 'off/removed' state.
-        self.checkAndStopLlapQueue(services, configurations, LLAP_QUEUE_NAME)
-
-  """
-  Entry point for updating Hive's 'LLAP app' configs namely : (1). num_llap_nodes (2). hive.llap.daemon.yarn.container.mb
-    (3). hive.llap.daemon.num.executors (4). hive.llap.io.memory.size (5). llap_heap_size (6). slider_am_container_mb.
-
-    The trigger point for updating LLAP configs (mentioned above) is change in values of :
-    'llap_queue_capacity' or 'num_llap_nodes' or 'llap' named queue get selected for config 'hive.llap.daemon.queue.name'.
-
-    'llap_queue_capacity', 'hive.llap.daemon.queue.name' : Change detection for this property triggers change for all
-     the configs mentioned.
-
-    'num_llap_nodes' : If there is a change in value for 'num_llap_nodes', it's value is not updated/calulated,
-     but other dependent configs get calculated.
-  """
-  def updateLlapConfigs(self, configurations, services, hosts, llap_queue_name):
-    putHiveInteractiveSiteProperty = self.putProperty(configurations, self.HIVE_INTERACTIVE_SITE, services)
-    putHiveInteractiveSitePropertyAttribute = self.putPropertyAttribute(configurations, self.HIVE_INTERACTIVE_SITE)
-
-    putHiveInteractiveEnvProperty = self.putProperty(configurations, "hive-interactive-env", services)
-    putHiveInteractiveEnvPropertyAttribute = self.putPropertyAttribute(configurations, "hive-interactive-env")
-
-    num_llap_nodes_in_changed_configs = False
-    llap_daemon_selected_queue_name = None
-    llap_queue_selected_in_current_call = None
-    cache_size_per_node_in_changed_configs = False
-
-    try:
-      if self.HIVE_INTERACTIVE_SITE in services['configurations'] and \
-          'hive.llap.daemon.queue.name' in services['configurations'][self.HIVE_INTERACTIVE_SITE]['properties']:
-        llap_daemon_selected_queue_name =  services['configurations'][self.HIVE_INTERACTIVE_SITE]['properties']['hive.llap.daemon.queue.name']
-
-      if 'hive.llap.daemon.queue.name' in configurations[self.HIVE_INTERACTIVE_SITE]['properties']:
-        llap_queue_selected_in_current_call = configurations[self.HIVE_INTERACTIVE_SITE]['properties']['hive.llap.daemon.queue.name']
-
-      # Update Visibility of LLAP configs.
-      capacitySchedulerProperties = self.getCapacitySchedulerProperties(services)
-      if capacitySchedulerProperties:
-        # Get all leaf queues.
-        leafQueueNames = self.getAllYarnLeafQueues(capacitySchedulerProperties)
-        if (llap_daemon_selected_queue_name != None and llap_daemon_selected_queue_name == llap_queue_name) or \
-          (llap_queue_selected_in_current_call != None and llap_queue_selected_in_current_call == llap_queue_name):
-            putHiveInteractiveEnvPropertyAttribute("llap_queue_capacity", "visible", "true")
-            Logger.debug("Selected YARN queue is '{0}'. Setting LLAP queue capacity slider visibility to True".format(llap_queue_name))
-        else:
-          putHiveInteractiveEnvPropertyAttribute("llap_queue_capacity", "visible", "false")
-          Logger.debug("Setting hive.llap.daemon.yarn.container.mb to yarn min container size (" + str(self.get_yarn_min_container_size(services)) + " MB).")
-          putHiveInteractiveSiteProperty('hive.llap.daemon.yarn.container.mb', long(self.get_yarn_min_container_size(services)))
-          Logger.debug("Queue selected for LLAP app is : '{0}'. Current YARN queues : {1}. "
-                    "Setting LLAP queue capacity slider visibility to False. "
-                    "Skipping updating values for LLAP related configs".format(llap_daemon_selected_queue_name, list(leafQueueNames)))
-          return
-      else:
-        Logger.error("Couldn't retrieve 'capacity-scheduler' properties while doing YARN queue adjustment for Hive Server Interactive."
-                     " Not calculating LLAP configs.")
-        return
-      # Won't be calculating values if queues not equal to 2 and queue in use is not llap
-      if len(leafQueueNames) > 2 or (len(leafQueueNames) == 1 and llap_queue_selected_in_current_call != llap_queue_name):
-        return
-
-      # 'llap' queue exists at this point.
+  def putProperty(self, config, configType, services=None):
+    userConfigs = {}
+    changedConfigs = []
+    # if services parameter, prefer values, set by user
+    if services:
+      if 'configurations' in services.keys():
+        userConfigs = services['configurations']
       if 'changed-configurations' in services.keys():
-        llap_queue_prop_old_val = None
+        changedConfigs = services["changed-configurations"]
 
-        # Calculations are triggered only if there is change in following props : 'llap_queue_capacity' or 'enable_hive_interactive',
-        # 'num_llap_nodes' or hive.llap.daemon.queue.name has change in value and selection is 'llap'
-        config_names_to_be_checked = set(['llap_queue_capacity', 'enable_hive_interactive', 'num_llap_nodes'])
-        changed_configs_in_hive_int_env = self.are_config_props_in_changed_configs(services, "hive-interactive-env",
-                                                                                   config_names_to_be_checked, False)
-
-        llap_queue_prop_in_changed_configs = self.are_config_props_in_changed_configs(services, self.HIVE_INTERACTIVE_SITE,
-                                                                                      set(['hive.llap.daemon.queue.name']), False)
-
-        if not changed_configs_in_hive_int_env and not llap_queue_prop_in_changed_configs:
-          Logger.info("LLAP parameters not modified. Not adjusting LLAP configs. "
-                       "Current changed-configuration received is : {0}".format(services["changed-configurations"]))
-          return
-
-        node_manager_hosts = self.get_node_manager_hosts(services, hosts)
-        node_manager_host_cnt = len(node_manager_hosts)
-
-        # If changed configurations contains 'num_llap_nodes' prop, we don't calulate it and use the same value.
-        num_llap_nodes_in_changed_configs = self.are_config_props_in_changed_configs(services, "hive-interactive-env",
-                                                                                     set(['num_llap_nodes']), False)
-
-        # Get value for prop 'num_llap_nodes'.
-        if not num_llap_nodes_in_changed_configs:
-          num_llap_nodes, num_llap_nodes_max_limit = self.calculate_num_llap_nodes(services, hosts, configurations)
-        else:
-          num_llap_nodes = self.get_num_llap_nodes(services)
-          num_llap_nodes_max_limit = node_manager_host_cnt
-
-        # Get calculated value for prop 'hive.llap.daemon.yarn.container.mb'
-        llap_container_size, llap_container_size_min_limit = self.calculate_llap_app_container_size(services, hosts, configurations)
-
-        # Get calculated value for prop 'hive.llap.daemon.num.executors'
-        num_executors_per_node, num_executors_per_node_max_limit = self.calculate_llap_daemon_executors_count(services,
-                                                                                                              llap_container_size)
-        assert (num_executors_per_node >= 0), "'Number of executors per node' : {0}. Expected value : > 0".format(
-          num_executors_per_node)
-
-
-        # We calculate and update 'cache' value only if user has not modified it.
-        cache_size_per_node_in_changed_configs = self.are_config_props_in_changed_configs(services,
-                                                                                  "hive-interactive-site",
-                                                                                  set(['hive.llap.io.memory.size']),
-                                                                                  False)
-        if not cache_size_per_node_in_changed_configs:
-          # Get calculated value for prop 'hive.llap.io.memory.size'
-          cache_size_per_node, cache_size_per_node_max_limit = self.calculate_llap_cache_size_per_executor(services,
-                                                                                                 llap_container_size,
-                                                                                                 num_executors_per_node)
-          if cache_size_per_node < 0:
-            Logger.info("Calculated 'cache_size_per_node' : {0}. Setting 'cache_size_per_node' to 0.".format(cache_size_per_node))
-            cache_size_per_node = 0
-          if cache_size_per_node_max_limit < 0:
-            Logger.info("Calculated 'cache_size_per_node_max_limit' : {0}. Setting 'cache_size_per_node_max_limit' to "
-                        "0.".format(cache_size_per_node_max_limit))
-            cache_size_per_node_max_limit = 0
-
-        # Get calculated value for prop 'llap_heap_size'
-        llap_xmx = self.calculate_llap_app_heap_size(services, num_executors_per_node)
-
-        # Get calculated Slider AM container Size
-        yarn_min_container_size = self.get_yarn_min_container_size(services)
-        slider_am_container_mb = self.calculate_slider_am_size(yarn_min_container_size)
-
-
-        # Updating configs.
-        if not num_llap_nodes_in_changed_configs:
-          num_llap_nodes = long(num_llap_nodes)
-          num_llap_nodes_max_limit= long(num_llap_nodes_max_limit)
-
-          Logger.info("LLAP config 'num_llap_nodes' updated. Min : {0}, Curr: {1}, Max: {2}" \
-                      .format('1', num_llap_nodes, num_llap_nodes_max_limit))
-          putHiveInteractiveEnvProperty('num_llap_nodes', num_llap_nodes)
-          putHiveInteractiveEnvPropertyAttribute('num_llap_nodes', "minimum", 1)
-          putHiveInteractiveEnvPropertyAttribute('num_llap_nodes', "maximum", int(num_llap_nodes_max_limit))
-
-        llap_container_size = max(long(yarn_min_container_size), long(llap_container_size))
-        llap_container_size_min_limit = max(long(yarn_min_container_size), long(llap_container_size_min_limit))
-        putHiveInteractiveSiteProperty('hive.llap.daemon.yarn.container.mb', llap_container_size)
-        putHiveInteractiveSitePropertyAttribute('hive.llap.daemon.yarn.container.mb', "minimum",
-                                                llap_container_size_min_limit)
-        putHiveInteractiveSitePropertyAttribute('hive.llap.daemon.yarn.container.mb', "maximum",
-                                                llap_container_size)
-        Logger.info("LLAP config 'hive.llap.daemon.yarn.container.mb' updated. Min : {0}, Curr: {1}, Max: {2}" \
-                    .format(llap_container_size_min_limit, llap_container_size, llap_container_size))
-
-        num_executors_per_node = long(num_executors_per_node)
-        num_executors_per_node_max_limit = long(num_executors_per_node_max_limit)
-        putHiveInteractiveSiteProperty('hive.llap.daemon.num.executors', num_executors_per_node)
-        putHiveInteractiveSitePropertyAttribute('hive.llap.daemon.num.executors', "minimum", 1)
-        putHiveInteractiveSitePropertyAttribute('hive.llap.daemon.num.executors', "maximum",
-                                                num_executors_per_node_max_limit)
-        Logger.info("LLAP config 'hive.llap.daemon.num.executors' updated. Min : {0}, Curr: {1}, Max: {2}" \
-                    .format('1', num_executors_per_node, num_executors_per_node_max_limit))
-
-        if not cache_size_per_node_in_changed_configs:
-          cache_size_per_node = long(cache_size_per_node)
-          cache_size_per_node_max_limit = long(cache_size_per_node_max_limit)
-          putHiveInteractiveSiteProperty('hive.llap.io.memory.size', cache_size_per_node)
-          putHiveInteractiveSitePropertyAttribute('hive.llap.io.memory.size', "minimum", 0)  # 0 -> Disables caching.
-          putHiveInteractiveSitePropertyAttribute('hive.llap.io.memory.size', "maximum",
-                                                  cache_size_per_node_max_limit)
-          llap_io_enabled = 'false'
-          if cache_size_per_node >= 64:
-            llap_io_enabled = 'true'
-
-          putHiveInteractiveSiteProperty('hive.llap.io.enabled', llap_io_enabled)
-          Logger.info("LLAP config 'hive.llap.io.memory.size' updated. Min : {0}, Curr: {1}, Max: {2}" \
-                      .format('0', cache_size_per_node, cache_size_per_node_max_limit))
-          Logger.info("HiveServer2 config 'hive.llap.io.enabled' updated to '{0}' as part of "
-                      "'hive.llap.io.memory.size' calculation.".format(llap_io_enabled))
-
-        llap_xmx = long(llap_xmx)
-        putHiveInteractiveEnvProperty('llap_heap_size', llap_xmx)
-        Logger.info("LLAP config 'llap_heap_size' updated. Curr: {0}".format(llap_xmx))
-
-        slider_am_container_mb = long(slider_am_container_mb)
-        putHiveInteractiveEnvProperty('slider_am_container_mb', slider_am_container_mb)
-        Logger.info("LLAP config 'slider_am_container_mb' updated. Curr: {0}".format(slider_am_container_mb))
-
-    except Exception as e:
-      Logger.info(e.message+" Skipping calculating LLAP configs. Setting them to minimum values.")
-      traceback.print_exc()
-
-      try:
-        yarn_min_container_size = self.get_yarn_min_container_size(services)
-        slider_am_container_mb = self.calculate_slider_am_size(yarn_min_container_size)
-
-        putHiveInteractiveEnvProperty('num_llap_nodes', 0)
-        putHiveInteractiveEnvPropertyAttribute('num_llap_nodes', "minimum", 0)
-        putHiveInteractiveEnvPropertyAttribute('num_llap_nodes', "maximum", 0)
-
-        putHiveInteractiveSiteProperty('hive.llap.daemon.yarn.container.mb', yarn_min_container_size)
-        putHiveInteractiveSitePropertyAttribute('hive.llap.daemon.yarn.container.mb', "minimum", yarn_min_container_size)
-        putHiveInteractiveSitePropertyAttribute('hive.llap.daemon.yarn.container.mb', "maximum", yarn_min_container_size)
-
-        putHiveInteractiveSiteProperty('hive.llap.daemon.num.executors', 0)
-        putHiveInteractiveSitePropertyAttribute('hive.llap.daemon.num.executors', "minimum", 0)
-        putHiveInteractiveSitePropertyAttribute('hive.llap.daemon.num.executors', "maximum", 0)
-
-        putHiveInteractiveSiteProperty('hive.llap.io.memory.size', 0)
-        putHiveInteractiveSitePropertyAttribute('hive.llap.io.memory.size', "minimum", 0)
-        putHiveInteractiveSitePropertyAttribute('hive.llap.io.memory.size', "maximum", 0)
-
-        putHiveInteractiveEnvProperty('llap_heap_size', 0)
-
-        putHiveInteractiveEnvProperty('slider_am_container_mb', slider_am_container_mb)
-
-      except Exception as e:
-        Logger.info("Problem setting minimum values for LLAP configs in except code.")
-        traceback.print_exc()
-
-  """
-  Checks for the presence of passed-in configuration properties in a given config, if they are changed.
-  Reads from services["changed-configurations"].
-  Parameters:
-     services: Configuration information for the cluster
-     config_type : Type of the configuration
-     config_names_set : Set of configuration properties to be checked if they are changed.
-     all_exists: If True : returns True only if all properties mentioned in 'config_names_set' we found
-                           in services["changed-configurations"].
-                           Otherwise, returns False.
-                 If False : return True, if any of the properties mentioned in config_names_set we found in
-                           services["changed-configurations"].
-                           Otherwise, returns False.
-  """
-  def are_config_props_in_changed_configs(self, services, config_type, config_names_set, all_exists):
-    changedConfigs = services["changed-configurations"]
-    changed_config_names_set = set()
-    for changedConfig in changedConfigs:
-      if changedConfig['type'] == config_type:
-        changed_config_names_set.update([changedConfig['name']])
-
-    if changed_config_names_set is None:
-      return False
-    else:
-      configs_intersection = changed_config_names_set.intersection(config_names_set)
-      if all_exists:
-        if configs_intersection == config_names_set:
-          return True
+    if configType not in config:
+      config[configType] = {}
+    if"properties" not in config[configType]:
+      config[configType]["properties"] = {}
+    def appendProperty(key, value):
+      # If property exists in changedConfigs, do not override, use user defined property
+      if self.__isPropertyInChangedConfigs(configType, key, changedConfigs):
+        config[configType]["properties"][key] = userConfigs[configType]['properties'][key]
       else:
-        if len(configs_intersection) > 0 :
-          return True
+        config[configType]["properties"][key] = str(value)
+    return appendProperty
+
+  def __isPropertyInChangedConfigs(self, configType, propertyName, changedConfigs):
+    for changedConfig in changedConfigs:
+      if changedConfig['type']==configType and changedConfig['name']==propertyName:
+        return True
     return False
 
-  """
-  Returns all the Node Manager configs in cluster.
-  """
-  def get_node_manager_hosts(self, services, hosts):
-    if len(hosts["items"]) > 0:
-      node_manager_hosts = self.getHostsWithComponent("YARN", "NODEMANAGER", services, hosts)
-      assert (node_manager_hosts is not None), "Information about NODEMANAGER not found in cluster."
-      return node_manager_hosts
+  def putPropertyAttribute(self, config, configType):
+    if configType not in config:
+      config[configType] = {}
+    def appendPropertyAttribute(key, attribute, attributeValue):
+      if "property_attributes" not in config[configType]:
+        config[configType]["property_attributes"] = {}
+      if key not in config[configType]["property_attributes"]:
+        config[configType]["property_attributes"][key] = {}
+      config[configType]["property_attributes"][key][attribute] = attributeValue if isinstance(attributeValue, list) else str(attributeValue)
+    return appendPropertyAttribute
+
+  def recommendKAFKAConfigurations(self, configurations, clusterData, services, hosts):
+    kafka_broker = getServicesSiteProperties(services, "kafka-broker")
+
+    # kerberos security for kafka is decided from `security.inter.broker.protocol` property value
+    security_enabled = (kafka_broker is not None and 'security.inter.broker.protocol' in  kafka_broker
+                        and 'SASL' in kafka_broker['security.inter.broker.protocol'])
+    putKafkaBrokerProperty = self.putProperty(configurations, "kafka-broker", services)
+    putKafkaLog4jProperty = self.putProperty(configurations, "kafka-log4j", services)
+    putKafkaBrokerAttributes = self.putPropertyAttribute(configurations, "kafka-broker")
+
+    #If AMS is part of Services, use the KafkaTimelineMetricsReporter for metric reporting. Default is ''.
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
+    if "AMBARI_METRICS" in servicesList:
+      putKafkaBrokerProperty('kafka.metrics.reporters', 'org.apache.hadoop.metrics2.sink.kafka.KafkaTimelineMetricsReporter')
+
+    if "ranger-env" in services["configurations"] and "ranger-kafka-plugin-properties" in services["configurations"] and \
+            "ranger-kafka-plugin-enabled" in services["configurations"]["ranger-env"]["properties"]:
+      putKafkaRangerPluginProperty = self.putProperty(configurations, "ranger-kafka-plugin-properties", services)
+      rangerEnvKafkaPluginProperty = services["configurations"]["ranger-env"]["properties"]["ranger-kafka-plugin-enabled"]
+      putKafkaRangerPluginProperty("ranger-kafka-plugin-enabled", rangerEnvKafkaPluginProperty)
+
+    if 'ranger-kafka-plugin-properties' in services['configurations'] and ('ranger-kafka-plugin-enabled' in services['configurations']['ranger-kafka-plugin-properties']['properties']):
+      kafkaLog4jRangerLines = [{
+        "name": "log4j.appender.rangerAppender",
+        "value": "org.apache.log4j.DailyRollingFileAppender"
+      },
+        {
+          "name": "log4j.appender.rangerAppender.DatePattern",
+          "value": "'.'yyyy-MM-dd-HH"
+        },
+        {
+          "name": "log4j.appender.rangerAppender.File",
+          "value": "${kafka.logs.dir}/ranger_kafka.log"
+        },
+        {
+          "name": "log4j.appender.rangerAppender.layout",
+          "value": "org.apache.log4j.PatternLayout"
+        },
+        {
+          "name": "log4j.appender.rangerAppender.layout.ConversionPattern",
+          "value": "%d{ISO8601} %p [%t] %C{6} (%F:%L) - %m%n"
+        },
+        {
+          "name": "log4j.logger.org.apache.ranger",
+          "value": "INFO, rangerAppender"
+        }]
+
+      rangerPluginEnabled=''
+      if 'ranger-kafka-plugin-properties' in configurations and 'ranger-kafka-plugin-enabled' in  configurations['ranger-kafka-plugin-properties']['properties']:
+        rangerPluginEnabled = configurations['ranger-kafka-plugin-properties']['properties']['ranger-kafka-plugin-enabled']
+      elif 'ranger-kafka-plugin-properties' in services['configurations'] and 'ranger-kafka-plugin-enabled' in services['configurations']['ranger-kafka-plugin-properties']['properties']:
+        rangerPluginEnabled = services['configurations']['ranger-kafka-plugin-properties']['properties']['ranger-kafka-plugin-enabled']
+
+      if  rangerPluginEnabled and rangerPluginEnabled.lower() == "Yes".lower():
+        # recommend authorizer.class.name
+        putKafkaBrokerProperty("authorizer.class.name", 'org.apache.ranger.authorization.kafka.authorizer.RangerKafkaAuthorizer')
+        # change kafka-log4j when ranger plugin is installed
+
+        if 'kafka-log4j' in services['configurations'] and 'content' in services['configurations']['kafka-log4j']['properties']:
+          kafkaLog4jContent = services['configurations']['kafka-log4j']['properties']['content']
+          for item in range(len(kafkaLog4jRangerLines)):
+            if kafkaLog4jRangerLines[item]["name"] not in kafkaLog4jContent:
+              kafkaLog4jContent+= '\n' + kafkaLog4jRangerLines[item]["name"] + '=' + kafkaLog4jRangerLines[item]["value"]
+          putKafkaLog4jProperty("content",kafkaLog4jContent)
 
 
-  """
-  Returns the current LLAP queue capacity percentage value. (llap_queue_capacity)
-  """
-  def get_llap_cap_percent_slider(self, services, configurations):
-    if 'llap_queue_capacity' in services['configurations']['hive-interactive-env']['properties']:
-      llap_slider_cap_percentage = float(
-        services['configurations']['hive-interactive-env']['properties']['llap_queue_capacity'])
-      if llap_slider_cap_percentage <= 0 :
-        if 'hive-interactive-env' in configurations and \
-            'llap_queue_capacity' in configurations["hive-interactive-env"]["properties"]:
-          llap_slider_cap_percentage = configurations["hive-interactive-env"]["properties"]["llap_queue_capacity"]
-      assert (llap_slider_cap_percentage > 0), "'llap_queue_capacity' is set to 0."
-      return llap_slider_cap_percentage
-
-
-  """
-  Returns current value of cache per node for LLAP (hive.llap.io.memory.size)
-  """
-  def get_cache_size_per_node_for_llap_nodes(self, services):
-    if 'hive.llap.io.memory.size' in services['configurations']['hive-interactive-site']['properties']:
-      cache_size_per_node = float(
-        services['configurations']['hive-interactive-site']['properties']['hive.llap.io.memory.size'])
-      return cache_size_per_node
-    else:
-      Logger.error("Couldn't retrieve Hive Server interactive's 'hive.llap.io.memory.size' config.")
-      # Not doing raise as the Exception that catches it will set all other LLAP configs related
-      # to LLAP package as 0, a way to tell that calulations couldn't be done. This is not the intention here.
-      # Just keep cache 0, if it couldn't be retrieved.
-      return 0
-
-  """
-  Returns current value of number of LLAP nodes in cluster (num_llap_nodes)
-  """
-  def get_num_llap_nodes(self, services):
-    if 'num_llap_nodes' in services['configurations']['hive-interactive-env']['properties']:
-      num_llap_nodes = float(
-        services['configurations']['hive-interactive-env']['properties']['num_llap_nodes'])
-      assert (num_llap_nodes > 0), "Number of LLAP nodes read : {0}. Expected value : > 0".format(
-        num_llap_nodes)
-      return num_llap_nodes
-    else:
-      raise Fail("Couldn't retrieve Hive Server interactive's 'num_llap_nodes' config.")
-
-  """
-  Calculates recommended and maximum LLAP nodes in the cluster.
-  """
-  def calculate_num_llap_nodes(self, services, hosts, configurations):
-    # TODO : Read NodeManager confis and figure the smallest sized NM.
-    size_of_smallest_nm = self.get_yarn_rm_mem_in_mb(services)
-    assert (
-      size_of_smallest_nm > 0), "Size of smallest NODEMANAGER calculated value : {0}. Expected value : > 0".format(
-      size_of_smallest_nm)
-    yarn_min_container_size = self.get_yarn_min_container_size(services)
-    node_size_usable = self._normalizeDown(size_of_smallest_nm, yarn_min_container_size)
-    cap_available_for_daemons = self.calculate_cap_available_for_llap_daemons(services, hosts, configurations)
-    num_llap_nodes = float(math.ceil(cap_available_for_daemons / node_size_usable))
-    assert (num_llap_nodes > 0), "Number of LLAP nodes calculated : {0}. Expected value : > 0".format(
-      num_llap_nodes)
-    # Maximum number of nodes that LLAP can use.
-    num_llap_nodes_max_limit = len(self.get_node_manager_hosts(services, hosts))
-    Logger.info("Calculated num_llap_nodes {3}, num_llap_nodes_max_limit : {4}, using following : "
-                "yarn_min_container_size : {0}, node_size_usable : {1}, cap_available_for_daemons :"
-                " {2}. ".format(yarn_min_container_size, node_size_usable, \
-                cap_available_for_daemons, num_llap_nodes, num_llap_nodes_max_limit))
-    return num_llap_nodes, num_llap_nodes_max_limit
-
-
-  """
-  Gets Tez container size (hive.tez.container.size)
-  """
-  def get_tez_container_size(self, services):
-    hive_container_size = 0
-    if 'hive.tez.container.size' in services['configurations']['hive-site']['properties']:
-      hive_container_size = float(
-        services['configurations']['hive-site']['properties']['hive.tez.container.size'])
-      assert (
-        hive_container_size > 0), "'hive.tez.container.size' current value : {0}. Expected value : > 0".format(
-        hive_container_size)
-    else:
-      raise Fail("Couldn't retrieve Hive Server 'hive.tez.container.size' config.")
-    return hive_container_size
-
-
-
-  """
-  Gets YARN's mimimum container size (yarn.scheduler.minimum-allocation-mb)
-  """
-  def get_yarn_min_container_size(self, services):
-    yarn_min_container_size = 0
-    if 'yarn.scheduler.minimum-allocation-mb' in services['configurations']['yarn-site']['properties']:
-      yarn_min_container_size = float(
-        services['configurations']['yarn-site']['properties']['yarn.scheduler.minimum-allocation-mb'])
-      assert (
-        yarn_min_container_size > 0), "'yarn.scheduler.minimum-allocation-mb' current value : {0}. Expected value : > 0".format(
-        yarn_min_container_size)
-    else:
-      raise Fail("Couldn't retrieve YARN's 'yarn.scheduler.minimum-allocation-mb' config.")
-    return yarn_min_container_size
-
-  """
-  Calculates recommended and minimum container size for LLAP app.
-  """
-  def calculate_llap_app_container_size(self, services, hosts, configurations):
-    cap_available_for_daemons = self.calculate_cap_available_for_llap_daemons(services, hosts, configurations)
-
-    node_manager_hosts = self.get_node_manager_hosts(services, hosts)
-    node_manager_host_cnt = len(node_manager_hosts)
-
-    num_llap_nodes_in_changed_configs = self.are_config_props_in_changed_configs(services, "hive-interactive-env",
-                                                                                 set(['num_llap_nodes']), False)
-    if not num_llap_nodes_in_changed_configs:
-      num_llap_nodes, num_llap_nodes_max_limit = self.calculate_num_llap_nodes(services, hosts, configurations)
-    else:
-      num_llap_nodes = self.get_num_llap_nodes(services)
-
-    llap_container_size_raw = cap_available_for_daemons / num_llap_nodes
-    llap_container_size_raw_min_limit = cap_available_for_daemons / node_manager_host_cnt
-
-    yarn_min_container_size = self.get_yarn_min_container_size(services)
-
-    llap_container_size = self._normalizeDown(llap_container_size_raw, yarn_min_container_size)
-    llap_container_size_min_limit = self._normalizeDown(llap_container_size_raw_min_limit, yarn_min_container_size)
-    '''
-    if llap_container_size_max_limit < llap_container_size:
-      llap_container_size_max_limit = llap_container_size
-    '''
-    Logger.info("Calculated llap_container_size : {0}, llap_container_size_min_limit : {1}, using following : "
-                "cap_available_for_daemons : {2}, node_manager_host_cnt : {3}, llap_container_size_raw : {4}, "
-                "llap_container_size_raw_max_limit : {5}, yarn_min_container_size : {6} "\
-                .format(llap_container_size, llap_container_size_min_limit, cap_available_for_daemons, node_manager_host_cnt,
-                        llap_container_size_raw, llap_container_size_raw_min_limit, yarn_min_container_size))
-    return llap_container_size, llap_container_size_min_limit
-
-
-  def calculate_cap_available_for_llap_daemons(self, services, hosts, configurations):
-    llap_concurrency = 0
-    llap_slider_cap_percentage = self.get_llap_cap_percent_slider(services, configurations)
-    yarn_rm_mem_in_mb = self.get_yarn_rm_mem_in_mb(services)
-
-
-    node_manager_hosts = self.get_node_manager_hosts(services, hosts)
-    assert (node_manager_hosts is not None), "Information about NODEMANAGER not found in cluster."
-
-    total_cluster_cap = len(node_manager_hosts) * yarn_rm_mem_in_mb
-
-    total_llap_queue_size = float(llap_slider_cap_percentage) / 100 * total_cluster_cap
-
-    llap_daemon_container_size = self.get_hive_am_container_size(services)
-
-    yarn_min_container_size = self.get_yarn_min_container_size(services)
-
-    if 'hive.server2.tez.sessions.per.default.queue' in services['configurations'][self.HIVE_INTERACTIVE_SITE][
-      'properties']:
-      llap_concurrency = float(services['configurations'][self.HIVE_INTERACTIVE_SITE]['properties'][
-                                 'hive.server2.tez.sessions.per.default.queue'])
-      assert (llap_concurrency > 0), "'hive.server2.tez.sessions.per.default.queue' current value : {0}. Expected value : > 0"\
-        .format(llap_concurrency)
-    else:
-      raise Fail("Couldn't retrieve Hive Server interactive's 'hive.server2.tez.sessions.per.default.queue' config.")
-
-    total_am_capacity_required = self._normalizeUp(llap_daemon_container_size, yarn_min_container_size) \
-                                 * llap_concurrency + self.calculate_slider_am_size(yarn_min_container_size)
-    cap_available_for_daemons = total_llap_queue_size - total_am_capacity_required
-    if cap_available_for_daemons < yarn_min_container_size :
-      raise Fail("'Capacity available for LLAP daemons'({0}) < 'YARN minimum container size'({1}). Invalid configuration detected. "
-                 "Increase LLAP queue size.".format(cap_available_for_daemons, yarn_min_container_size))
-    assert (
-      cap_available_for_daemons > 0), "'Capacity available for daemons' calculated value : {0}. Expected value : > 0".format(
-      cap_available_for_daemons)
-    Logger.info("Calculated cap_available_for_daemons : {0}, using following : llap_slider_cap_percentage : {1}, "
-                "yarn_rm_mem_in_mb : {2}, total_cluster_cap : {3}, total_llap_queue_size : {4}, llap_daemon_container_size"
-                " : {5}, yarn_min_container_size : {6}, llap_concurrency : {7}, total_am_capacity_required : {8}, "
-                .format(cap_available_for_daemons, llap_slider_cap_percentage, yarn_rm_mem_in_mb, total_cluster_cap,
-                        total_llap_queue_size, llap_daemon_container_size, yarn_min_container_size, llap_concurrency,
-                        total_am_capacity_required))
-    return cap_available_for_daemons
-
-  """
-  Calculates the Slider App Master size based on YARN's Minimum Container Size.
-  """
-  def calculate_slider_am_size(self, yarn_min_container_size):
-    if yarn_min_container_size > 1024:
-      return 1024
-    if yarn_min_container_size >= 256 and yarn_min_container_size <= 1024:
-      return yarn_min_container_size
-    if yarn_min_container_size < 256:
-      return 256
-
-  """
-  Gets YARN Resource Manager memory in MB (yarn.nodemanager.resource.memory-mb).
-  """
-  def get_yarn_rm_mem_in_mb(self, services):
-    if 'yarn-site' in services['configurations'] and \
-        'yarn.nodemanager.resource.memory-mb' in services['configurations']['yarn-site']['properties']:
-      yarn_rm_mem_in_mb = float(
-        services['configurations']['yarn-site']['properties']['yarn.nodemanager.resource.memory-mb'])
-      assert (
-        yarn_rm_mem_in_mb > 0.0), "'yarn.nodemanager.resource.memory-mb' current value : {0}. Expected value : > 0".format(
-        yarn_rm_mem_in_mb)
-    else:
-      raise Fail(
-        "Couldn't retrieve YARN's 'yarn.nodemanager.resource.memory-mb' config.")
-    return yarn_rm_mem_in_mb
-
-  """
-  Gets HIVE App Master container size (tez.am.resource.memory.mb)
-  """
-  def get_hive_am_container_size(self, services):
-    llap_daemon_container_size = 0
-    if self.HIVE_INTERACTIVE_SITE in services['configurations'] and \
-        'tez.am.resource.memory.mb' in services['configurations']['tez-interactive-site']['properties']:
-      llap_daemon_container_size = float(
-        services['configurations']['tez-interactive-site']['properties']['tez.am.resource.memory.mb'])
-      assert (
-        llap_daemon_container_size > 0), "'tez.am.resource.memory.mb' current value : {0}. Expected value : > 0".format(
-        llap_daemon_container_size)
-    else:
-      raise Fail("Couldn't retrieve Hive Server interactive's 'tez.am.resource.memory.mb' config.")
-    return llap_daemon_container_size
-
-
-  """
-  Calculates suggested and maximum value for number of LLAP executors.
-  """
-  def calculate_llap_daemon_executors_count(self, services, llap_container_size):
-    cpu_per_nm_host = 0
-    exec_to_cache_ratio = 1.5
-
-    hive_container_size = self.get_tez_container_size(services)
-
-    if 'yarn.nodemanager.resource.cpu-vcores' in services['configurations']['yarn-site']['properties']:
-      cpu_per_nm_host = float(services['configurations']['yarn-site']['properties'][
-                                'yarn.nodemanager.resource.cpu-vcores'])
-      assert (cpu_per_nm_host > 0), "'yarn.nodemanager.resource.cpu-vcores' current value : {0}. Expected value : > 0"\
-        .format(cpu_per_nm_host)
-    else:
-      raise Fail("Couldn't retrieve YARN's 'yarn.nodemanager.resource.cpu-vcores' config.")
-
-    mem_per_executor = hive_container_size * exec_to_cache_ratio
-    if mem_per_executor > llap_container_size:
-      mem_per_executor = llap_container_size
-
-    num_executors_per_node_raw = math.floor(llap_container_size / mem_per_executor)
-    num_executors_per_node = min(num_executors_per_node_raw, cpu_per_nm_host)
-    # Allow 4x over-subscription of CPU as a max value
-    num_executors_per_node_max_limit = min(num_executors_per_node_raw, 4 * cpu_per_nm_host)
-    Logger.info("calculated num_executors_per_node: {0}, num_executors_per_node_max_limit : {1}, using following "
-                ":  hive_container_size : {2}, cpu_per_nm_host : {3}, mem_per_executor : {4}, num_executors_per_node_raw : {5}"
-                .format(num_executors_per_node, num_executors_per_node_max_limit, hive_container_size,
-                        cpu_per_nm_host, mem_per_executor, num_executors_per_node_raw))
-    return num_executors_per_node, num_executors_per_node_max_limit
-
-
-  """
-  Calculates suggested and maximum value for LLAP cache size per node.
-  """
-  def calculate_llap_cache_size_per_executor(self, services, llap_container_size, num_executors_per_node):
-    hive_container_size = self.get_tez_container_size(services)
-    cache_size_per_node = llap_container_size - (num_executors_per_node * hive_container_size)
-    # Reserved memory for minExecutors, which is 1.
-    cache_size_per_node_max_limit = llap_container_size - (1 * hive_container_size)
-    Logger.info("Calculated cache_size_per_node : {0}, cache_size_per_node_max_limit : {1}, using following : "
-                "hive_container_size : {2}, llap_container_size : {3}, num_executors_per_node : {4}"
-                .format(cache_size_per_node, cache_size_per_node_max_limit, hive_container_size, llap_container_size,
-                        num_executors_per_node))
-    return cache_size_per_node, cache_size_per_node_max_limit
-
-
-  """
-  Calculates recommended heap size for LLAP app.
-  """
-  def calculate_llap_app_heap_size(self, services, num_executors_per_node):
-    hive_container_size = self.get_tez_container_size(services)
-    total_mem_for_executors = num_executors_per_node * hive_container_size
-    llap_app_heap_size = max(total_mem_for_executors * 0.8, total_mem_for_executors - 1024)
-    Logger.info("Calculated llap_app_heap_size : {0}, using following : hive_container_size : {1}, "
-                "total_mem_for_executors : {2}".format(llap_app_heap_size, hive_container_size, total_mem_for_executors))
-    return llap_app_heap_size
-
-  """
-  Minimum 'llap' queue capacity required in order to get LLAP app running.
-  """
-  def min_llap_queue_perc_required_in_cluster(self, services, hosts):
-    # Get llap queue size if seized at 20%
-    node_manager_hosts = self.get_node_manager_hosts(services, hosts)
-    yarn_rm_mem_in_mb = self.get_yarn_rm_mem_in_mb(services)
-    total_cluster_cap = len(node_manager_hosts) * yarn_rm_mem_in_mb
-    total_llap_queue_size_at_20_perc = 20.0 / 100 * total_cluster_cap
-
-    # Calculate based on minimum size required by containers.
-    yarn_min_container_size = self.get_yarn_min_container_size(services)
-    slider_am_size = self.calculate_slider_am_size(yarn_min_container_size)
-    tez_container_size = self.get_tez_container_size(services)
-    hive_am_container_size = self.get_hive_am_container_size(services)
-    normalized_val = self._normalizeUp(slider_am_size, yarn_min_container_size) + self._normalizeUp\
-      (tez_container_size, yarn_min_container_size) + self._normalizeUp(hive_am_container_size, yarn_min_container_size)
-
-    min_required = max(total_llap_queue_size_at_20_perc, normalized_val)
-
-    min_required_perc = min_required * 100 / total_cluster_cap
-    Logger.info("Calculated min_llap_queue_perc_required_in_cluster : {0} and min_llap_queue_cap_required_in_cluster: {1} "
-                "using following : yarn_min_container_size : {2}, ""slider_am_size : {3}, tez_container_size : {4}, "
-                "hive_am_container_size : {5}".format(min_required_perc, min_required, yarn_min_container_size,
-                slider_am_size, tez_container_size, hive_am_container_size))
-    return int(math.ceil(min_required_perc))
-
-  """
-  Normalize down 'val2' with respect to 'val1'.
-  """
-  def _normalizeDown(self, val1, val2):
-    tmp = math.floor(val1 / val2)
-    if tmp < 1.00:
-      return val1
-    return tmp * val2
-
-  """
-  Normalize up 'val2' with respect to 'val1'.
-  """
-  def _normalizeUp(self, val1, val2):
-    tmp = math.ceil(val1 / val2)
-    return tmp * val2
-
-  """
-  Checks and (1). Creates 'llap' queue if only 'default' queue exist at leaf level and is consuming 100% capacity OR
-             (2). Updates 'llap' queue capacity and state, if 'llap' queue exists.
-  """
-  def checkAndManageLlapQueue(self, services, configurations, hosts, llap_queue_name):
-    putHiveInteractiveEnvProperty = self.putProperty(configurations, "hive-interactive-env", services)
-    putHiveInteractiveSiteProperty = self.putProperty(configurations, self.HIVE_INTERACTIVE_SITE, services)
-    putHiveInteractiveEnvPropertyAttribute = self.putPropertyAttribute(configurations, "hive-interactive-env")
-    putCapSchedProperty = self.putProperty(configurations, "capacity-scheduler", services)
-
-    capacitySchedulerProperties = self.getCapacitySchedulerProperties(services)
-
-    if capacitySchedulerProperties:
-      # Get the llap Cluster percentage used for 'llap' Queue creation
-      if 'llap_queue_capacity' in services['configurations']['hive-interactive-env']['properties']:
-        llap_slider_cap_percentage = int(
-          services['configurations']['hive-interactive-env']['properties']['llap_queue_capacity'])
-        llap_min_reqd_cap_percentage = self.min_llap_queue_perc_required_in_cluster(services, hosts)
-        if llap_slider_cap_percentage <= 0 or llap_slider_cap_percentage > 100:
-          Logger.info("Adjusting HIVE 'llap_queue_capacity' from {0}% to {1}%".format(llap_slider_cap_percentage, llap_min_reqd_cap_percentage))
-          putHiveInteractiveEnvProperty('llap_queue_capacity', llap_min_reqd_cap_percentage)
-          llap_slider_cap_percentage = llap_min_reqd_cap_percentage
       else:
-        Logger.error("Problem retrieving LLAP Queue Capacity. Skipping creating {0} queue".format(llap_queue_name))
-        return
-      leafQueueNames = self.getAllYarnLeafQueues(capacitySchedulerProperties)
-      capSchedConfigKeys = capacitySchedulerProperties.keys()
-
-      yarn_default_queue_capacity = -1
-      if 'yarn.scheduler.capacity.root.default.capacity' in capSchedConfigKeys:
-        yarn_default_queue_capacity = capacitySchedulerProperties.get('yarn.scheduler.capacity.root.default.capacity')
-
-      # Get 'llap' queue state
-      currLlapQueueState = ''
-      if 'yarn.scheduler.capacity.root.'+llap_queue_name+'.state' in capSchedConfigKeys:
-        currLlapQueueState = capacitySchedulerProperties.get('yarn.scheduler.capacity.root.'+llap_queue_name+'.state')
-
-      # Get 'llap' queue capacity
-      currLlapQueueCap = -1
-      if 'yarn.scheduler.capacity.root.'+llap_queue_name+'.capacity' in capSchedConfigKeys:
-        currLlapQueueCap = int(capacitySchedulerProperties.get('yarn.scheduler.capacity.root.'+llap_queue_name+'.capacity'))
-
-      if self.HIVE_INTERACTIVE_SITE in services['configurations'] and \
-          'hive.llap.daemon.queue.name' in services['configurations'][self.HIVE_INTERACTIVE_SITE]['properties']:
-        llap_daemon_selected_queue_name =  services['configurations'][self.HIVE_INTERACTIVE_SITE]['properties']['hive.llap.daemon.queue.name']
-      else:
-        Logger.debug("Couldn't retrive 'hive.llap.daemon.queue.name' property. Skipping adjusting queues.")
-        return
-      updated_cap_sched_configs = ''
-
-      enabled_hive_int_in_changed_configs = self.are_config_props_in_changed_configs(services, "hive-interactive-env",
-                                                                                   set(['enable_hive_interactive']), False)
-      """
-      We create OR "modify 'llap' queue 'state and/or capacity' " based on below conditions:
-       - if only 1 queue exists at root level and is 'default' queue and has 100% cap -> Create 'llap' queue,  OR
-       - if 2 queues exists at root level ('llap' and 'default') :
-           - Queue selected is 'llap' and state is STOPPED -> Modify 'llap' queue state to RUNNING, adjust capacity, OR
-           - Queue selected is 'llap', state is RUNNING and 'llap_queue_capacity' prop != 'llap' queue current running capacity ->
-              Modify 'llap' queue capacity to 'llap_queue_capacity'
-      """
-      if 'default' in leafQueueNames and \
-        ((len(leafQueueNames) == 1 and int(yarn_default_queue_capacity) == 100) or \
-        ((len(leafQueueNames) == 2 and llap_queue_name in leafQueueNames) and \
-           ((currLlapQueueState == 'STOPPED' and enabled_hive_int_in_changed_configs) or (currLlapQueueState == 'RUNNING' and currLlapQueueCap != llap_slider_cap_percentage)))):
-        adjusted_default_queue_cap = str(100 - llap_slider_cap_percentage)
-        for prop, val in capacitySchedulerProperties.items():
-          if llap_queue_name not in prop:
-            if prop == 'yarn.scheduler.capacity.root.queues':
-              updated_cap_sched_configs = updated_cap_sched_configs \
-                                          + prop + "=default,llap\n"
-            elif prop == 'yarn.scheduler.capacity.root.default.capacity':
-              updated_cap_sched_configs = updated_cap_sched_configs \
-                                          + prop + "=" + adjusted_default_queue_cap + "\n"
-            elif prop == 'yarn.scheduler.capacity.root.default.maximum-capacity':
-              updated_cap_sched_configs = updated_cap_sched_configs \
-                                          + prop + "=" + adjusted_default_queue_cap + "\n"
-            elif prop.startswith('yarn.') and '.llap.' not in prop:
-              updated_cap_sched_configs = updated_cap_sched_configs + prop + "=" + val + "\n"
-
-        llap_slider_cap_percentage = str(llap_slider_cap_percentage)
-        hive_user = '*'  # Open to all
-        if 'hive_user' in services['configurations']['hive-env']['properties']:
-          hive_user = services['configurations']['hive-env']['properties']['hive_user']
-
-        # Now, append the 'llap' queue related properties
-        updated_cap_sched_configs = updated_cap_sched_configs \
-                                    + "yarn.scheduler.capacity.root." + llap_queue_name + ".user-limit-factor=1\n" \
-                                    + "yarn.scheduler.capacity.root." + llap_queue_name + ".state=RUNNING\n" \
-                                    + "yarn.scheduler.capacity.root." + llap_queue_name + ".ordering-policy=fifo\n" \
-                                    + "yarn.scheduler.capacity.root." + llap_queue_name + ".minimum-user-limit-percent=100\n" \
-                                    + "yarn.scheduler.capacity.root." + llap_queue_name + ".maximum-capacity=" \
-                                    + llap_slider_cap_percentage + "\n" \
-                                    + "yarn.scheduler.capacity.root." + llap_queue_name + ".capacity=" \
-                                    + llap_slider_cap_percentage + "\n" \
-                                    + "yarn.scheduler.capacity.root." + llap_queue_name + ".acl_submit_applications=" \
-                                    + hive_user + "\n" \
-                                    + "yarn.scheduler.capacity.root." + llap_queue_name + ".acl_administer_queue=" \
-                                    + hive_user + "\n" \
-                                    + "yarn.scheduler.capacity.root." + llap_queue_name + ".maximum-am-resource-percent=1"
-
-        if updated_cap_sched_configs:
-          putCapSchedProperty("capacity-scheduler", updated_cap_sched_configs)
-          if len(leafQueueNames) == 1: # 'llap' queue didn't exist before
-            Logger.info("Created YARN Queue : '{0}' with capacity : {1}%. Adjusted default queue capacity to : {2}%" \
-                      .format(llap_queue_name, llap_slider_cap_percentage, adjusted_default_queue_cap))
-          else: # Queue existed, only adjustments done.
-            Logger.info("Adjusted YARN Queue : '{0}'. Current capacity : {1}%. State: RUNNING.".format(llap_queue_name, llap_slider_cap_percentage))
-            Logger.info("Adjusted 'default' queue capacity to : {0}%".format(adjusted_default_queue_cap))
-
-          # Update Hive 'hive.llap.daemon.queue.name' prop to use 'llap' queue.
-          putHiveInteractiveSiteProperty('hive.llap.daemon.queue.name', 'llap')
-          putHiveInteractiveEnvPropertyAttribute('llap_queue_capacity', "minimum", llap_min_reqd_cap_percentage)
-          putHiveInteractiveEnvPropertyAttribute('llap_queue_capacity', "maximum", 100)
-
-          # Update 'hive.llap.daemon.queue.name' prop combo entries.
-          self.setLlapDaemonQueueName(services, configurations)
-      else:
-        Logger.debug("Not creating {0} queue. Current YARN queues : {1}".format(llap_queue_name, list(leafQueueNames)))
-    else:
-      Logger.error("Couldn't retrieve 'capacity-scheduler' properties while doing YARN queue adjustment for Hive Server Interactive.")
-
-  """
-  Checks and sees (1). If only two leaf queues exist at root level, namely: 'default' and 'llap',
-              and (2). 'llap' is in RUNNING state.
-
-  If yes, performs the following actions:   (1). 'llap' queue state set to STOPPED,
-                                            (2). 'llap' queue capacity set to 0 %,
-                                            (3). 'default' queue capacity set to 100 %
-  """
-  def checkAndStopLlapQueue(self, services, configurations, llap_queue_name):
-    putCapSchedProperty = self.putProperty(configurations, "capacity-scheduler", services)
-    putHiveInteractiveSiteProperty = self.putProperty(configurations, self.HIVE_INTERACTIVE_SITE, services)
-    capacitySchedulerProperties = self.getCapacitySchedulerProperties(services)
-    updated_default_queue_configs = ''
-    updated_llap_queue_configs = ''
-    if capacitySchedulerProperties:
-      # Get all leaf queues.
-      leafQueueNames = self.getAllYarnLeafQueues(capacitySchedulerProperties)
-
-      if len(leafQueueNames) == 2 and llap_queue_name in leafQueueNames and 'default' in leafQueueNames:
-        # Get 'llap' queue state
-        currLlapQueueState = 'STOPPED'
-        if 'yarn.scheduler.capacity.root.'+llap_queue_name+'.state' in capacitySchedulerProperties.keys():
-          currLlapQueueState = capacitySchedulerProperties.get('yarn.scheduler.capacity.root.'+llap_queue_name+'.state')
+        # Kerberized Cluster with Ranger plugin disabled
+        if security_enabled and 'kafka-broker' in services['configurations'] and 'authorizer.class.name' in services['configurations']['kafka-broker']['properties'] and \
+                services['configurations']['kafka-broker']['properties']['authorizer.class.name'] == 'org.apache.ranger.authorization.kafka.authorizer.RangerKafkaAuthorizer':
+          putKafkaBrokerProperty("authorizer.class.name", 'kafka.security.auth.SimpleAclAuthorizer')
+        # Non-kerberos Cluster with Ranger plugin disabled
         else:
-          Logger.error("{0} queue 'state' property not present in capacity scheduler. Skipping adjusting queues.".format(llap_queue_name))
-          return
-        if currLlapQueueState == 'RUNNING':
-          DEFAULT_MAX_CAPACITY = '100'
-          for prop, val in capacitySchedulerProperties.items():
-            # Update 'default' related configs in 'updated_cap_sched_configs'
-            if llap_queue_name not in prop:
-              if prop == 'yarn.scheduler.capacity.root.default.capacity':
-                # Set 'default' capacity back to maximum val
-                updated_default_queue_configs = updated_default_queue_configs \
-                                            + prop + "="+DEFAULT_MAX_CAPACITY + "\n"
-              elif prop == 'yarn.scheduler.capacity.root.default.maximum-capacity':
-                # Set 'default' max. capacity back to maximum val
-                updated_default_queue_configs = updated_default_queue_configs \
-                                            + prop + "="+DEFAULT_MAX_CAPACITY + "\n"
-              elif prop.startswith('yarn.'):
-                updated_default_queue_configs = updated_default_queue_configs + prop + "=" + val + "\n"
-            else: # Update 'llap' related configs in 'updated_cap_sched_configs'
-              if prop == 'yarn.scheduler.capacity.root.'+llap_queue_name+'.state':
-                updated_llap_queue_configs = updated_llap_queue_configs \
-                                            + prop + "=STOPPED\n"
-              elif prop == 'yarn.scheduler.capacity.root.'+llap_queue_name+'.capacity':
-                updated_llap_queue_configs = updated_llap_queue_configs \
-                                            + prop + "=0\n"
-              elif prop == 'yarn.scheduler.capacity.root.'+llap_queue_name+'.maximum-capacity':
-                updated_llap_queue_configs = updated_llap_queue_configs \
-                                            + prop + "=0\n"
-              elif prop.startswith('yarn.'):
-                updated_llap_queue_configs = updated_llap_queue_configs + prop + "=" + val + "\n"
-        else:
-          Logger.debug("{0} queue state is : {1}. Skipping adjusting queues.".format(llap_queue_name, currLlapQueueState))
-          return
+          putKafkaBrokerAttributes('authorizer.class.name', 'delete', 'true')
 
-        if updated_default_queue_configs and updated_llap_queue_configs:
-          putCapSchedProperty("capacity-scheduler", updated_default_queue_configs+updated_llap_queue_configs)
-          Logger.info("Changed YARN '{0}' queue state to 'STOPPED', and capacity to 0%. Adjusted 'default' queue capacity to : {1}%" \
-            .format(llap_queue_name, DEFAULT_MAX_CAPACITY))
+    # Non-Kerberos Cluster without Ranger
+    elif not security_enabled:
+      putKafkaBrokerAttributes('authorizer.class.name', 'delete', 'true')
 
-          # Update Hive 'hive.llap.daemon.queue.name' prop to use 'default' queue.
-          putHiveInteractiveSiteProperty('hive.llap.daemon.queue.name', 'default')
-      else:
-        Logger.debug("Not removing '{0}' queue as number of Queues not equal to 2. Current YARN queues : {1}".format(llap_queue_name, list(leafQueueNames)))
+  def getDBConnectionHostPort(self, db_type, db_host):
+    connection_string = ""
+    if db_type is None or db_type == "":
+      return connection_string
     else:
-      Logger.error("Couldn't retrieve 'capacity-scheduler' properties while doing YARN queue adjustment for Hive Server Interactive.")
-
-  """
-  Checks and sets the 'Hive Server Interactive' 'hive.llap.daemon.queue.name' config.
-  """
-  def setLlapDaemonQueueName(self, services, configurations):
-    putHiveInteractiveSitePropertyAttribute = self.putPropertyAttribute(configurations, self.HIVE_INTERACTIVE_SITE)
-    capacitySchedulerProperties = dict()
-
-    # Read 'capacity-scheduler' from configurations if we modified and added recommendation to it, as part of current
-    # StackAdvisor invocation.
-    if 'capacity-scheduler' in configurations and \
-        'capacity-scheduler' in configurations['capacity-scheduler']['properties']:
-      properties = str(configurations['capacity-scheduler']['properties']['capacity-scheduler']).split('\n')
-      for property in properties:
-        key, sep, value = property.partition("=")
-        capacitySchedulerProperties[key] = value
-    else: # read from input : services
-      capacitySchedulerProperties = self.getCapacitySchedulerProperties(services)
-
-    leafQueueNames = self.getAllYarnLeafQueues(capacitySchedulerProperties)
-    if leafQueueNames:
-      leafQueues = [{"label": str(queueName), "value": queueName} for queueName in leafQueueNames]
-      leafQueues = sorted(leafQueues, key=lambda q:q['value'])
-      putHiveInteractiveSitePropertyAttribute("hive.llap.daemon.queue.name", "entries", leafQueues)
-    else:
-      Logger.error("Problem retrieving YARN queues. Skipping updating HIVE Server Interactve "
-                   "'hive.server2.tez.default.queues' property.")
-
-  """
-  Gets all YARN leaf queues.
-  """
-  def getAllYarnLeafQueues(self, capacitySchedulerProperties):
-    config_list = capacitySchedulerProperties.keys()
-    yarn_queues = []
-    leafQueueNames = set()
-    if 'yarn.scheduler.capacity.root.queues' in config_list:
-      yarn_queues = capacitySchedulerProperties.get('yarn.scheduler.capacity.root.queues')
-
-    if yarn_queues:
-      toProcessQueues = yarn_queues.split(",")
-      while len(toProcessQueues) > 0:
-        queue = toProcessQueues.pop()
-        queueKey = "yarn.scheduler.capacity.root." + queue + ".queues"
-        if queueKey in capacitySchedulerProperties:
-          # If parent queue, add children
-          subQueues = capacitySchedulerProperties[queueKey].split(",")
-          for subQueue in subQueues:
-            toProcessQueues.append(queue + "." + subQueue)
+      colon_count = db_host.count(':')
+      if colon_count == 0:
+        if DB_TYPE_DEFAULT_PORT_MAP.has_key(db_type):
+          connection_string = db_host + ":" + DB_TYPE_DEFAULT_PORT_MAP[db_type]
         else:
-          # Leaf queue
-          queueName = queue.split(".")[-1]
-          leafQueueNames.add(queueName)
-    return leafQueueNames
+          connection_string = db_host
+      elif colon_count == 1:
+        connection_string = db_host
 
-  """
-  Returns the dictionary of 'capacity-scheduler' related configs.
-  """
-  def getCapacitySchedulerProperties(self, services):
-    capacitySchedulerProperties = dict()
-    if "capacity-scheduler" in services['configurations']:
-      if "capacity-scheduler" in services['configurations']["capacity-scheduler"]["properties"]:
-        properties = str(services['configurations']["capacity-scheduler"]["properties"]["capacity-scheduler"])\
-          .split('\n')
-
-        if properties:
-          for property in properties:
-            key, sep, value = property.partition("=")
-            capacitySchedulerProperties[key] = value
-    return capacitySchedulerProperties
+    return connection_string
 
   def recommendRangerConfigurations(self, configurations, clusterData, services, hosts):
-    super(HDF20StackAdvisor, self).recommendRangerConfigurations(configurations, clusterData, services, hosts)
-    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
 
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
+    putRangerEnvProperty = self.putProperty(configurations, "ranger-env", services)
+    putRangerAdminProperty = self.putProperty(configurations, "admin-properties", services)
+    putRangerAdminSiteProperty = self.putProperty(configurations, "ranger-admin-site", services)
+    putRangerUgsyncSite = self.putProperty(configurations, "ranger-ugsync-site", services)
     putTagsyncAppProperty = self.putProperty(configurations, "tagsync-application-properties", services)
     putTagsyncSiteProperty = self.putProperty(configurations, "ranger-tagsync-site", services)
+
+    # Build policymgr_external_url
+    protocol = 'http'
+    ranger_admin_host = 'localhost'
+    port = '6080'
+
+    # Check if http is disabled. For HDF-0.3 this can be checked in ranger-admin-site/ranger.service.http.enabled
+    # For Ranger-0.4.0 this can be checked in ranger-site/http.enabled
+    if ('ranger-site' in services['configurations'] and 'http.enabled' in services['configurations']['ranger-site']['properties'] \
+      and services['configurations']['ranger-site']['properties']['http.enabled'].lower() == 'false') or \
+      ('ranger-admin-site' in services['configurations'] and 'ranger.service.http.enabled' in services['configurations']['ranger-admin-site']['properties'] \
+      and services['configurations']['ranger-admin-site']['properties']['ranger.service.http.enabled'].lower() == 'false'):
+      # HTTPS protocol is used
+      protocol = 'https'
+      # Starting Ranger-0.5.0.0.3 port stored in ranger-admin-site ranger.service.https.port
+      if 'ranger-admin-site' in services['configurations'] and \
+          'ranger.service.https.port' in services['configurations']['ranger-admin-site']['properties']:
+        port = services['configurations']['ranger-admin-site']['properties']['ranger.service.https.port']
+      # In Ranger-0.4.0 port stored in ranger-site https.service.port
+      elif 'ranger-site' in services['configurations'] and \
+          'https.service.port' in services['configurations']['ranger-site']['properties']:
+        port = services['configurations']['ranger-site']['properties']['https.service.port']
+    else:
+      # HTTP protocol is used
+      # Starting Ranger-0.5.0.0.3 port stored in ranger-admin-site ranger.service.http.port
+      if 'ranger-admin-site' in services['configurations'] and \
+          'ranger.service.http.port' in services['configurations']['ranger-admin-site']['properties']:
+        port = services['configurations']['ranger-admin-site']['properties']['ranger.service.http.port']
+      # In Ranger-0.4.0 port stored in ranger-site http.service.port
+      elif 'ranger-site' in services['configurations'] and \
+          'http.service.port' in services['configurations']['ranger-site']['properties']:
+        port = services['configurations']['ranger-site']['properties']['http.service.port']
+
+    ranger_admin_hosts = self.getComponentHostNames(services, "RANGER", "RANGER_ADMIN")
+    if ranger_admin_hosts:
+      if len(ranger_admin_hosts) > 1 \
+        and services['configurations'] \
+        and 'admin-properties' in services['configurations'] and 'policymgr_external_url' in services['configurations']['admin-properties']['properties'] \
+        and services['configurations']['admin-properties']['properties']['policymgr_external_url'] \
+        and services['configurations']['admin-properties']['properties']['policymgr_external_url'].strip():
+
+        # in case of HA deployment keep the policymgr_external_url specified in the config
+        policymgr_external_url = services['configurations']['admin-properties']['properties']['policymgr_external_url']
+      else:
+
+        ranger_admin_host = ranger_admin_hosts[0]
+        policymgr_external_url = "%s://%s:%s" % (protocol, ranger_admin_host, port)
+
+      putRangerAdminProperty('policymgr_external_url', policymgr_external_url)
+
+    rangerServiceVersion = [service['StackServices']['service_version'] for service in services["services"] if service['StackServices']['service_name'] == 'RANGER'][0]
+    if rangerServiceVersion == '0.4.0':
+      # Recommend ldap settings based on ambari.properties configuration
+      # If 'ambari.ldap.isConfigured' == true
+      # For Ranger version 0.4.0
+      if 'ambari-server-properties' in services and \
+      'ambari.ldap.isConfigured' in services['ambari-server-properties'] and \
+        services['ambari-server-properties']['ambari.ldap.isConfigured'].lower() == "true":
+        putUserSyncProperty = self.putProperty(configurations, "usersync-properties", services)
+        serverProperties = services['ambari-server-properties']
+        if 'authentication.ldap.managerDn' in serverProperties:
+          putUserSyncProperty('SYNC_LDAP_BIND_DN', serverProperties['authentication.ldap.managerDn'])
+        if 'authentication.ldap.primaryUrl' in serverProperties:
+          ldap_protocol =  'ldap://'
+          if 'authentication.ldap.useSSL' in serverProperties and serverProperties['authentication.ldap.useSSL'] == 'true':
+            ldap_protocol =  'ldaps://'
+          ldapUrl = ldap_protocol + serverProperties['authentication.ldap.primaryUrl'] if serverProperties['authentication.ldap.primaryUrl'] else serverProperties['authentication.ldap.primaryUrl']
+          putUserSyncProperty('SYNC_LDAP_URL', ldapUrl)
+        if 'authentication.ldap.userObjectClass' in serverProperties:
+          putUserSyncProperty('SYNC_LDAP_USER_OBJECT_CLASS', serverProperties['authentication.ldap.userObjectClass'])
+        if 'authentication.ldap.usernameAttribute' in serverProperties:
+          putUserSyncProperty('SYNC_LDAP_USER_NAME_ATTRIBUTE', serverProperties['authentication.ldap.usernameAttribute'])
+
+
+      # Set Ranger Admin Authentication method
+      if 'admin-properties' in services['configurations'] and 'usersync-properties' in services['configurations'] and \
+          'SYNC_SOURCE' in services['configurations']['usersync-properties']['properties']:
+        rangerUserSyncSource = services['configurations']['usersync-properties']['properties']['SYNC_SOURCE']
+        authenticationMethod = rangerUserSyncSource.upper()
+        if authenticationMethod != 'FILE':
+          putRangerAdminProperty('authentication_method', authenticationMethod)
+
+      # Recommend xasecure.audit.destination.hdfs.dir
+      # For Ranger version 0.4.0
+      include_hdfs = "HDFS" in servicesList
+      if include_hdfs:
+        if 'core-site' in services['configurations'] and ('fs.defaultFS' in services['configurations']['core-site']['properties']):
+          default_fs = services['configurations']['core-site']['properties']['fs.defaultFS']
+          default_fs += '/ranger/audit/%app-type%/%time:yyyyMMdd%'
+          putRangerEnvProperty('xasecure.audit.destination.hdfs.dir', default_fs)
+
+      # Recommend Ranger Audit properties for ranger supported services
+      # For Ranger version 0.4.0
+      ranger_services = [
+        {'service_name': 'STORM', 'audit_file': 'ranger-storm-plugin-properties'}
+      ]
+
+      for item in range(len(ranger_services)):
+        if ranger_services[item]['service_name'] in servicesList:
+          component_audit_file =  ranger_services[item]['audit_file']
+          if component_audit_file in services["configurations"]:
+            ranger_audit_dict = [
+              {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.db', 'target_configname': 'XAAUDIT.DB.IS_ENABLED'},
+              {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs', 'target_configname': 'XAAUDIT.HDFS.IS_ENABLED'},
+              {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs.dir', 'target_configname': 'XAAUDIT.HDFS.DESTINATION_DIRECTORY'}
+            ]
+            putRangerAuditProperty = self.putProperty(configurations, component_audit_file, services)
+
+            for item in ranger_audit_dict:
+              if item['filename'] in services["configurations"] and item['configname'] in  services["configurations"][item['filename']]["properties"]:
+                if item['filename'] in configurations and item['configname'] in  configurations[item['filename']]["properties"]:
+                  rangerAuditProperty = configurations[item['filename']]["properties"][item['configname']]
+                else:
+                  rangerAuditProperty = services["configurations"][item['filename']]["properties"][item['configname']]
+                putRangerAuditProperty(item['target_configname'], rangerAuditProperty)
+
+    cluster_env = getServicesSiteProperties(services, "cluster-env")
+    security_enabled = cluster_env is not None and "security_enabled" in cluster_env and \
+                       cluster_env["security_enabled"].lower() == "true"
+    if "ranger-env" in configurations and not security_enabled:
+      putRangerEnvProperty("ranger-storm-plugin-enabled", "No")
+
+    if 'admin-properties' in services['configurations'] and ('DB_FLAVOR' in services['configurations']['admin-properties']['properties']) \
+        and ('db_host' in services['configurations']['admin-properties']['properties']) and ('db_name' in services['configurations']['admin-properties']['properties']):
+
+      rangerDbFlavor = services['configurations']["admin-properties"]["properties"]["DB_FLAVOR"]
+      rangerDbHost =   services['configurations']["admin-properties"]["properties"]["db_host"]
+      rangerDbName =   services['configurations']["admin-properties"]["properties"]["db_name"]
+      ranger_db_url_dict = {
+        'MYSQL': {'ranger.jpa.jdbc.driver': 'com.mysql.jdbc.Driver',
+                  'ranger.jpa.jdbc.url': 'jdbc:mysql://' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + '/' + rangerDbName},
+        'ORACLE': {'ranger.jpa.jdbc.driver': 'oracle.jdbc.driver.OracleDriver',
+                   'ranger.jpa.jdbc.url': 'jdbc:oracle:thin:@//' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + '/' + rangerDbName},
+        'POSTGRES': {'ranger.jpa.jdbc.driver': 'org.postgresql.Driver',
+                     'ranger.jpa.jdbc.url': 'jdbc:postgresql://' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + '/' + rangerDbName},
+        'MSSQL': {'ranger.jpa.jdbc.driver': 'com.microsoft.sqlserver.jdbc.SQLServerDriver',
+                  'ranger.jpa.jdbc.url': 'jdbc:sqlserver://' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + ';databaseName=' + rangerDbName},
+        'SQLA': {'ranger.jpa.jdbc.driver': 'sap.jdbc4.sqlanywhere.IDriver',
+                 'ranger.jpa.jdbc.url': 'jdbc:sqlanywhere:host=' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + ';database=' + rangerDbName}
+      }
+      rangerDbProperties = ranger_db_url_dict.get(rangerDbFlavor, ranger_db_url_dict['MYSQL'])
+      for key in rangerDbProperties:
+        putRangerAdminSiteProperty(key, rangerDbProperties.get(key))
+
+      if 'admin-properties' in services['configurations'] and ('DB_FLAVOR' in services['configurations']['admin-properties']['properties']) \
+          and ('db_host' in services['configurations']['admin-properties']['properties']):
+
+        rangerDbFlavor = services['configurations']["admin-properties"]["properties"]["DB_FLAVOR"]
+        rangerDbHost =   services['configurations']["admin-properties"]["properties"]["db_host"]
+        ranger_db_privelege_url_dict = {
+          'MYSQL': {'ranger_privelege_user_jdbc_url': 'jdbc:mysql://' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost)},
+          'ORACLE': {'ranger_privelege_user_jdbc_url': 'jdbc:oracle:thin:@//' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost)},
+          'POSTGRES': {'ranger_privelege_user_jdbc_url': 'jdbc:postgresql://' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + '/postgres'},
+          'MSSQL': {'ranger_privelege_user_jdbc_url': 'jdbc:sqlserver://' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + ';'},
+          'SQLA': {'ranger_privelege_user_jdbc_url': 'jdbc:sqlanywhere:host=' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + ';'}
+        }
+        rangerPrivelegeDbProperties = ranger_db_privelege_url_dict.get(rangerDbFlavor, ranger_db_privelege_url_dict['MYSQL'])
+        for key in rangerPrivelegeDbProperties:
+          putRangerEnvProperty(key, rangerPrivelegeDbProperties.get(key))
+
+    # Recommend ldap settings based on ambari.properties configuration
+    if 'ambari-server-properties' in services and \
+            'ambari.ldap.isConfigured' in services['ambari-server-properties'] and \
+            services['ambari-server-properties']['ambari.ldap.isConfigured'].lower() == "true":
+      serverProperties = services['ambari-server-properties']
+      if 'authentication.ldap.baseDn' in serverProperties:
+        putRangerUgsyncSite('ranger.usersync.ldap.searchBase', serverProperties['authentication.ldap.baseDn'])
+      if 'authentication.ldap.groupMembershipAttr' in serverProperties:
+        putRangerUgsyncSite('ranger.usersync.group.memberattributename', serverProperties['authentication.ldap.groupMembershipAttr'])
+      if 'authentication.ldap.groupNamingAttr' in serverProperties:
+        putRangerUgsyncSite('ranger.usersync.group.nameattribute', serverProperties['authentication.ldap.groupNamingAttr'])
+      if 'authentication.ldap.groupObjectClass' in serverProperties:
+        putRangerUgsyncSite('ranger.usersync.group.objectclass', serverProperties['authentication.ldap.groupObjectClass'])
+      if 'authentication.ldap.managerDn' in serverProperties:
+        putRangerUgsyncSite('ranger.usersync.ldap.binddn', serverProperties['authentication.ldap.managerDn'])
+      if 'authentication.ldap.primaryUrl' in serverProperties:
+        ldap_protocol =  'ldap://'
+        if 'authentication.ldap.useSSL' in serverProperties and serverProperties['authentication.ldap.useSSL'] == 'true':
+          ldap_protocol =  'ldaps://'
+        ldapUrl = ldap_protocol + serverProperties['authentication.ldap.primaryUrl'] if serverProperties['authentication.ldap.primaryUrl'] else serverProperties['authentication.ldap.primaryUrl']
+        putRangerUgsyncSite('ranger.usersync.ldap.url', ldapUrl)
+      if 'authentication.ldap.userObjectClass' in serverProperties:
+        putRangerUgsyncSite('ranger.usersync.ldap.user.objectclass', serverProperties['authentication.ldap.userObjectClass'])
+      if 'authentication.ldap.usernameAttribute' in serverProperties:
+        putRangerUgsyncSite('ranger.usersync.ldap.user.nameattribute', serverProperties['authentication.ldap.usernameAttribute'])
+
+
+    # Recommend Ranger Authentication method
+    authMap = {
+      'org.apache.ranger.unixusersync.process.UnixUserGroupBuilder': 'UNIX',
+      'org.apache.ranger.ldapusersync.process.LdapUserGroupBuilder': 'LDAP'
+    }
+
+    if 'ranger-ugsync-site' in services['configurations'] and 'ranger.usersync.source.impl.class' in services['configurations']["ranger-ugsync-site"]["properties"]:
+      rangerUserSyncClass = services['configurations']["ranger-ugsync-site"]["properties"]["ranger.usersync.source.impl.class"]
+      if rangerUserSyncClass in authMap:
+        rangerSqlConnectorProperty = authMap.get(rangerUserSyncClass)
+        putRangerAdminSiteProperty('ranger.authentication.method', rangerSqlConnectorProperty)
+
+
+    if 'ranger-env' in services['configurations'] and 'is_solrCloud_enabled' in services['configurations']["ranger-env"]["properties"]:
+      isSolrCloudEnabled = services['configurations']["ranger-env"]["properties"]["is_solrCloud_enabled"]  == "true"
+    else:
+      isSolrCloudEnabled = False
+
+    if isSolrCloudEnabled:
+      zookeeper_host_port = self.getZKHostPortString(services)
+      ranger_audit_zk_port = ''
+      if zookeeper_host_port:
+        ranger_audit_zk_port = '{0}/{1}'.format(zookeeper_host_port, 'ranger_audits')
+        putRangerAdminSiteProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
+    else:
+      putRangerAdminSiteProperty('ranger.audit.solr.zookeepers', 'NONE')
+
+    # Recommend ranger.audit.solr.zookeepers and xasecure.audit.destination.hdfs.dir
+    include_hdfs = "HDFS" in servicesList
+    if include_hdfs:
+      if 'core-site' in services['configurations'] and ('fs.defaultFS' in services['configurations']['core-site']['properties']):
+        default_fs = services['configurations']['core-site']['properties']['fs.defaultFS']
+        putRangerEnvProperty('xasecure.audit.destination.hdfs.dir', '{0}/{1}/{2}'.format(default_fs,'ranger','audit'))
+
+    # Recommend Ranger supported service's audit properties
+    ranger_services = [
+      {'service_name': 'KAFKA', 'audit_file': 'ranger-kafka-audit'},
+      {'service_name': 'STORM', 'audit_file': 'ranger-storm-audit'}
+    ]
+
+    for item in range(len(ranger_services)):
+      if ranger_services[item]['service_name'] in servicesList:
+        component_audit_file =  ranger_services[item]['audit_file']
+        if component_audit_file in services["configurations"]:
+          ranger_audit_dict = [
+            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.db', 'target_configname': 'xasecure.audit.destination.db'},
+            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs', 'target_configname': 'xasecure.audit.destination.hdfs'},
+            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs.dir', 'target_configname': 'xasecure.audit.destination.hdfs.dir'},
+            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.solr', 'target_configname': 'xasecure.audit.destination.solr'},
+            {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.urls', 'target_configname': 'xasecure.audit.destination.solr.urls'},
+            {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.zookeepers', 'target_configname': 'xasecure.audit.destination.solr.zookeepers'}
+          ]
+          putRangerAuditProperty = self.putProperty(configurations, component_audit_file, services)
+
+          for item in ranger_audit_dict:
+            if item['filename'] in services["configurations"] and item['configname'] in  services["configurations"][item['filename']]["properties"]:
+              if item['filename'] in configurations and item['configname'] in  configurations[item['filename']]["properties"]:
+                rangerAuditProperty = configurations[item['filename']]["properties"][item['configname']]
+              else:
+                rangerAuditProperty = services["configurations"][item['filename']]["properties"][item['configname']]
+              putRangerAuditProperty(item['target_configname'], rangerAuditProperty)
+
+    audit_solr_flag = 'false'
+    audit_db_flag = 'false'
+    ranger_audit_source_type = 'solr'
+    if 'ranger-env' in services['configurations'] and 'xasecure.audit.destination.solr' in services['configurations']["ranger-env"]["properties"]:
+      audit_solr_flag = services['configurations']["ranger-env"]["properties"]['xasecure.audit.destination.solr']
+    if 'ranger-env' in services['configurations'] and 'xasecure.audit.destination.db' in services['configurations']["ranger-env"]["properties"]:
+      audit_db_flag = services['configurations']["ranger-env"]["properties"]['xasecure.audit.destination.db']
+
+    if audit_db_flag == 'true' and audit_solr_flag == 'false':
+      ranger_audit_source_type = 'db'
+    putRangerAdminSiteProperty('ranger.audit.source.type',ranger_audit_source_type)
 
     has_ranger_tagsync = False
     if 'RANGER' in servicesList:
@@ -1059,7 +513,7 @@ class HDF20StackAdvisor(HDF12StackAdvisor):
       kafka_hosts = self.getHostNamesWithComponent("KAFKA", "KAFKA_BROKER", services)
       kafka_port = '6667'
       if 'kafka-broker' in services['configurations'] and (
-          'port' in services['configurations']['kafka-broker']['properties']):
+            'port' in services['configurations']['kafka-broker']['properties']):
         kafka_port = services['configurations']['kafka-broker']['properties']['port']
       kafka_host_port = []
       for i in range(len(kafka_hosts)):
@@ -1069,6 +523,688 @@ class HDF20StackAdvisor(HDF12StackAdvisor):
       putTagsyncAppProperty('atlas.kafka.bootstrap.servers', final_kafka_host)
     else:
       putTagsyncAppProperty('atlas.kafka.bootstrap.servers', 'localhost:6667')
+
+  def getAmsMemoryRecommendation(self, services, hosts):
+    # MB per sink in hbase heapsize
+    HEAP_PER_MASTER_COMPONENT = 50
+    HEAP_PER_SLAVE_COMPONENT = 10
+
+    schMemoryMap = {
+      "KAFKA": {
+        "KAFKA_BROKER": HEAP_PER_MASTER_COMPONENT
+      },
+      "STORM": {
+        "NIMBUS": HEAP_PER_MASTER_COMPONENT,
+      },
+      "AMBARI_METRICS": {
+        "METRICS_COLLECTOR": HEAP_PER_MASTER_COMPONENT,
+        "METRICS_MONITOR": HEAP_PER_SLAVE_COMPONENT
+      }
+    }
+    total_sinks_count = 0
+    # minimum heap size
+    hbase_heapsize = 500
+    for serviceName, componentsDict in schMemoryMap.items():
+      for componentName, multiplier in componentsDict.items():
+        schCount = len(
+          self.getHostsWithComponent(serviceName, componentName, services,
+                                     hosts))
+        hbase_heapsize += int((schCount * multiplier) ** 0.9)
+        total_sinks_count += schCount
+    collector_heapsize = int(hbase_heapsize/4 if hbase_heapsize > 2048 else 512)
+
+    return round_to_n(collector_heapsize), round_to_n(hbase_heapsize), total_sinks_count
+
+  def recommendStormConfigurations(self, configurations, clusterData, services, hosts):
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
+    putStormSiteProperty = self.putProperty(configurations, "storm-site", services)
+    putStormStartupProperty = self.putProperty(configurations, "storm-site", services)
+    putStormSiteAttributes = self.putPropertyAttribute(configurations, "storm-site")
+
+    # Storm AMS integration
+    if 'AMBARI_METRICS' in servicesList:
+      putStormSiteProperty('metrics.reporter.register', 'org.apache.hadoop.metrics2.sink.storm.StormTimelineMetricsReporter')
+
+    storm_site = getServicesSiteProperties(services, "storm-site")
+    security_enabled = (storm_site is not None and "storm.zookeeper.superACL" in storm_site)
+    if "ranger-env" in services["configurations"] and "ranger-storm-plugin-properties" in services["configurations"] and \
+            "ranger-storm-plugin-enabled" in services["configurations"]["ranger-env"]["properties"]:
+      putStormRangerPluginProperty = self.putProperty(configurations, "ranger-storm-plugin-properties", services)
+      rangerEnvStormPluginProperty = services["configurations"]["ranger-env"]["properties"]["ranger-storm-plugin-enabled"]
+      putStormRangerPluginProperty("ranger-storm-plugin-enabled", rangerEnvStormPluginProperty)
+
+    rangerPluginEnabled = ''
+    if 'ranger-storm-plugin-properties' in configurations and 'ranger-storm-plugin-enabled' in  configurations['ranger-storm-plugin-properties']['properties']:
+      rangerPluginEnabled = configurations['ranger-storm-plugin-properties']['properties']['ranger-storm-plugin-enabled']
+    elif 'ranger-storm-plugin-properties' in services['configurations'] and 'ranger-storm-plugin-enabled' in services['configurations']['ranger-storm-plugin-properties']['properties']:
+      rangerPluginEnabled = services['configurations']['ranger-storm-plugin-properties']['properties']['ranger-storm-plugin-enabled']
+
+    nonRangerClass = 'backtype.storm.security.auth.authorizer.SimpleACLAuthorizer'
+    rangerServiceVersion=''
+    if 'RANGER' in servicesList:
+      rangerServiceVersion = [service['StackServices']['service_version'] for service in services["services"] if service['StackServices']['service_name'] == 'RANGER'][0]
+
+    if rangerServiceVersion and rangerServiceVersion == '0.4.0':
+      rangerClass = 'com.xasecure.authorization.storm.authorizer.XaSecureStormAuthorizer'
+    else:
+      rangerClass = 'org.apache.ranger.authorization.storm.authorizer.RangerStormAuthorizer'
+    # Cluster is kerberized
+    if security_enabled:
+      if rangerPluginEnabled and (rangerPluginEnabled.lower() == 'Yes'.lower()):
+        putStormSiteProperty('nimbus.authorizer',rangerClass)
+      elif (services["configurations"]["storm-site"]["properties"]["nimbus.authorizer"] == rangerClass):
+        putStormSiteProperty('nimbus.authorizer', nonRangerClass)
+    else:
+      putStormSiteAttributes('nimbus.authorizer', 'delete', 'true')
+
+    if "storm-site" in services["configurations"]:
+      # atlas
+      notifier_plugin_property = "storm.topology.submission.notifier.plugin.class"
+      if notifier_plugin_property in services["configurations"]["storm-site"]["properties"]:
+        notifier_plugin_value = services["configurations"]["storm-site"]["properties"][notifier_plugin_property]
+        if notifier_plugin_value is None:
+          notifier_plugin_value = " "
+      else:
+        notifier_plugin_value = " "
+
+      include_atlas = "ATLAS" in servicesList
+      atlas_hook_class = "org.apache.atlas.storm.hook.StormAtlasHook"
+      if include_atlas and atlas_hook_class not in notifier_plugin_value:
+        if notifier_plugin_value == " ":
+          notifier_plugin_value = atlas_hook_class
+        else:
+          notifier_plugin_value = notifier_plugin_value + "," + atlas_hook_class
+      if not include_atlas and atlas_hook_class in notifier_plugin_value:
+        application_classes = []
+        for application_class in notifier_plugin_value.split(","):
+          if application_class != atlas_hook_class and application_class != " ":
+            application_classes.append(application_class)
+        if application_classes:
+          notifier_plugin_value = ",".join(application_classes)
+        else:
+          notifier_plugin_value = " "
+      putStormStartupProperty(notifier_plugin_property, notifier_plugin_value)
+
+  def recommendAmsConfigurations(self, configurations, clusterData, services, hosts):
+    putAmsEnvProperty = self.putProperty(configurations, "ams-env", services)
+    putAmsHbaseSiteProperty = self.putProperty(configurations, "ams-hbase-site", services)
+    putAmsSiteProperty = self.putProperty(configurations, "ams-site", services)
+    putHbaseEnvProperty = self.putProperty(configurations, "ams-hbase-env", services)
+    putGrafanaProperty = self.putProperty(configurations, "ams-grafana-env", services)
+    putGrafanaPropertyAttribute = self.putPropertyAttribute(configurations, "ams-grafana-env")
+
+    amsCollectorHosts = self.getComponentHostNames(services, "AMBARI_METRICS", "METRICS_COLLECTOR")
+
+    if 'cluster-env' in services['configurations'] and \
+        'metrics_collector_vip_host' in services['configurations']['cluster-env']['properties']:
+      metric_collector_host = services['configurations']['cluster-env']['properties']['metrics_collector_vip_host']
+    else:
+      metric_collector_host = 'localhost' if len(amsCollectorHosts) == 0 else amsCollectorHosts[0]
+
+    putAmsSiteProperty("timeline.metrics.service.webapp.address", str(metric_collector_host) + ":6188")
+
+    log_dir = "/var/log/ambari-metrics-collector"
+    if "ams-env" in services["configurations"]:
+      if "metrics_collector_log_dir" in services["configurations"]["ams-env"]["properties"]:
+        log_dir = services["configurations"]["ams-env"]["properties"]["metrics_collector_log_dir"]
+      putHbaseEnvProperty("hbase_log_dir", log_dir)
+
+    defaultFs = 'file:///'
+    if "core-site" in services["configurations"] and \
+      "fs.defaultFS" in services["configurations"]["core-site"]["properties"]:
+      defaultFs = services["configurations"]["core-site"]["properties"]["fs.defaultFS"]
+
+    operatingMode = "embedded"
+    if "ams-site" in services["configurations"]:
+      if "timeline.metrics.service.operation.mode" in services["configurations"]["ams-site"]["properties"]:
+        operatingMode = services["configurations"]["ams-site"]["properties"]["timeline.metrics.service.operation.mode"]
+
+    if operatingMode == "distributed":
+      putAmsSiteProperty("timeline.metrics.service.watcher.disabled", 'true')
+      putAmsSiteProperty("timeline.metrics.host.aggregator.ttl", 259200)
+      putAmsHbaseSiteProperty("hbase.cluster.distributed", 'true')
+    else:
+      putAmsSiteProperty("timeline.metrics.service.watcher.disabled", 'false')
+      putAmsSiteProperty("timeline.metrics.host.aggregator.ttl", 86400)
+      putAmsHbaseSiteProperty("hbase.cluster.distributed", 'false')
+
+    rootDir = "file:///var/lib/ambari-metrics-collector/hbase"
+    tmpDir = "/var/lib/ambari-metrics-collector/hbase-tmp"
+    zk_port_default = []
+    if "ams-hbase-site" in services["configurations"]:
+      if "hbase.rootdir" in services["configurations"]["ams-hbase-site"]["properties"]:
+        rootDir = services["configurations"]["ams-hbase-site"]["properties"]["hbase.rootdir"]
+      if "hbase.tmp.dir" in services["configurations"]["ams-hbase-site"]["properties"]:
+        tmpDir = services["configurations"]["ams-hbase-site"]["properties"]["hbase.tmp.dir"]
+      if "hbase.zookeeper.property.clientPort" in services["configurations"]["ams-hbase-site"]["properties"]:
+        zk_port_default = services["configurations"]["ams-hbase-site"]["properties"]["hbase.zookeeper.property.clientPort"]
+
+      # Skip recommendation item if default value is present
+    if operatingMode == "distributed" and not "{{zookeeper_clientPort}}" in zk_port_default:
+      zkPort = self.getZKPort(services)
+      putAmsHbaseSiteProperty("hbase.zookeeper.property.clientPort", zkPort)
+    elif operatingMode == "embedded" and not "{{zookeeper_clientPort}}" in zk_port_default:
+      putAmsHbaseSiteProperty("hbase.zookeeper.property.clientPort", "61181")
+
+    mountpoints = ["/"]
+    for collectorHostName in amsCollectorHosts:
+      for host in hosts["items"]:
+        if host["Hosts"]["host_name"] == collectorHostName:
+          mountpoints = self.getPreferredMountPoints(host["Hosts"])
+          break
+    isLocalRootDir = rootDir.startswith("file://") or (defaultFs.startswith("file://") and rootDir.startswith("/"))
+    if isLocalRootDir:
+      rootDir = re.sub("^file:///|/", "", rootDir, count=1)
+      rootDir = "file://" + os.path.join(mountpoints[0], rootDir)
+    tmpDir = re.sub("^file:///|/", "", tmpDir, count=1)
+    if len(mountpoints) > 1 and isLocalRootDir:
+      tmpDir = os.path.join(mountpoints[1], tmpDir)
+    else:
+      tmpDir = os.path.join(mountpoints[0], tmpDir)
+    putAmsHbaseSiteProperty("hbase.tmp.dir", tmpDir)
+
+    if operatingMode == "distributed":
+      putAmsHbaseSiteProperty("hbase.rootdir", defaultFs + "/user/ams/hbase")
+
+    if operatingMode == "embedded":
+      if isLocalRootDir:
+        putAmsHbaseSiteProperty("hbase.rootdir", rootDir)
+      else:
+        putAmsHbaseSiteProperty("hbase.rootdir", "file:///var/lib/ambari-metrics-collector/hbase")
+
+    collector_heapsize, hbase_heapsize, total_sinks_count = self.getAmsMemoryRecommendation(services, hosts)
+
+    putAmsEnvProperty("metrics_collector_heapsize", collector_heapsize)
+
+    # blockCache = 0.3, memstore = 0.35, phoenix-server = 0.15, phoenix-client = 0.25
+    putAmsHbaseSiteProperty("hfile.block.cache.size", 0.3)
+    putAmsHbaseSiteProperty("hbase.hregion.memstore.flush.size", 134217728)
+    putAmsHbaseSiteProperty("hbase.regionserver.global.memstore.upperLimit", 0.35)
+    putAmsHbaseSiteProperty("hbase.regionserver.global.memstore.lowerLimit", 0.3)
+
+    if len(amsCollectorHosts) > 1:
+      pass
+    else:
+      # blockCache = 0.3, memstore = 0.3, phoenix-server = 0.2, phoenix-client = 0.3
+      if total_sinks_count >= 2000:
+        putAmsHbaseSiteProperty("hbase.regionserver.handler.count", 60)
+        putAmsHbaseSiteProperty("hbase.regionserver.hlog.blocksize", 134217728)
+        putAmsHbaseSiteProperty("hbase.regionserver.maxlogs", 64)
+        putAmsHbaseSiteProperty("hbase.hregion.memstore.flush.size", 268435456)
+        putAmsHbaseSiteProperty("hbase.regionserver.global.memstore.upperLimit", 0.3)
+        putAmsHbaseSiteProperty("hbase.regionserver.global.memstore.lowerLimit", 0.25)
+        putAmsHbaseSiteProperty("phoenix.query.maxGlobalMemoryPercentage", 20)
+        putAmsHbaseSiteProperty("phoenix.coprocessor.maxMetaDataCacheSize", 81920000)
+        putAmsSiteProperty("phoenix.query.maxGlobalMemoryPercentage", 30)
+        putAmsSiteProperty("timeline.metrics.service.resultset.fetchSize", 10000)
+      elif total_sinks_count >= 500:
+        putAmsHbaseSiteProperty("hbase.regionserver.handler.count", 60)
+        putAmsHbaseSiteProperty("hbase.regionserver.hlog.blocksize", 134217728)
+        putAmsHbaseSiteProperty("hbase.regionserver.maxlogs", 64)
+        putAmsHbaseSiteProperty("hbase.hregion.memstore.flush.size", 268435456)
+        putAmsHbaseSiteProperty("phoenix.coprocessor.maxMetaDataCacheSize", 40960000)
+        putAmsSiteProperty("timeline.metrics.service.resultset.fetchSize", 5000)
+      else:
+        putAmsHbaseSiteProperty("phoenix.coprocessor.maxMetaDataCacheSize", 20480000)
+      pass
+
+    metrics_api_handlers = min(50, max(20, int(total_sinks_count / 100)))
+    putAmsSiteProperty("timeline.metrics.service.handler.thread.count", metrics_api_handlers)
+
+    # Distributed mode heap size
+    if operatingMode == "distributed":
+      hbase_heapsize = max(hbase_heapsize, 768)
+      putHbaseEnvProperty("hbase_master_heapsize", "512")
+      putHbaseEnvProperty("hbase_master_xmn_size", "102") #20% of 512 heap size
+      putHbaseEnvProperty("hbase_regionserver_heapsize", hbase_heapsize)
+      putHbaseEnvProperty("regionserver_xmn_size", round_to_n(0.15*hbase_heapsize,64))
+    else:
+      # Embedded mode heap size : master + regionserver
+      hbase_rs_heapsize = 768
+      putHbaseEnvProperty("hbase_regionserver_heapsize", hbase_rs_heapsize)
+      putHbaseEnvProperty("hbase_master_heapsize", hbase_heapsize)
+      putHbaseEnvProperty("hbase_master_xmn_size", round_to_n(0.15*(hbase_heapsize+hbase_rs_heapsize),64))
+
+    # If no local DN in distributed mode
+    if operatingMode == "distributed":
+      dn_hosts = self.getComponentHostNames(services, "HDFS", "DATANODE")
+      # call by Kerberos wizard sends only the service being affected
+      # so it is possible for dn_hosts to be None but not amsCollectorHosts
+      if dn_hosts and len(dn_hosts) > 0:
+        if set(amsCollectorHosts).intersection(dn_hosts):
+          collector_cohosted_with_dn = "true"
+        else:
+          collector_cohosted_with_dn = "false"
+        putAmsHbaseSiteProperty("dfs.client.read.shortcircuit", collector_cohosted_with_dn)
+
+    #split points
+    scriptDir = os.path.dirname(os.path.abspath(__file__))
+    metricsDir = os.path.join(scriptDir, '../../../../common-services/AMBARI_METRICS/0.1.0/package')
+    serviceMetricsDir = os.path.join(metricsDir, 'files', 'service-metrics')
+    sys.path.append(os.path.join(metricsDir, 'scripts'))
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
+
+    from split_points import FindSplitPointsForAMSRegions
+
+    ams_hbase_site = None
+    ams_hbase_env = None
+
+    # Overriden properties form the UI
+    if "ams-hbase-site" in services["configurations"]:
+      ams_hbase_site = services["configurations"]["ams-hbase-site"]["properties"]
+    if "ams-hbase-env" in services["configurations"]:
+       ams_hbase_env = services["configurations"]["ams-hbase-env"]["properties"]
+
+    # Recommendations
+    if not ams_hbase_site:
+      ams_hbase_site = configurations["ams-hbase-site"]["properties"]
+    if not ams_hbase_env:
+      ams_hbase_env = configurations["ams-hbase-env"]["properties"]
+
+    split_point_finder = FindSplitPointsForAMSRegions(
+      ams_hbase_site, ams_hbase_env, serviceMetricsDir, operatingMode, servicesList)
+
+    result = split_point_finder.get_split_points()
+    precision_splits = ' '
+    aggregate_splits = ' '
+    if result.precision:
+      precision_splits = result.precision
+    if result.aggregate:
+      aggregate_splits = result.aggregate
+    putAmsSiteProperty("timeline.metrics.host.aggregate.splitpoints", ','.join(precision_splits))
+    putAmsSiteProperty("timeline.metrics.cluster.aggregate.splitpoints", ','.join(aggregate_splits))
+
+    component_grafana_exists = False
+    for service in services['services']:
+      if 'components' in service:
+        for component in service['components']:
+          if 'StackServiceComponents' in component:
+            # If Grafana is installed the hostnames would indicate its location
+            if 'METRICS_GRAFANA' in component['StackServiceComponents']['component_name'] and\
+              len(component['StackServiceComponents']['hostnames']) != 0:
+              component_grafana_exists = True
+              break
+    pass
+
+    if not component_grafana_exists:
+      putGrafanaPropertyAttribute("metrics_grafana_password", "visible", "false")
+
+    pass
+
+  def getHostNamesWithComponent(self, serviceName, componentName, services):
+    """
+    Returns the list of hostnames on which service component is installed
+    """
+    if services is not None and serviceName in [service["StackServices"]["service_name"] for service in services["services"]]:
+      service = [serviceEntry for serviceEntry in services["services"] if serviceEntry["StackServices"]["service_name"] == serviceName][0]
+      components = [componentEntry for componentEntry in service["components"] if componentEntry["StackServiceComponents"]["component_name"] == componentName]
+      if (len(components) > 0 and len(components[0]["StackServiceComponents"]["hostnames"]) > 0):
+        componentHostnames = components[0]["StackServiceComponents"]["hostnames"]
+        return componentHostnames
+    return []
+
+  def getHostsWithComponent(self, serviceName, componentName, services, hosts):
+    if services is not None and hosts is not None and serviceName in [service["StackServices"]["service_name"] for service in services["services"]]:
+      service = [serviceEntry for serviceEntry in services["services"] if serviceEntry["StackServices"]["service_name"] == serviceName][0]
+      components = [componentEntry for componentEntry in service["components"] if componentEntry["StackServiceComponents"]["component_name"] == componentName]
+      if (len(components) > 0 and len(components[0]["StackServiceComponents"]["hostnames"]) > 0):
+        componentHostnames = components[0]["StackServiceComponents"]["hostnames"]
+        componentHosts = [host for host in hosts["items"] if host["Hosts"]["host_name"] in componentHostnames]
+        return componentHosts
+    return []
+
+  def getHostWithComponent(self, serviceName, componentName, services, hosts):
+    componentHosts = self.getHostsWithComponent(serviceName, componentName, services, hosts)
+    if (len(componentHosts) > 0):
+      return componentHosts[0]
+    return None
+
+  def getHostComponentsByCategories(self, hostname, categories, services, hosts):
+    components = []
+    if services is not None and hosts is not None:
+      for service in services["services"]:
+          components.extend([componentEntry for componentEntry in service["components"]
+                              if componentEntry["StackServiceComponents"]["component_category"] in categories
+                              and hostname in componentEntry["StackServiceComponents"]["hostnames"]])
+    return components
+
+  def getZKHostPortString(self, services, include_port=True):
+    """
+    Returns the comma delimited string of zookeeper server host with the configure port installed in a cluster
+    Example: zk.host1.org:2181,zk.host2.org:2181,zk.host3.org:2181
+    include_port boolean param -> If port is also needed.
+    """
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
+    include_zookeeper = "ZOOKEEPER" in servicesList
+    zookeeper_host_port = ''
+
+    if include_zookeeper:
+      zookeeper_hosts = self.getHostNamesWithComponent("ZOOKEEPER", "ZOOKEEPER_SERVER", services)
+      zookeeper_host_port_arr = []
+
+      if include_port:
+        zookeeper_port = self.getZKPort(services)
+        for i in range(len(zookeeper_hosts)):
+          zookeeper_host_port_arr.append(zookeeper_hosts[i] + ':' + zookeeper_port)
+      else:
+        for i in range(len(zookeeper_hosts)):
+          zookeeper_host_port_arr.append(zookeeper_hosts[i])
+
+      zookeeper_host_port = ",".join(zookeeper_host_port_arr)
+    return zookeeper_host_port
+
+  def getZKPort(self, services):
+    zookeeper_port = '2181'     #default port
+    if 'zoo.cfg' in services['configurations'] and ('clientPort' in services['configurations']['zoo.cfg']['properties']):
+      zookeeper_port = services['configurations']['zoo.cfg']['properties']['clientPort']
+    return zookeeper_port
+
+  def getConfigurationClusterSummary(self, servicesList, hosts, components, services):
+
+    hBaseInstalled = False
+    cluster = {
+      "cpu": 0,
+      "disk": 0,
+      "ram": 0,
+      "hBaseInstalled": hBaseInstalled,
+      "components": components
+    }
+
+    if len(hosts["items"]) > 0:
+      nodeManagerHosts = self.getHostsWithComponent("YARN", "NODEMANAGER", services, hosts)
+      # NodeManager host with least memory is generally used in calculations as it will work in larger hosts.
+      if nodeManagerHosts is not None and len(nodeManagerHosts) > 0:
+        nodeManagerHost = nodeManagerHosts[0];
+        for nmHost in nodeManagerHosts:
+          if nmHost["Hosts"]["total_mem"] < nodeManagerHost["Hosts"]["total_mem"]:
+            nodeManagerHost = nmHost
+        host = nodeManagerHost["Hosts"]
+        cluster["referenceNodeManagerHost"] = host
+      else:
+        host = hosts["items"][0]["Hosts"]
+      cluster["referenceHost"] = host
+      cluster["cpu"] = host["cpu_count"]
+      cluster["disk"] = len(host["disk_info"])
+      cluster["ram"] = int(host["total_mem"] / (1024 * 1024))
+
+    ramRecommendations = [
+      {"os":1, "hbase":1},
+      {"os":2, "hbase":1},
+      {"os":2, "hbase":2},
+      {"os":4, "hbase":4},
+      {"os":6, "hbase":8},
+      {"os":8, "hbase":8},
+      {"os":8, "hbase":8},
+      {"os":12, "hbase":16},
+      {"os":24, "hbase":24},
+      {"os":32, "hbase":32},
+      {"os":64, "hbase":32}
+    ]
+    index = {
+      cluster["ram"] <= 4: 0,
+      4 < cluster["ram"] <= 8: 1,
+      8 < cluster["ram"] <= 16: 2,
+      16 < cluster["ram"] <= 24: 3,
+      24 < cluster["ram"] <= 48: 4,
+      48 < cluster["ram"] <= 64: 5,
+      64 < cluster["ram"] <= 72: 6,
+      72 < cluster["ram"] <= 96: 7,
+      96 < cluster["ram"] <= 128: 8,
+      128 < cluster["ram"] <= 256: 9,
+      256 < cluster["ram"]: 10
+    }[1]
+
+
+    cluster["reservedRam"] = ramRecommendations[index]["os"]
+    cluster["hbaseRam"] = ramRecommendations[index]["hbase"]
+
+
+    cluster["minContainerSize"] = {
+      cluster["ram"] <= 4: 256,
+      4 < cluster["ram"] <= 8: 512,
+      8 < cluster["ram"] <= 24: 1024,
+      24 < cluster["ram"]: 2048
+    }[1]
+
+    totalAvailableRam = cluster["ram"] - cluster["reservedRam"]
+    if cluster["hBaseInstalled"]:
+      totalAvailableRam -= cluster["hbaseRam"]
+    cluster["totalAvailableRam"] = max(512, totalAvailableRam * 1024)
+    '''containers = max(3, min (2*cores,min (1.8*DISKS,(Total available RAM) / MIN_CONTAINER_SIZE))))'''
+    cluster["containers"] = round(max(3,
+                                min(2 * cluster["cpu"],
+                                    min(ceil(1.8 * cluster["disk"]),
+                                            cluster["totalAvailableRam"] / cluster["minContainerSize"]))))
+
+    '''ramPerContainers = max(2GB, RAM - reservedRam - hBaseRam) / containers'''
+    cluster["ramPerContainer"] = abs(cluster["totalAvailableRam"] / cluster["containers"])
+    '''If greater than 1GB, value will be in multiples of 512.'''
+    if cluster["ramPerContainer"] > 1024:
+      cluster["ramPerContainer"] = int(cluster["ramPerContainer"] / 512) * 512
+
+    cluster["mapMemory"] = int(cluster["ramPerContainer"])
+    cluster["reduceMemory"] = cluster["ramPerContainer"]
+    cluster["amMemory"] = max(cluster["mapMemory"], cluster["reduceMemory"])
+
+    return cluster
+
+  def getServiceConfigurationValidators(self):
+    return {
+      "KAFKA": {"ranger-kafka-plugin-properties": self.validateKafkaRangerPluginConfigurations,
+                "kafka-broker": self.validateKAFKAConfigurations},
+      "STORM": {"storm-site": self.validateStormConfigurations,
+                "ranger-storm-plugin-properties": self.validateStormRangerPluginConfigurations},
+      "AMBARI_METRICS": {"ams-hbase-site": self.validateAmsHbaseSiteConfigurations,
+              "ams-hbase-env": self.validateAmsHbaseEnvConfigurations,
+              "ams-site": self.validateAmsSiteConfigurations},
+      "RANGER": {"ranger-env": self.validateRangerConfigurationsEnv,
+                 "ranger-tagsync-site": self.validateRangerTagsyncConfigurations}
+    }
+
+  def validateMinMax(self, items, recommendedDefaults, configurations):
+
+    # required for casting to the proper numeric type before comparison
+    def convertToNumber(number):
+      try:
+        return int(number)
+      except ValueError:
+        return float(number)
+
+    for configName in configurations:
+      validationItems = []
+      if configName in recommendedDefaults and "property_attributes" in recommendedDefaults[configName]:
+        for propertyName in recommendedDefaults[configName]["property_attributes"]:
+          if propertyName in configurations[configName]["properties"]:
+            if "maximum" in recommendedDefaults[configName]["property_attributes"][propertyName] and \
+                propertyName in recommendedDefaults[configName]["properties"]:
+              userValue = convertToNumber(configurations[configName]["properties"][propertyName])
+              maxValue = convertToNumber(recommendedDefaults[configName]["property_attributes"][propertyName]["maximum"])
+              if userValue > maxValue:
+                validationItems.extend([{"config-name": propertyName, "item": self.getWarnItem("Value is greater than the recommended maximum of {0} ".format(maxValue))}])
+            if "minimum" in recommendedDefaults[configName]["property_attributes"][propertyName] and \
+                    propertyName in recommendedDefaults[configName]["properties"]:
+              userValue = convertToNumber(configurations[configName]["properties"][propertyName])
+              minValue = convertToNumber(recommendedDefaults[configName]["property_attributes"][propertyName]["minimum"])
+              if userValue < minValue:
+                validationItems.extend([{"config-name": propertyName, "item": self.getWarnItem("Value is less than the recommended minimum of {0} ".format(minValue))}])
+      items.extend(self.toConfigurationValidationProblems(validationItems, configName))
+    pass
+
+  def validateAmsSiteConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+    validationItems = []
+
+    op_mode = properties.get("timeline.metrics.service.operation.mode")
+    correct_op_mode_item = None
+    if op_mode not in ("embedded", "distributed"):
+      correct_op_mode_item = self.getErrorItem("Correct value should be set.")
+      pass
+
+    validationItems.extend([{"config-name":'timeline.metrics.service.operation.mode', "item": correct_op_mode_item }])
+    return self.toConfigurationValidationProblems(validationItems, "ams-site")
+
+  def validateAmsHbaseSiteConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+
+    amsCollectorHosts = self.getComponentHostNames(services, "AMBARI_METRICS", "METRICS_COLLECTOR")
+    ams_site = getSiteProperties(configurations, "ams-site")
+    core_site = getSiteProperties(configurations, "core-site")
+
+    collector_heapsize, hbase_heapsize, total_sinks_count = self.getAmsMemoryRecommendation(services, hosts)
+    recommendedDiskSpace = 10485760
+    # TODO validate configuration for multiple AMBARI_METRICS collectors
+    if len(amsCollectorHosts) > 1:
+      pass
+    else:
+      if total_sinks_count > 2000:
+        recommendedDiskSpace  = 104857600  # * 1k == 100 Gb
+      elif total_sinks_count > 500:
+        recommendedDiskSpace  = 52428800  # * 1k == 50 Gb
+      elif total_sinks_count > 250:
+        recommendedDiskSpace  = 20971520  # * 1k == 20 Gb
+
+    validationItems = []
+
+    rootdir_item = None
+    op_mode = ams_site.get("timeline.metrics.service.operation.mode")
+    default_fs = core_site.get("fs.defaultFS") if core_site else "file:///"
+    hbase_rootdir = properties.get("hbase.rootdir")
+    hbase_tmpdir = properties.get("hbase.tmp.dir")
+    distributed = properties.get("hbase.cluster.distributed")
+    is_local_root_dir = hbase_rootdir.startswith("file://") or (default_fs.startswith("file://") and hbase_rootdir.startswith("/"))
+
+    if op_mode == "distributed" and is_local_root_dir:
+      rootdir_item = self.getWarnItem("In distributed mode hbase.rootdir should point to HDFS.")
+    elif op_mode == "embedded":
+      if distributed.lower() == "false" and hbase_rootdir.startswith('/') or hbase_rootdir.startswith("hdfs://"):
+        rootdir_item = self.getWarnItem("In embedded mode hbase.rootdir cannot point to schemaless values or HDFS, "
+                                        "Example - file:// for localFS")
+      pass
+
+    distributed_item = None
+    if op_mode == "distributed" and not distributed.lower() == "true":
+      distributed_item = self.getErrorItem("hbase.cluster.distributed property should be set to true for "
+                                           "distributed mode")
+    if op_mode == "embedded" and distributed.lower() == "true":
+      distributed_item = self.getErrorItem("hbase.cluster.distributed property should be set to false for embedded mode")
+
+    hbase_zk_client_port = properties.get("hbase.zookeeper.property.clientPort")
+    zkPort = self.getZKPort(services)
+    hbase_zk_client_port_item = None
+    if distributed.lower() == "true" and op_mode == "distributed" and \
+        hbase_zk_client_port != zkPort and hbase_zk_client_port != "{{zookeeper_clientPort}}":
+      hbase_zk_client_port_item = self.getErrorItem("In AMS distributed mode, hbase.zookeeper.property.clientPort "
+                                                    "should be the cluster zookeeper server port : {0}".format(zkPort))
+
+    if distributed.lower() == "false" and op_mode == "embedded" and \
+        hbase_zk_client_port == zkPort and hbase_zk_client_port != "{{zookeeper_clientPort}}":
+      hbase_zk_client_port_item = self.getErrorItem("In AMS embedded mode, hbase.zookeeper.property.clientPort "
+                                                    "should be a different port than cluster zookeeper port."
+                                                    "(default:61181)")
+
+    validationItems.extend([{"config-name":'hbase.rootdir', "item": rootdir_item },
+                            {"config-name":'hbase.cluster.distributed', "item": distributed_item },
+                            {"config-name":'hbase.zookeeper.property.clientPort', "item": hbase_zk_client_port_item }])
+
+    for collectorHostName in amsCollectorHosts:
+      for host in hosts["items"]:
+        if host["Hosts"]["host_name"] == collectorHostName:
+          if op_mode == 'embedded' or is_local_root_dir:
+            validationItems.extend([{"config-name": 'hbase.rootdir', "item": self.validatorEnoughDiskSpace(properties, 'hbase.rootdir', host["Hosts"], recommendedDiskSpace)}])
+            validationItems.extend([{"config-name": 'hbase.rootdir', "item": self.validatorNotRootFs(properties, recommendedDefaults, 'hbase.rootdir', host["Hosts"])}])
+            validationItems.extend([{"config-name": 'hbase.tmp.dir', "item": self.validatorNotRootFs(properties, recommendedDefaults, 'hbase.tmp.dir', host["Hosts"])}])
+
+          dn_hosts = self.getComponentHostNames(services, "HDFS", "DATANODE")
+          if is_local_root_dir:
+            mountPoints = []
+            for mountPoint in host["Hosts"]["disk_info"]:
+              mountPoints.append(mountPoint["mountpoint"])
+            hbase_rootdir_mountpoint = getMountPointForDir(hbase_rootdir, mountPoints)
+            hbase_tmpdir_mountpoint = getMountPointForDir(hbase_tmpdir, mountPoints)
+            preferred_mountpoints = self.getPreferredMountPoints(host['Hosts'])
+            # hbase.rootdir and hbase.tmp.dir shouldn't point to the same partition
+            # if multiple preferred_mountpoints exist
+            if hbase_rootdir_mountpoint == hbase_tmpdir_mountpoint and \
+              len(preferred_mountpoints) > 1:
+              item = self.getWarnItem("Consider not using {0} partition for storing metrics temporary data. "
+                                      "{0} partition is already used as hbase.rootdir to store metrics data".format(hbase_tmpdir_mountpoint))
+              validationItems.extend([{"config-name":'hbase.tmp.dir', "item": item}])
+
+            # if METRICS_COLLECTOR is co-hosted with DATANODE
+            # cross-check dfs.datanode.data.dir and hbase.rootdir
+            # they shouldn't share same disk partition IO
+            hdfs_site = getSiteProperties(configurations, "hdfs-site")
+            dfs_datadirs = hdfs_site.get("dfs.datanode.data.dir").split(",") if hdfs_site and "dfs.datanode.data.dir" in hdfs_site else []
+            if dn_hosts and collectorHostName in dn_hosts and ams_site and \
+              dfs_datadirs and len(preferred_mountpoints) > len(dfs_datadirs):
+              for dfs_datadir in dfs_datadirs:
+                dfs_datadir_mountpoint = getMountPointForDir(dfs_datadir, mountPoints)
+                if dfs_datadir_mountpoint == hbase_rootdir_mountpoint:
+                  item = self.getWarnItem("Consider not using {0} partition for storing metrics data. "
+                                          "{0} is already used by datanode to store HDFS data".format(hbase_rootdir_mountpoint))
+                  validationItems.extend([{"config-name": 'hbase.rootdir', "item": item}])
+                  break
+          # If no local DN in distributed mode
+          elif collectorHostName not in dn_hosts and distributed.lower() == "true":
+            item = self.getWarnItem("It's recommended to install Datanode component on {0} "
+                                    "to speed up IO operations between HDFS and Metrics "
+                                    "Collector in distributed mode ".format(collectorHostName))
+            validationItems.extend([{"config-name": "hbase.cluster.distributed", "item": item}])
+          # Short circuit read should be enabled in distibuted mode
+          # if local DN installed
+          else:
+            validationItems.extend([{"config-name": "dfs.client.read.shortcircuit", "item": self.validatorEqualsToRecommendedItem(properties, recommendedDefaults, "dfs.client.read.shortcircuit")}])
+
+    return self.toConfigurationValidationProblems(validationItems, "ams-hbase-site")
+
+  def validateStormConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+    validationItems = []
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
+    # Storm AMS integration
+    if 'AMBARI_METRICS' in servicesList and "metrics.reporter.register" in properties and \
+      "org.apache.hadoop.metrics2.sink.storm.StormTimelineMetricsReporter" not in properties.get("metrics.reporter.register"):
+
+      validationItems.append({"config-name": 'metrics.reporter.register',
+                              "item": self.getWarnItem(
+                                "Should be set to org.apache.hadoop.metrics2.sink.storm.StormTimelineMetricsReporter to report the metrics to Ambari Metrics service.")})
+
+    return self.toConfigurationValidationProblems(validationItems, "storm-site")
+
+  def validateStormRangerPluginConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+    validationItems = []
+    ranger_plugin_properties = getSiteProperties(configurations, "ranger-storm-plugin-properties")
+    ranger_plugin_enabled = ranger_plugin_properties['ranger-storm-plugin-enabled'] if ranger_plugin_properties else 'No'
+    if ranger_plugin_enabled.lower() == 'yes':
+      # ranger-hdfs-plugin must be enabled in ranger-env
+      ranger_env = getServicesSiteProperties(services, 'ranger-env')
+      if not ranger_env or not 'ranger-storm-plugin-enabled' in ranger_env or \
+              ranger_env['ranger-storm-plugin-enabled'].lower() != 'yes':
+        validationItems.append({"config-name": 'ranger-storm-plugin-enabled',
+                                "item": self.getWarnItem(
+                                    "ranger-storm-plugin-properties/ranger-storm-plugin-enabled must correspond ranger-env/ranger-storm-plugin-enabled")})
+    return self.toConfigurationValidationProblems(validationItems, "ranger-storm-plugin-properties")
+
+  def validateKafkaRangerPluginConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+    validationItems = []
+    ranger_plugin_properties = getSiteProperties(configurations, "ranger-kafka-plugin-properties")
+    ranger_plugin_enabled = ranger_plugin_properties['ranger-kafka-plugin-enabled'] if ranger_plugin_properties else 'No'
+    if ranger_plugin_enabled.lower() == 'yes':
+      # ranger-hdfs-plugin must be enabled in ranger-env
+      ranger_env = getServicesSiteProperties(services, 'ranger-env')
+      if not ranger_env or not 'ranger-kafka-plugin-enabled' in ranger_env or \
+              ranger_env['ranger-kafka-plugin-enabled'].lower() != 'yes':
+        validationItems.append({"config-name": 'ranger-kafka-plugin-enabled',
+                                "item": self.getWarnItem(
+                                    "ranger-kafka-plugin-properties/ranger-kafka-plugin-enabled must correspond ranger-env/ranger-kafka-plugin-enabled")})
+    return self.toConfigurationValidationProblems(validationItems, "ranger-kafka-plugin-properties")
+
+  def validateRangerConfigurationsEnv(self, properties, recommendedDefaults, configurations, services, hosts):
+    validationItems = []
+    if "ranger-storm-plugin-enabled" in properties and "ranger-storm-plugin-enabled" in recommendedDefaults and \
+            properties["ranger-storm-plugin-enabled"] != recommendedDefaults["ranger-storm-plugin-enabled"]:
+      validationItems.append({"config-name": "ranger-storm-plugin-enabled",
+                              "item": self.getWarnItem(
+                                  "Ranger Storm plugin should not be enabled in non-kerberos environment.")})
+
+    return self.toConfigurationValidationProblems(validationItems, "ranger-env")
 
   def validateRangerTagsyncConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
     ranger_tagsync_properties = getSiteProperties(configurations, "ranger-tagsync-site")
@@ -1080,25 +1216,547 @@ class HDF20StackAdvisor(HDF12StackAdvisor):
       has_atlas = not "ATLAS" in servicesList
 
       if has_atlas and 'ranger.tagsync.source.atlas' in ranger_tagsync_properties and \
-        ranger_tagsync_properties['ranger.tagsync.source.atlas'].lower() == 'true':
+              ranger_tagsync_properties['ranger.tagsync.source.atlas'].lower() == 'true':
         validationItems.append({"config-name": "ranger.tagsync.source.atlas",
-                                  "item": self.getWarnItem(
+                                "item": self.getWarnItem(
                                     "Need to Install ATLAS service to set ranger.tagsync.source.atlas as true.")})
 
     return self.toConfigurationValidationProblems(validationItems, "ranger-tagsync-site")
 
-  """
-  Returns the host(s) on which a requested service's component is hosted.
-  Parameters :
-    services : Configuration information for the cluster
-    serviceName : Passed-in service in consideration
-    componentName : Passed-in component in consideration
-  """
-  def __getHostsForComponent(self, services, serviceName, componentName):
+  def validateAmsHbaseEnvConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+
+    ams_env = getSiteProperties(configurations, "ams-env")
+    amsHbaseSite = getSiteProperties(configurations, "ams-hbase-site")
+    validationItems = []
+    mb = 1024 * 1024
+    gb = 1024 * mb
+
+    regionServerItem = self.validatorLessThenDefaultValue(properties, recommendedDefaults, "hbase_regionserver_heapsize") ## FIXME if new service added
+    if regionServerItem:
+      validationItems.extend([{"config-name": "hbase_regionserver_heapsize", "item": regionServerItem}])
+
+    hbaseMasterHeapsizeItem = self.validatorLessThenDefaultValue(properties, recommendedDefaults, "hbase_master_heapsize")
+    if hbaseMasterHeapsizeItem:
+      validationItems.extend([{"config-name": "hbase_master_heapsize", "item": hbaseMasterHeapsizeItem}])
+
+    logDirItem = self.validatorEqualsPropertyItem(properties, "hbase_log_dir", ams_env, "metrics_collector_log_dir")
+    if logDirItem:
+      validationItems.extend([{"config-name": "hbase_log_dir", "item": logDirItem}])
+
+    collector_heapsize = to_number(ams_env.get("metrics_collector_heapsize"))
+    hbase_master_heapsize = to_number(properties["hbase_master_heapsize"])
+    hbase_master_xmn_size = to_number(properties["hbase_master_xmn_size"])
+    hbase_regionserver_heapsize = to_number(properties["hbase_regionserver_heapsize"])
+    hbase_regionserver_xmn_size = to_number(properties["regionserver_xmn_size"])
+
+    # Validate Xmn settings.
+    masterXmnItem = None
+    regionServerXmnItem = None
+    is_hbase_distributed = amsHbaseSite.get("hbase.cluster.distributed").lower() == 'true'
+
+    if is_hbase_distributed:
+      minMasterXmn = 0.12 * hbase_master_heapsize
+      maxMasterXmn = 0.2 * hbase_master_heapsize
+      if hbase_master_xmn_size < minMasterXmn:
+        masterXmnItem = self.getWarnItem("Value is lesser than the recommended minimum Xmn size of {0} "
+                                         "(12% of hbase_master_heapsize)".format(int(ceil(minMasterXmn))))
+
+      if hbase_master_xmn_size > maxMasterXmn:
+        masterXmnItem = self.getWarnItem("Value is greater than the recommended maximum Xmn size of {0} "
+                                         "(20% of hbase_master_heapsize)".format(int(floor(maxMasterXmn))))
+
+      minRegionServerXmn = 0.12 * hbase_regionserver_heapsize
+      maxRegionServerXmn = 0.2 * hbase_regionserver_heapsize
+      if hbase_regionserver_xmn_size < minRegionServerXmn:
+        regionServerXmnItem = self.getWarnItem("Value is lesser than the recommended minimum Xmn size of {0} "
+                                               "(12% of hbase_regionserver_heapsize)"
+                                               .format(int(ceil(minRegionServerXmn))))
+
+      if hbase_regionserver_xmn_size > maxRegionServerXmn:
+        regionServerXmnItem = self.getWarnItem("Value is greater than the recommended maximum Xmn size of {0} "
+                                               "(20% of hbase_regionserver_heapsize)"
+                                               .format(int(floor(maxRegionServerXmn))))
+    else:
+      minMasterXmn = 0.12 * (hbase_master_heapsize + hbase_regionserver_heapsize)
+      maxMasterXmn = 0.2 *  (hbase_master_heapsize + hbase_regionserver_heapsize)
+      if hbase_master_xmn_size < minMasterXmn:
+        masterXmnItem = self.getWarnItem("Value is lesser than the recommended minimum Xmn size of {0} "
+                                         "(12% of hbase_master_heapsize + hbase_regionserver_heapsize)"
+                                         .format(int(ceil(minMasterXmn))))
+
+      if hbase_master_xmn_size > maxMasterXmn:
+        masterXmnItem = self.getWarnItem("Value is greater than the recommended maximum Xmn size of {0} "
+                                         "(20% of hbase_master_heapsize + hbase_regionserver_heapsize)"
+                                         .format(int(floor(maxMasterXmn))))
+    if masterXmnItem:
+      validationItems.extend([{"config-name": "hbase_master_xmn_size", "item": masterXmnItem}])
+
+    if regionServerXmnItem:
+      validationItems.extend([{"config-name": "regionserver_xmn_size", "item": regionServerXmnItem}])
+
+    if hbaseMasterHeapsizeItem is None:
+      hostMasterComponents = {}
+
+      for service in services["services"]:
+        for component in service["components"]:
+          if component["StackServiceComponents"]["hostnames"] is not None:
+            for hostName in component["StackServiceComponents"]["hostnames"]:
+              if self.isMasterComponent(component):
+                if hostName not in hostMasterComponents.keys():
+                  hostMasterComponents[hostName] = []
+                hostMasterComponents[hostName].append(component["StackServiceComponents"]["component_name"])
+
+      amsCollectorHosts = self.getComponentHostNames(services, "AMBARI_METRICS", "METRICS_COLLECTOR")
+      for collectorHostName in amsCollectorHosts:
+        for host in hosts["items"]:
+          if host["Hosts"]["host_name"] == collectorHostName:
+            # AMS Collector co-hosted with other master components in bigger clusters
+            if len(hosts['items']) > 31 and \
+                            len(hostMasterComponents[collectorHostName]) > 2 and \
+                            host["Hosts"]["total_mem"] < 32*mb: # < 32Gb(total_mem in k)
+              masterHostMessage = "Host {0} is used by multiple master components ({1}). " \
+                                  "It is recommended to use a separate host for the " \
+                                  "Ambari Metrics Collector component and ensure " \
+                                  "the host has sufficient memory available."
+
+              hbaseMasterHeapsizeItem = self.getWarnItem(masterHostMessage.format(
+                  collectorHostName, str(", ".join(hostMasterComponents[collectorHostName]))))
+              if hbaseMasterHeapsizeItem:
+                validationItems.extend([{"config-name": "hbase_master_heapsize", "item": hbaseMasterHeapsizeItem}])
+
+            # Check for unused RAM on AMS Collector node
+            hostComponents = []
+            for service in services["services"]:
+              for component in service["components"]:
+                if component["StackServiceComponents"]["hostnames"] is not None:
+                  if collectorHostName in component["StackServiceComponents"]["hostnames"]:
+                    hostComponents.append(component["StackServiceComponents"]["component_name"])
+
+            requiredMemory = getMemorySizeRequired(hostComponents, configurations)
+            unusedMemory = host["Hosts"]["total_mem"] * 1024 - requiredMemory # in bytes
+            if unusedMemory > 4*gb:  # warn user, if more than 4GB RAM is unused
+              heapPropertyToIncrease = "hbase_regionserver_heapsize" if is_hbase_distributed else "hbase_master_heapsize"
+              xmnPropertyToIncrease = "regionserver_xmn_size" if is_hbase_distributed else "hbase_master_xmn_size"
+              recommended_collector_heapsize = int((unusedMemory - 4*gb)/5) + collector_heapsize*mb
+              recommended_hbase_heapsize = int((unusedMemory - 4*gb)*4/5) + to_number(properties.get(heapPropertyToIncrease))*mb
+              recommended_hbase_heapsize = min(32*gb, recommended_hbase_heapsize) #Make sure heapsize <= 32GB
+              recommended_xmn_size = round_to_n(0.12*recommended_hbase_heapsize/mb,128)
+
+              if collector_heapsize < recommended_collector_heapsize or \
+                  to_number(properties[heapPropertyToIncrease]) < recommended_hbase_heapsize:
+                collectorHeapsizeItem = self.getWarnItem("{0} MB RAM is unused on the host {1} based on components " \
+                                                         "assigned. Consider allocating  {2} MB to " \
+                                                         "metrics_collector_heapsize in ams-env, " \
+                                                         "{3} MB to {4} in ams-hbase-env"
+                                                         .format(unusedMemory/mb, collectorHostName,
+                                                                 recommended_collector_heapsize/mb,
+                                                                 recommended_hbase_heapsize/mb,
+                                                                 heapPropertyToIncrease))
+                validationItems.extend([{"config-name": heapPropertyToIncrease, "item": collectorHeapsizeItem}])
+
+              if to_number(properties[xmnPropertyToIncrease]) < recommended_hbase_heapsize:
+                xmnPropertyToIncreaseItem = self.getWarnItem("Consider allocating {0} MB to use up some unused memory "
+                                                             "on host".format(recommended_xmn_size))
+                validationItems.extend([{"config-name": xmnPropertyToIncrease, "item": xmnPropertyToIncreaseItem}])
+      pass
+
+    return self.toConfigurationValidationProblems(validationItems, "ams-hbase-env")
+
+  def validateKAFKAConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+    kafka_broker = properties
+    validationItems = []
+
+    #Adding Ranger Plugin logic here
+    ranger_plugin_properties = getSiteProperties(configurations, "ranger-kafka-plugin-properties")
+    ranger_plugin_enabled = ranger_plugin_properties['ranger-kafka-plugin-enabled'] if ranger_plugin_properties else 'No'
+    prop_name = 'authorizer.class.name'
+    prop_val = "org.apache.ranger.authorization.kafka.authorizer.RangerKafkaAuthorizer"
     servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
-    componentsListList = [service["components"] for service in services["services"]]
-    componentsList = [item["StackServiceComponents"] for sublist in componentsListList for item in sublist]
-    hosts_for_component = []
-    if serviceName in servicesList:
-      hosts_for_component = [component["hostnames"] for component in componentsList if component["component_name"] == componentName][0]
-    return hosts_for_component
+    if ("RANGER" in servicesList) and (ranger_plugin_enabled.lower() == 'Yes'.lower()):
+      if kafka_broker[prop_name] != prop_val:
+        validationItems.append({"config-name": prop_name,
+                                "item": self.getWarnItem(
+                                    "If Ranger Kafka Plugin is enabled." \
+                                    "{0} needs to be set to {1}".format(prop_name,prop_val))})
+
+    return self.toConfigurationValidationProblems(validationItems, "kafka-broker")
+
+
+  def validateServiceConfigurations(self, serviceName):
+    return self.getServiceConfigurationValidators().get(serviceName, None)
+
+  def getWarnItem(self, message):
+    return {"level": "WARN", "message": message}
+
+  def getErrorItem(self, message):
+    return {"level": "ERROR", "message": message}
+
+  def getPreferredMountPoints(self, hostInfo):
+
+    # '/etc/resolv.conf', '/etc/hostname', '/etc/hosts' are docker specific mount points
+    undesirableMountPoints = ["/", "/home", "/etc/resolv.conf", "/etc/hosts",
+                              "/etc/hostname", "/tmp"]
+    undesirableFsTypes = ["devtmpfs", "tmpfs", "vboxsf", "CDFS"]
+    mountPoints = []
+    if hostInfo and "disk_info" in hostInfo:
+      mountPointsDict = {}
+      for mountpoint in hostInfo["disk_info"]:
+        if not (mountpoint["mountpoint"] in undesirableMountPoints or
+                mountpoint["mountpoint"].startswith(("/boot", "/mnt")) or
+                mountpoint["type"] in undesirableFsTypes or
+                mountpoint["available"] == str(0)):
+          mountPointsDict[mountpoint["mountpoint"]] = to_number(mountpoint["available"])
+      if mountPointsDict:
+        mountPoints = sorted(mountPointsDict, key=mountPointsDict.get, reverse=True)
+    mountPoints.append("/")
+    return mountPoints
+
+  def validatorNotRootFs(self, properties, recommendedDefaults, propertyName, hostInfo):
+    if not propertyName in properties:
+      return self.getErrorItem("Value should be set")
+    dir = properties[propertyName]
+    if not dir.startswith("file://") or dir == recommendedDefaults.get(propertyName):
+      return None
+
+    dir = re.sub("^file://", "", dir, count=1)
+    mountPoints = []
+    for mountPoint in hostInfo["disk_info"]:
+      mountPoints.append(mountPoint["mountpoint"])
+    mountPoint = getMountPointForDir(dir, mountPoints)
+
+    if "/" == mountPoint and self.getPreferredMountPoints(hostInfo)[0] != mountPoint:
+      return self.getWarnItem("It is not recommended to use root partition for {0}".format(propertyName))
+
+    return None
+
+  def validatorEnoughDiskSpace(self, properties, propertyName, hostInfo, reqiuredDiskSpace):
+    if not propertyName in properties:
+      return self.getErrorItem("Value should be set")
+    dir = properties[propertyName]
+    if not dir.startswith("file://"):
+      return None
+
+    dir = re.sub("^file://", "", dir, count=1)
+    mountPoints = {}
+    for mountPoint in hostInfo["disk_info"]:
+      mountPoints[mountPoint["mountpoint"]] = to_number(mountPoint["available"])
+    mountPoint = getMountPointForDir(dir, mountPoints.keys())
+
+    if not mountPoints:
+      return self.getErrorItem("No disk info found on host %s" % hostInfo["host_name"])
+
+    if mountPoints[mountPoint] < reqiuredDiskSpace:
+      msg = "Ambari Metrics disk space requirements not met. \n" \
+            "Recommended disk space for partition {0} is {1}G"
+      return self.getWarnItem(msg.format(mountPoint, reqiuredDiskSpace/1048576)) # in Gb
+    return None
+
+  def validatorLessThenDefaultValue(self, properties, recommendedDefaults, propertyName):
+    if propertyName not in recommendedDefaults:
+      # If a property name exists in say hbase-env and hbase-site (which is allowed), then it will exist in the
+      # "properties" dictionary, but not necessarily in the "recommendedDefaults" dictionary". In this case, ignore it.
+      return None
+
+    if not propertyName in properties:
+      return self.getErrorItem("Value should be set")
+    value = to_number(properties[propertyName])
+    if value is None:
+      return self.getErrorItem("Value should be integer")
+    defaultValue = to_number(recommendedDefaults[propertyName])
+    if defaultValue is None:
+      return None
+    if value < defaultValue:
+      return self.getWarnItem("Value is less than the recommended default of {0}".format(defaultValue))
+    return None
+
+  def validatorEqualsPropertyItem(self, properties1, propertyName1,
+                                  properties2, propertyName2,
+                                  emptyAllowed=False):
+    if not propertyName1 in properties1:
+      return self.getErrorItem("Value should be set for %s" % propertyName1)
+    if not propertyName2 in properties2:
+      return self.getErrorItem("Value should be set for %s" % propertyName2)
+    value1 = properties1.get(propertyName1)
+    if value1 is None and not emptyAllowed:
+      return self.getErrorItem("Empty value for %s" % propertyName1)
+    value2 = properties2.get(propertyName2)
+    if value2 is None and not emptyAllowed:
+      return self.getErrorItem("Empty value for %s" % propertyName2)
+    if value1 != value2:
+      return self.getWarnItem("It is recommended to set equal values "
+             "for properties {0} and {1}".format(propertyName1, propertyName2))
+
+    return None
+
+  def validatorEqualsToRecommendedItem(self, properties, recommendedDefaults,
+                                       propertyName):
+    if not propertyName in properties:
+      return self.getErrorItem("Value should be set for %s" % propertyName)
+    value = properties.get(propertyName)
+    if not propertyName in recommendedDefaults:
+      return self.getErrorItem("Value should be recommended for %s" % propertyName)
+    recommendedValue = recommendedDefaults.get(propertyName)
+    if value != recommendedValue:
+      return self.getWarnItem("It is recommended to set value {0} "
+             "for property {1}".format(recommendedValue, propertyName))
+    return None
+
+  def validateMinMemorySetting(self, properties, defaultValue, propertyName):
+    if not propertyName in properties:
+      return self.getErrorItem("Value should be set")
+    if defaultValue is None:
+      return self.getErrorItem("Config's default value can't be null or undefined")
+
+    value = properties[propertyName]
+    if value is None:
+      return self.getErrorItem("Value can't be null or undefined")
+    try:
+      valueInt = to_number(value)
+      # TODO: generify for other use cases
+      defaultValueInt = int(str(defaultValue).strip())
+      if valueInt < defaultValueInt:
+        return self.getWarnItem("Value is less than the minimum recommended default of -Xmx" + str(defaultValue))
+    except:
+      return None
+
+    return None
+
+  def validateXmxValue(self, properties, recommendedDefaults, propertyName):
+    if not propertyName in properties:
+      return self.getErrorItem("Value should be set")
+    value = properties[propertyName]
+    defaultValue = recommendedDefaults[propertyName]
+    if defaultValue is None:
+      return self.getErrorItem("Config's default value can't be null or undefined")
+    if not checkXmxValueFormat(value) and checkXmxValueFormat(defaultValue):
+      # Xmx is in the default-value but not the value, should be an error
+      return self.getErrorItem('Invalid value format')
+    if not checkXmxValueFormat(defaultValue):
+      # if default value does not contain Xmx, then there is no point in validating existing value
+      return None
+    valueInt = formatXmxSizeToBytes(getXmxSize(value))
+    defaultValueXmx = getXmxSize(defaultValue)
+    defaultValueInt = formatXmxSizeToBytes(defaultValueXmx)
+    if valueInt < defaultValueInt:
+      return self.getWarnItem("Value is less than the recommended default of -Xmx" + defaultValueXmx)
+    return None
+
+  def getMastersWithMultipleInstances(self):
+    return ['ZOOKEEPER_SERVER', 'METRICS_COLLECTOR']
+
+  def getNotValuableComponents(self):
+    return ['METRICS_MONITOR']
+
+  def getNotPreferableOnServerComponents(self):
+    return ['STORM_UI_SERVER', 'DRPC_SERVER', 'STORM_REST_API', 'NIMBUS', 'METRICS_COLLECTOR']
+
+  def getCardinalitiesDict(self):
+    return {
+      'ZOOKEEPER_SERVER': {"min": 3},
+      'METRICS_COLLECTOR': {"min": 1}
+    }
+
+  def getComponentLayoutSchemes(self):
+    return {
+      'METRICS_COLLECTOR': {3: 2, 6: 2, 31: 3, "else": 5},
+    }
+
+  def get_system_min_uid(self):
+    login_defs = '/etc/login.defs'
+    uid_min_tag = 'UID_MIN'
+    comment_tag = '#'
+    uid_min = uid_default = '1000'
+    uid = None
+
+    if os.path.exists(login_defs):
+      with open(login_defs, 'r') as f:
+        data = f.read().split('\n')
+        # look for uid_min_tag in file
+        uid = filter(lambda x: uid_min_tag in x, data)
+        # filter all lines, where uid_min_tag was found in comments
+        uid = filter(lambda x: x.find(comment_tag) > x.find(uid_min_tag) or x.find(comment_tag) == -1, uid)
+
+      if uid is not None and len(uid) > 0:
+        uid = uid[0]
+        comment = uid.find(comment_tag)
+        tag = uid.find(uid_min_tag)
+        if comment == -1:
+          uid_tag = tag + len(uid_min_tag)
+          uid_min = uid[uid_tag:].strip()
+        elif comment > tag:
+          uid_tag = tag + len(uid_min_tag)
+          uid_min = uid[uid_tag:comment].strip()
+
+    # check result for value
+    try:
+      int(uid_min)
+    except ValueError:
+      return uid_default
+
+    return uid_min
+
+  def mergeValidators(self, parentValidators, childValidators):
+    for service, configsDict in childValidators.iteritems():
+      if service not in parentValidators:
+        parentValidators[service] = {}
+      parentValidators[service].update(configsDict)
+
+  def checkSiteProperties(self, siteProperties, *propertyNames):
+    """
+    Check if properties defined in site properties.
+    :param siteProperties: config properties dict
+    :param *propertyNames: property names to validate
+    :returns: True if all properties defined, in other cases returns False
+    """
+    if siteProperties is None:
+      return False
+    for name in propertyNames:
+      if not (name in siteProperties):
+        return False
+    return True
+
+def getOldValue(self, services, configType, propertyName):
+  if services:
+    if 'changed-configurations' in services.keys():
+      changedConfigs = services["changed-configurations"]
+      for changedConfig in changedConfigs:
+        if changedConfig["type"] == configType and changedConfig["name"]== propertyName and "old_value" in changedConfig:
+          return changedConfig["old_value"]
+  return None
+
+# Validation helper methods
+def getSiteProperties(configurations, siteName):
+  siteConfig = configurations.get(siteName)
+  if siteConfig is None:
+    return None
+  return siteConfig.get("properties")
+
+def getServicesSiteProperties(services, siteName):
+  configurations = services.get("configurations")
+  if not configurations:
+    return None
+  siteConfig = configurations.get(siteName)
+  if siteConfig is None:
+    return None
+  return siteConfig.get("properties")
+
+def to_number(s):
+  try:
+    return int(re.sub("\D", "", s))
+  except ValueError:
+    return None
+
+def checkXmxValueFormat(value):
+  p = re.compile('-Xmx(\d+)(b|k|m|g|p|t|B|K|M|G|P|T)?')
+  matches = p.findall(value)
+  return len(matches) == 1
+
+def getXmxSize(value):
+  p = re.compile("-Xmx(\d+)(.?)")
+  result = p.findall(value)[0]
+  if len(result) > 1:
+    # result[1] - is a space or size formatter (b|k|m|g etc)
+    return result[0] + result[1].lower()
+  return result[0]
+
+def formatXmxSizeToBytes(value):
+  value = value.lower()
+  if len(value) == 0:
+    return 0
+  modifier = value[-1]
+
+  if modifier == ' ' or modifier in "0123456789":
+    modifier = 'b'
+  m = {
+    modifier == 'b': 1,
+    modifier == 'k': 1024,
+    modifier == 'm': 1024 * 1024,
+    modifier == 'g': 1024 * 1024 * 1024,
+    modifier == 't': 1024 * 1024 * 1024 * 1024,
+    modifier == 'p': 1024 * 1024 * 1024 * 1024 * 1024
+    }[1]
+  return to_number(value) * m
+
+def getPort(address):
+  """
+  Extracts port from the address like 0.0.0.0:1019
+  """
+  if address is None:
+    return None
+  m = re.search(r'(?:http(?:s)?://)?([\w\d.]*):(\d{1,5})', address)
+  if m is not None:
+    return int(m.group(2))
+  else:
+    return None
+
+def isSecurePort(port):
+  """
+  Returns True if port is root-owned at *nix systems
+  """
+  if port is not None:
+    return port < 1024
+  else:
+    return False
+
+def getMountPointForDir(dir, mountPoints):
+  """
+  :param dir: Directory to check, even if it doesn't exist.
+  :return: Returns the closest mount point as a string for the directory.
+  if the "dir" variable is None, will return None.
+  If the directory does not exist, will return "/".
+  """
+  bestMountFound = None
+  if dir:
+    dir = re.sub("^file://", "", dir, count=1).strip().lower()
+
+    # If the path is "/hadoop/hdfs/data", then possible matches for mounts could be
+    # "/", "/hadoop/hdfs", and "/hadoop/hdfs/data".
+    # So take the one with the greatest number of segments.
+    for mountPoint in mountPoints:
+      # Ensure that the mount path and the dir path ends with "/"
+      # The mount point "/hadoop" should not match with the path "/hadoop1"
+      if os.path.join(dir, "").startswith(os.path.join(mountPoint, "")):
+        if bestMountFound is None:
+          bestMountFound = mountPoint
+        elif os.path.join(bestMountFound, "").count(os.path.sep) < os.path.join(mountPoint, "").count(os.path.sep):
+          bestMountFound = mountPoint
+
+  return bestMountFound
+
+def getHeapsizeProperties():
+  return { "ZOOKEEPER_SERVER": [{"config-name": "zookeeper-env",
+                                 "property": "zookeeper_heapsize",
+                                 "default": "1024m"}],
+           "METRICS_COLLECTOR": [{"config-name": "ams-hbase-env",
+                                   "property": "hbase_master_heapsize",
+                                   "default": "1024"},
+                                 {"config-name": "ams-hbase-env",
+                                  "property": "hbase_regionserver_heapsize",
+                                  "default": "1024"},
+                                 {"config-name": "ams-env",
+                                   "property": "metrics_collector_heapsize",
+                                   "default": "512"}],
+           }
+
+def getMemorySizeRequired(components, configurations):
+  totalMemoryRequired = 512*1024*1024 # 512Mb for OS needs
+  for component in components:
+    if component in getHeapsizeProperties().keys():
+      heapSizeProperties = getHeapsizeProperties()[component]
+      for heapSizeProperty in heapSizeProperties:
+        try:
+          properties = configurations[heapSizeProperty["config-name"]]["properties"]
+          heapsize = properties[heapSizeProperty["property"]]
+        except KeyError:
+          heapsize = heapSizeProperty["default"]
+
+        # Assume Mb if no modifier
+        if len(heapsize) > 1 and heapsize[-1] in '0123456789':
+          heapsize = str(heapsize) + "m"
+
+        totalMemoryRequired += formatXmxSizeToBytes(heapsize)
+
+  return totalMemoryRequired
+
+def round_to_n(mem_size, n=128):
+  return int(round(mem_size / float(n))) * int(n)
