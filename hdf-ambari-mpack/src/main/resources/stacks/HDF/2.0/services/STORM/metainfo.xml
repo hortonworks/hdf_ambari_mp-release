@@ -21,8 +21,8 @@
   <services>
     <service>
       <name>STORM</name>
-      <version>1.0.1.2.0</version>
-      <extends>common-services/STORM/1.0.1</extends>
+      <version>0.10.0.2.0</version>
+      <extends>common-services/STORM/0.10.0</extends>
     </service>
   </services>
 </metainfo>
