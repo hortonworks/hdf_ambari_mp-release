@@ -32,6 +32,7 @@
                     <timeout>10000</timeout>
                   </commandScript>
                 </component>
+                                
             </components>
             <osSpecifics>
               <osSpecific>
@@ -48,7 +49,7 @@
       	    </configuration-dependencies>
             <restartRequiredAfterChange>false</restartRequiredAfterChange>
             <widgetsFileName>widgets.json</widgetsFileName>
-            <metricsFileName>metrics.json</metricsFileName>        
+      		<metricsFileName>metrics.json</metricsFileName>        
         </service>
     </services>
 </metainfo>

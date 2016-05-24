@@ -11,31 +11,14 @@ class Master(Script):
     import params
     import status_params
       
-    Execute('echo master config dump: ' + str(', '.join(params.master_configs)))
-    
-    #location of prebuilt package from 9/3   
-    #snapshot_package='https://www.dropbox.com/s/la1c25xq9zd8w5g/nifi-0.3.0-SNAPSHOT-bin.zip'
-    
-    #official 0.3
-    #snapshot_package='http://apache.arvixe.com/nifi/0.3.0/nifi-0.3.0-bin.zip'
+    #Execute('echo master config dump: ' + str(', '.join(params.master_configs)))
 
-    #official HDF 1.0 package (same as apache 0.3.0)
-    #snapshot_package='http://public-repo-1.hortonworks.com/HDF/1.0.0.0/nifi-1.0.0.0-7-bin.zip'
-    
-    #official HDF 1.1.1 package (nifi 0.4.1)
-    #snapshot_package='http://public-repo-1.hortonworks.com/HDF/1.1.1.0/nifi-1.1.1.0-12-bin.zip'           
-    
-    #snapshot_package='http://public-repo-1.hortonworks.com/HDF/1.1.2.0/nifi-0.5.1.1.1.2.0-32-bin.zip'
-    
     #official HDF 1.2 package (nifi 0.6.0)
     snapshot_package='http://public-repo-1.hortonworks.com/HDF/centos6/1.x/updates/1.2.0.0/HDF-1.2.0.0-91.zip'
     
-
     #e.g. /var/lib/ambari-agent/cache/stacks/HDP/2.3/services/NIFI/package
     service_packagedir = os.path.realpath(__file__).split('/scripts')[0] 
             
-    #Execute('find '+service_packagedir+' -iname "*.sh" | xargs chmod +x')
-
     #Create user and group if they don't exist
     self.create_linux_user(params.nifi_user, params.nifi_group)
     if params.nifi_user != 'root':
@@ -54,8 +37,6 @@ class Master(Script):
          
     Execute('touch ' +  params.nifi_node_log_file, user=params.nifi_user)    
     Execute('rm -rf ' + params.nifi_node_dir, ignore_failures=True)
-    #Execute('mkdir -p '+params.nifi_node_dir)
-    #Execute('chown -R ' + params.nifi_user + ':' + params.nifi_group + ' ' + params.nifi_node_dir)
     
     Directory([params.nifi_node_dir],
             owner=params.nifi_user,
@@ -63,71 +44,15 @@ class Master(Script):
             create_parents=True
     )          
     
-    #User selected option to use prebuilt nifi package 
-    if params.setup_prebuilt:
 
-      Execute('echo Installing packages')
-        
-      #Install maven repo if needed      
-      #self.install_mvn_repo()
-      # Install packages listed in metainfo.xml
-      #self.install_packages(env)    
-
-
-
-      #Fetch and unzip snapshot build, if no cached nifi tar package exists on Ambari server node
-      if not os.path.exists(params.temp_file):
-        Execute('wget '+snapshot_package+' -O '+params.temp_file+' -a '  + params.nifi_node_log_file, user=params.nifi_user)
-      Execute('unzip '+params.temp_file+' -d ' + params.nifi_node_dir + ' >> ' + params.nifi_node_log_file, user=params.nifi_user)
-      Execute('mv '+params.nifi_node_dir+'/*/*/* ' + params.nifi_node_dir, user=params.nifi_user)
+    #Fetch and unzip snapshot build, if no cached nifi tar package exists on Ambari server node
+    if not os.path.exists(params.temp_file):
+      Execute('wget '+snapshot_package+' -O '+params.temp_file+' -a '  + params.nifi_node_log_file, user=params.nifi_user)
+    Execute('unzip '+params.temp_file+' -d ' + params.nifi_node_dir + ' >> ' + params.nifi_node_log_file, user=params.nifi_user)
+    Execute('mv '+params.nifi_node_dir+'/*/*/* ' + params.nifi_node_dir, user=params.nifi_user)
           
-
-      #params.conf_dir = os.path.join(*[params.nifi_install_dir,params.nifi_node_dirname,'conf'])
-      #params.bin_dir = os.path.join(*[params.nifi_install_dir,params.nifi_node_dirname,'bin'])
-      
-      #update the configs specified by user
-      self.configure(env, True)
-
-      #Execute('wget https://www.dropbox.com/s/n82hxkeg8ri0z70/flow.xml.gz -O '+params.conf_dir+'/flow.xml.gz',user=params.nifi_user)
-      
-      #run setup_snapshot.sh in FIRSTLAUNCH mode
-      #Execute(service_packagedir + '/scripts/setup_snapshot.sh '+params.nifi_node_dir+' '+params.hive_server_host+' '+params.hive_metastore_host+' '+params.hive_metastore_port+' FIRSTLAUNCH ' + params.spark_jar + ' ' + params.nifi_host + ' ' + str(params.nifi_port) + ' '+ str(params.setup_view) + ' >> ' + params.nifi_node_log_file, user=params.nifi_user)
-
-      #if nifi installed on ambari server, copy view jar into ambari views dir
-      #if params.setup_view:
-      #  if params.ambari_host == params.nifi_internalhost and not os.path.exists('/var/lib/ambari-server/resources/views/nifi-view-1.0-SNAPSHOT.jar'):
-      #    Execute('echo "Copying nifi view jar to ambari views dir"')      
-      #    Execute('cp /home/'+params.nifi_user+'/nifi-view/target/*.jar /var/lib/ambari-server/resources/views')
-      
-    else:
-      #User selected option to build nifi from source
-       
-      #if params.setup_view:
-        #Install maven repo if needed
-      self.install_mvn_repo()      
-      # Install packages listed in metainfo.xml
-      self.install_packages(env)    
-    
-      # Execute('yum -y install java-1.7.0-openjdk-devel >> ' + params.nifi_node_log_file)
-      
-      Execute('echo Compiling nifi from source')
-      Execute('cd '+params.nifi_install_dir+'; git clone https://git-wip-us.apache.org/repos/asf/nifi.git '+params.nifi_node_dir+' >> ' + params.nifi_node_log_file)
-      Execute('chown -R ' + params.nifi_user + ':' + params.nifi_group + ' ' + params.nifi_node_dir)
-                  
-      Execute('cd '+params.nifi_node_dir+'; mvn -T C2.0 clean install -DskipTests >> ' + params.nifi_node_log_file, user=params.nifi_user)
-      
-      #params.conf_dir =  glob.glob(params.nifi_install_dir + '/' + params.nifi_node_dirname + '/nifi-assembly/target/nifi-*/nifi-*/conf')[0]
-      #params.bin_dir =  glob.glob(params.nifi_install_dir + '/' + params.nifi_node_dirname + '/nifi-assembly/target/nifi-*/nifi-*/bin')[0]
-
-      #update the configs specified by user
-      self.configure(env, True)
-      #Execute('wget https://www.dropbox.com/s/n82hxkeg8ri0z70/flow.xml.gz -O '+params.conf_dir+'/flow.xml.gz',user=params.nifi_user)
-      
-      #if nifi installed on ambari server, copy view jar into ambari views dir
-      #if params.setup_view:
-      #  if params.ambari_host == params.nifi_internalhost and not os.path.exists('/var/lib/ambari-server/resources/views/nifi-view-1.0-SNAPSHOT.jar'):
-      #    Execute('echo "Copying nifi view jar to ambari views dir"')      
-      #    Execute('cp /home/'+params.nifi_user+'/nifi-view/target/*.jar /var/lib/ambari-server/resources/views')
+    #update the configs specified by user
+    self.configure(env, True)
 
 
     
@@ -174,7 +99,6 @@ class Master(Script):
     import params
     import status_params    
     self.set_conf_bin(env)    
-    Execute('echo JAVA_HOME=' + params.jdk64_home)
     Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh stop >> ' + params.nifi_node_log_file, user=params.nifi_user)
     Execute ('rm ' + status_params.nifi_node_pid_file)
  
@@ -197,22 +121,12 @@ class Master(Script):
     import status_params       
     check_process_status(status_params.nifi_node_pid_file)
 
-  def install_mvn_repo(self):
-    #for centos/RHEL 6/7 maven repo needs to be installed
-    distribution = platform.linux_distribution()[0].lower()
-    if distribution in ['centos', 'redhat'] and not os.path.exists('/etc/yum.repos.d/epel-apache-maven.repo'):
-      Execute('curl -o /etc/yum.repos.d/epel-apache-maven.repo https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo')
 
   def set_conf_bin(self, env):
     import params
   
-    if params.setup_prebuilt:
-      params.conf_dir = os.path.join(*[params.nifi_node_dir,'conf'])
-      params.bin_dir = os.path.join(*[params.nifi_node_dir,'bin'])
-
-    else:
-      params.conf_dir =  glob.glob(params.nifi_install_dir + '/' + params.nifi_node_dirname + '/nifi-assembly/target/nifi-*/nifi-*/conf')[0]
-      params.bin_dir =  glob.glob(params.nifi_install_dir + '/' + params.nifi_node_dirname + '/nifi-assembly/target/nifi-*/nifi-*/bin')[0]
+    params.conf_dir = os.path.join(*[params.nifi_node_dir,'conf'])
+    params.bin_dir = os.path.join(*[params.nifi_node_dir,'bin'])
 
       
 if __name__ == "__main__":
