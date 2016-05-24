@@ -61,6 +61,8 @@ nifi_node_properties_content = config['configurations']['nifi-node-properties-en
 # params from nifi-flow
 nifi_flow_content = config['configurations']['nifi-flow-env']['content']
 
+# params from nifi-state-management-env
+nifi_state_management_content = config['configurations']['nifi-state-management-env']['content']
 
 
 
@@ -76,3 +78,16 @@ else:
   metrics_collector_port = ''
 
 temp_file='/tmp/'+nifi_dirname+'.zip'
+
+
+#detect zookeeper_quorum
+zookeeper_port=default('/configurations/zoo.cfg/clientPort', None)
+#get comma separated list of zookeeper hosts from clusterHostInfo
+index = 0 
+zookeeper_quorum=""
+for host in config['clusterHostInfo']['zookeeper_hosts']:
+  zookeeper_quorum += host + ":"+str(zookeeper_port)
+  index += 1
+  if index < len(config['clusterHostInfo']['zookeeper_hosts']):
+    zookeeper_quorum += ","
+

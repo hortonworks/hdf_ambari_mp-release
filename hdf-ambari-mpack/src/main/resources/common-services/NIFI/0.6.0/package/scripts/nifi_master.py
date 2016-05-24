@@ -16,19 +16,9 @@ class Master(Script):
     #official HDF 1.2 package (nifi 0.6.0)
     snapshot_package='http://public-repo-1.hortonworks.com/HDF/centos6/1.x/updates/1.2.0.0/HDF-1.2.0.0-91.zip'
     
-
-    #e.g. /var/lib/ambari-agent/cache/stacks/HDP/2.3/services/NIFI/package
-    service_packagedir = os.path.realpath(__file__).split('/scripts')[0] 
             
-    #Execute('find '+service_packagedir+' -iname "*.sh" | xargs chmod +x')
-
     #Create user and group if they don't exist
     self.create_linux_user(params.nifi_user, params.nifi_group)
-    if params.nifi_user != 'root':
-      Execute('cp /etc/sudoers /etc/sudoers.bak')        
-      Execute('echo "'+params.nifi_user+'    ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers')
-      Execute('echo Creating ' +  params.nifi_master_log_dir +  ' ' +  status_params.nifi_pid_dir)    
-
             
     #create the log dir if it not already present
     Directory([status_params.nifi_pid_dir, params.nifi_master_log_dir],
@@ -92,6 +82,10 @@ class Master(Script):
     #write out logback.xml
     logback_content=InlineTemplate(params.nifi_master_logback_content)
     File(format("{params.conf_dir}/logback.xml"), content=logback_content, owner=params.nifi_user, group=params.nifi_group) 
+
+    #write out state-management.xml
+    statemgmt_content=InlineTemplate(params.nifi_state_management_content)
+    File(format("{params.conf_dir}/state-management.xml"), content=statemgmt_content, owner=params.nifi_user, group=params.nifi_group) 
     
     
     
