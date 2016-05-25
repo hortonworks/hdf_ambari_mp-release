@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <!--
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -18,42 +19,8 @@
  * limitations under the License.
  */
 -->
-<configuration>
 
-  <property>
-    <name>xasecure.audit.destination.db</name>
-    <deleted>true</deleted>
-  </property>
-
-  <property>
-    <name>xasecure.audit.destination.db.jdbc.url</name>
-    <deleted>true</deleted>
-  </property>
-
-  <property>
-    <name>xasecure.audit.destination.db.user</name>
-    <deleted>true</deleted>
-  </property>
-
-  <property>
-    <name>xasecure.audit.destination.db.password</name>
-    <deleted>true</deleted>
-  </property>
-
-  <property>
-    <name>xasecure.audit.destination.db.jdbc.driver</name>
-    <deleted>true</deleted>
-  </property>
-
-  <property>
-    <name>xasecure.audit.credential.provider.file</name>
-    <deleted>true</deleted>
-  </property>
-
-  <property>
-    <name>xasecure.audit.destination.db.batch.filespool.dir</name>
-    <deleted>true</deleted>
-  </property>
+<configuration supports_final="true" supports_adding_forbidden="true">
 
   <property>
     <name>xasecure.audit.destination.hdfs</name>
