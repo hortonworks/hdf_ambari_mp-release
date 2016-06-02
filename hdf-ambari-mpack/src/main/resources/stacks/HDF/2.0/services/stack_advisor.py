@@ -355,29 +355,28 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
 
     # Recommend Logsearch solr properties
 
-    if 'LOGSEARCH' in servicesList and zookeeper_host_port:
-      putRangerEnvProperty('is_solrCloud_enabled', 'true')
-      zookeeper_host_port = zookeeper_host_port.split(',')
-      zookeeper_host_port.sort()
-      zookeeper_host_port = ",".join(zookeeper_host_port)
-      logsearch_solr_znode = '/logsearch'
-      ranger_audit_zk_port = ''
-      if 'logsearch-solr-env' in services['configurations'] and \
-        ('logsearch_solr_znode' in services['configurations']['logsearch-solr-env']['properties']):
-        logsearch_solr_znode = services['configurations']['logsearch-solr-env']['properties']['logsearch_solr_znode']
-        ranger_audit_zk_port = '{0}{1}'.format(zookeeper_host_port, logsearch_solr_znode)
-      putRangerAdminSiteProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
-    else:
-      putRangerEnvProperty('is_solrCloud_enabled', 'false')
-
-    if 'ranger-env' in configurations and configurations["ranger-env"]["properties"]["is_solrCloud_enabled"]:
-      isSolrCloudEnabled = configurations and configurations["ranger-env"]["properties"]["is_solrCloud_enabled"] == "true"
-    elif 'ranger-env' in services['configurations'] and 'is_solrCloud_enabled' in services['configurations']["ranger-env"]["properties"]:
+    if 'ranger-env' in services['configurations'] and 'is_solrCloud_enabled' in services['configurations']["ranger-env"]["properties"]:
       isSolrCloudEnabled = services['configurations']["ranger-env"]["properties"]["is_solrCloud_enabled"]  == "true"
     else:
       isSolrCloudEnabled = False
 
-    if not isSolrCloudEnabled:
+    ranger_audit_zk_port = ''
+
+    if 'LOGSEARCH' in servicesList and zookeeper_host_port and isSolrCloudEnabled:
+      zookeeper_host_port = zookeeper_host_port.split(',')
+      zookeeper_host_port.sort()
+      zookeeper_host_port = ",".join(zookeeper_host_port)
+      logsearch_solr_znode = '/ambari-solr'
+
+      if 'logsearch-solr-env' in services['configurations'] and \
+        ('logsearch_solr_znode' in services['configurations']['logsearch-solr-env']['properties']):
+        logsearch_solr_znode = services['configurations']['logsearch-solr-env']['properties']['logsearch_solr_znode']
+        ranger_audit_zk_port = '{0}{1}'.format(zookeeper_host_port, logsearch_solr_znode)
+      putRangerAdminProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
+    elif zookeeper_host_port and isSolrCloudEnabled:
+      ranger_audit_zk_port = '{0}/{1}'.format(zookeeper_host_port, 'ranger_audits')
+      putRangerAdminProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
+    else:
       putRangerAdminProperty('ranger.audit.solr.zookeepers', 'NONE')
 
     # Recommend Ranger supported service's audit properties
@@ -435,8 +434,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
       putTagsyncAppProperty('atlas.kafka.bootstrap.servers', final_kafka_host)
     else:
       putTagsyncAppProperty('atlas.kafka.bootstrap.servers', 'localhost:6667')
-
-    #TODO Add logsearch related recommendation for ranger audit related properties once logsearch is available
 
   def getAmsMemoryRecommendation(self, services, hosts):
     # MB per sink in hbase heapsize
