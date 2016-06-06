@@ -372,12 +372,12 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         ('logsearch_solr_znode' in services['configurations']['logsearch-solr-env']['properties']):
         logsearch_solr_znode = services['configurations']['logsearch-solr-env']['properties']['logsearch_solr_znode']
         ranger_audit_zk_port = '{0}{1}'.format(zookeeper_host_port, logsearch_solr_znode)
-      putRangerAdminProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
+      putRangerAdminSiteProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
     elif zookeeper_host_port and isSolrCloudEnabled:
       ranger_audit_zk_port = '{0}/{1}'.format(zookeeper_host_port, 'ranger_audits')
-      putRangerAdminProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
+      putRangerAdminSiteProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
     else:
-      putRangerAdminProperty('ranger.audit.solr.zookeepers', 'NONE')
+      putRangerAdminSiteProperty('ranger.audit.solr.zookeepers', 'NONE')
 
     # Recommend Ranger supported service's audit properties
     ranger_services = [
