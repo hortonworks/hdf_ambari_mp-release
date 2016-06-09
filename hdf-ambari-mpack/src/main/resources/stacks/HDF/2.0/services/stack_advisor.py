@@ -534,7 +534,8 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
           notifier_plugin_value = ",".join(application_classes)
         else:
           notifier_plugin_value = " "
-      putStormStartupProperty(notifier_plugin_property, notifier_plugin_value)
+      if notifier_plugin_value != " ":
+        putStormStartupProperty(notifier_plugin_property, notifier_plugin_value)
 
   def recommendAmsConfigurations(self, configurations, clusterData, services, hosts):
     putAmsEnvProperty = self.putProperty(configurations, "ams-env", services)
