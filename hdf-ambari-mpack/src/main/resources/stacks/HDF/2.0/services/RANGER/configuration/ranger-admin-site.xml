@@ -20,7 +20,7 @@
 
   <property>
     <name>ranger.supportedcomponents</name>
-    <value>storm,kafka</value>
+    <value>storm,kafka,nifi</value>
   </property>
 
 </configuration>
