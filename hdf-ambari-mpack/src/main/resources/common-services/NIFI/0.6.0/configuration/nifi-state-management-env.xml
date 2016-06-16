@@ -54,14 +54,6 @@
                             - Open  : ZNodes will be open to any ZooKeeper client.
                             - CreatorOnly  : ZNodes will be accessible only by the creator. The creator will have full access to create children, read, write, delete, and administer the ZNodes.
                                              This option is available only if access to ZooKeeper is secured via Kerberos or if a Username and Password are set.
-
-        Username - An optional username that can be used to assign Access Controls to ZNodes. ZooKeeper allows users to assign arbitrary usernames and passwords to ZNodes. These usernames
-                   and passwords are not explicitly defined elsewhere but are simply associated with ZNodes, so it is important that all NiFi nodes in a cluster have the same value for the
-                   Username and Password properties.
-
-        Password - An optional password that can be used to assign Access Controls to ZNodes. This property must be set if the Username property is set. NOTE: ZooKeeper transmits passwords
-                   in plain text. As a result, a Username and Password should be used only if communicate with a ZooKeeper on a localhost or over encrypted comms (such as configuring SSL
-                   communications with ZooKeeper).
     --&gt;
 
 
@@ -69,11 +61,9 @@
         &lt;id&gt;zk-provider&lt;/id&gt;
         &lt;class&gt;org.apache.nifi.controller.state.providers.zookeeper.ZooKeeperStateProvider&lt;/class&gt;
         &lt;property name="Connect String"&gt;{{zookeeper_quorum}}&lt;/property&gt;
-        &lt;property name="Root Node"&gt;/nifi&lt;/property&gt;
+        &lt;property name="Root Node"&gt;{{nifi_znode}}&lt;/property&gt;
         &lt;property name="Session Timeout"&gt;30 seconds&lt;/property&gt;
         &lt;property name="Access Control"&gt;CreatorOnly&lt;/property&gt;
-        &lt;property name="Username"&gt;nifi&lt;/property&gt;
-        &lt;property name="Password"&gt;nifi&lt;/property&gt;
     &lt;/cluster-provider&gt;
 &lt;/stateManagement&gt;
 

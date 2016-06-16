@@ -23,7 +23,7 @@
 # limitations under the License.
 
 # Core Properties #
-nifi.version=0.6.0.1.2.0.0-91
+nifi.version=0.6.0.2.0.0.0-145
 nifi.flow.configuration.file=./conf/flow.xml.gz
 nifi.flow.configuration.archive.dir=./conf/archive/
 nifi.flowcontroller.autoResumeState=true
@@ -33,10 +33,10 @@ nifi.administrative.yield.duration=30 sec
 # If a component has no work to do (is "bored"), how long should we wait before checking again for work?
 nifi.bored.yield.duration=10 millis
 
-nifi.authority.provider.configuration.file=./conf/authority-providers.xml
+nifi.authorizer.configuration.file=./conf/authorizers.xml
 nifi.login.identity.provider.configuration.file=./conf/login-identity-providers.xml
 nifi.templates.directory=./conf/templates
-nifi.ui.banner.text=Nifi in Ambari
+nifi.ui.banner.text=
 nifi.ui.autorefresh.interval=30 sec
 nifi.nar.library.directory=./lib
 nifi.nar.working.directory=./work/nar/
@@ -120,9 +120,11 @@ nifi.components.status.repository.buffer.size=1440
 nifi.components.status.snapshot.frequency=1 min
 
 # Site to Site properties
-nifi.remote.input.socket.host=
+nifi.remote.input.host=
+nifi.remote.input.secure=false
 nifi.remote.input.socket.port=
-nifi.remote.input.secure=true
+nifi.remote.input.http.enabled=true
+nifi.remote.input.http.transaction.ttl=30 sec
 
 # web properties #
 nifi.web.war.directory=./lib
@@ -146,56 +148,39 @@ nifi.security.truststore=
 nifi.security.truststoreType=
 nifi.security.truststorePasswd=
 nifi.security.needClientAuth=
-nifi.security.user.credential.cache.duration=24 hours
-nifi.security.user.authority.provider=file-provider
+nifi.security.user.authorizer={{nifi_authorizer}}
 nifi.security.user.login.identity.provider=
-nifi.security.support.new.account.requests=
-# Valid Authorities include: ROLE_MONITOR,ROLE_DFM,ROLE_ADMIN,ROLE_PROVENANCE,ROLE_NIFI
-nifi.security.anonymous.authorities=
 nifi.security.ocsp.responder.url=
 nifi.security.ocsp.responder.certificate=
 
-# cluster common properties (cluster manager and nodes must have same values) #
+# cluster common properties (all nodes must have same values) #
 nifi.cluster.protocol.heartbeat.interval=5 sec
 nifi.cluster.protocol.is.secure=false
-nifi.cluster.protocol.socket.timeout=30 sec
-nifi.cluster.protocol.connection.handshake.timeout=45 sec
-# if multicast is used, then nifi.cluster.protocol.multicast.xxx properties must be configured #
-nifi.cluster.protocol.use.multicast=false
-nifi.cluster.protocol.multicast.address=
-nifi.cluster.protocol.multicast.port=
-nifi.cluster.protocol.multicast.service.broadcast.delay=500 ms
-nifi.cluster.protocol.multicast.service.locator.attempts=3
-nifi.cluster.protocol.multicast.service.locator.attempts.delay=1 sec
 
 # cluster node properties (only configure for cluster nodes) #
-nifi.cluster.is.node=true
+nifi.cluster.is.node={{nifi_is_node}}
 nifi.cluster.node.address={{nifi_node_host}}
 nifi.cluster.node.protocol.port={{nifi_node_protocol_port}}
-nifi.cluster.node.protocol.threads=2
-# if multicast is not used, nifi.cluster.node.unicast.xxx must have same values as nifi.cluster.manager.xxx #
-nifi.cluster.node.unicast.manager.address={{nifi_master_host}}
-nifi.cluster.node.unicast.manager.protocol.port={{nifi_master_protocol_port}}
+nifi.cluster.node.protocol.threads=10
+nifi.cluster.node.event.history.size=25
+nifi.cluster.node.connection.timeout=5 sec
+nifi.cluster.node.read.timeout=5 sec
+nifi.cluster.firewall.file=
 
-# cluster manager properties (only configure for cluster manager) #
-nifi.cluster.is.manager=false
-nifi.cluster.manager.address=
-nifi.cluster.manager.protocol.port=
-nifi.cluster.manager.node.firewall.file=
-nifi.cluster.manager.node.event.history.size=10
-nifi.cluster.manager.node.api.connection.timeout=30 sec
-nifi.cluster.manager.node.api.read.timeout=30 sec
-nifi.cluster.manager.node.api.request.threads=10
-nifi.cluster.manager.flow.retrieval.delay=5 sec
-nifi.cluster.manager.protocol.threads=10
-nifi.cluster.manager.safemode.duration=0 sec
+# How long a request should be allowed to hold a 'lock' on a component. #
+nifi.cluster.request.replication.claim.timeout=15 secs
+
+# zookeeper properties, used for cluster management #
+nifi.zookeeper.connect.string={{zookeeper_quorum}}
+nifi.zookeeper.connect.timeout=3 secs
+nifi.zookeeper.session.timeout=3 secs
+nifi.zookeeper.root.node={{nifi_znode}}
 
 # kerberos #
 nifi.kerberos.krb5.file=
 nifi.kerberos.service.principal=
 nifi.kerberos.keytab.location=
 nifi.kerberos.authentication.expiration=12 hours
-
 
   </value>
   </property>  
