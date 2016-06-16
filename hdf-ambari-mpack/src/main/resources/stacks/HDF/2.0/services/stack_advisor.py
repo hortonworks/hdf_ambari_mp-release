@@ -232,37 +232,27 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     putTagsyncAppProperty = self.putProperty(configurations, "tagsync-application-properties", services)
     putTagsyncSiteProperty = self.putProperty(configurations, "ranger-tagsync-site", services)
 
+    # get zookeeper hosts
+    zookeeper_host_port = self.getZKHostPortString(services)
+
     # Build policymgr_external_url
     protocol = 'http'
     ranger_admin_host = 'localhost'
     port = '6080'
 
-    # Check if http is disabled. For HDF-0.3 this can be checked in ranger-admin-site/ranger.service.http.enabled
-    # For Ranger-0.4.0 this can be checked in ranger-site/http.enabled
-    if ('ranger-site' in services['configurations'] and 'http.enabled' in services['configurations']['ranger-site']['properties'] \
-      and services['configurations']['ranger-site']['properties']['http.enabled'].lower() == 'false') or \
-      ('ranger-admin-site' in services['configurations'] and 'ranger.service.http.enabled' in services['configurations']['ranger-admin-site']['properties'] \
+    # Check if http is disabled. For HDF this can be checked in ranger-admin-site/ranger.service.http.enabled
+    if ('ranger-admin-site' in services['configurations'] and 'ranger.service.http.enabled' in services['configurations']['ranger-admin-site']['properties'] \
       and services['configurations']['ranger-admin-site']['properties']['ranger.service.http.enabled'].lower() == 'false'):
       # HTTPS protocol is used
       protocol = 'https'
-      # Starting Ranger-0.5.0.0.3 port stored in ranger-admin-site ranger.service.https.port
       if 'ranger-admin-site' in services['configurations'] and \
           'ranger.service.https.port' in services['configurations']['ranger-admin-site']['properties']:
         port = services['configurations']['ranger-admin-site']['properties']['ranger.service.https.port']
-      # In Ranger-0.4.0 port stored in ranger-site https.service.port
-      elif 'ranger-site' in services['configurations'] and \
-          'https.service.port' in services['configurations']['ranger-site']['properties']:
-        port = services['configurations']['ranger-site']['properties']['https.service.port']
     else:
       # HTTP protocol is used
-      # Starting Ranger-0.5.0.0.3 port stored in ranger-admin-site ranger.service.http.port
       if 'ranger-admin-site' in services['configurations'] and \
           'ranger.service.http.port' in services['configurations']['ranger-admin-site']['properties']:
         port = services['configurations']['ranger-admin-site']['properties']['ranger.service.http.port']
-      # In Ranger-0.4.0 port stored in ranger-site http.service.port
-      elif 'ranger-site' in services['configurations'] and \
-          'http.service.port' in services['configurations']['ranger-site']['properties']:
-        port = services['configurations']['ranger-site']['properties']['http.service.port']
 
     ranger_admin_hosts = self.getComponentHostNames(services, "RANGER", "RANGER_ADMIN")
     if ranger_admin_hosts:
@@ -275,77 +265,10 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         # in case of HA deployment keep the policymgr_external_url specified in the config
         policymgr_external_url = services['configurations']['admin-properties']['properties']['policymgr_external_url']
       else:
-
         ranger_admin_host = ranger_admin_hosts[0]
-        policymgr_external_url = "%s://%s:%s" % (protocol, ranger_admin_host, port)
+        policymgr_external_url = "{0}://{1}:{2}".format(protocol, ranger_admin_host, port)
 
       putRangerAdminProperty('policymgr_external_url', policymgr_external_url)
-
-    rangerServiceVersion = [service['StackServices']['service_version'] for service in services["services"] if service['StackServices']['service_name'] == 'RANGER'][0]
-    if rangerServiceVersion == '0.4.0':
-      # Recommend ldap settings based on ambari.properties configuration
-      # If 'ambari.ldap.isConfigured' == true
-      # For Ranger version 0.4.0
-      if 'ambari-server-properties' in services and \
-      'ambari.ldap.isConfigured' in services['ambari-server-properties'] and \
-        services['ambari-server-properties']['ambari.ldap.isConfigured'].lower() == "true":
-        putUserSyncProperty = self.putProperty(configurations, "usersync-properties", services)
-        serverProperties = services['ambari-server-properties']
-        if 'authentication.ldap.managerDn' in serverProperties:
-          putUserSyncProperty('SYNC_LDAP_BIND_DN', serverProperties['authentication.ldap.managerDn'])
-        if 'authentication.ldap.primaryUrl' in serverProperties:
-          ldap_protocol =  'ldap://'
-          if 'authentication.ldap.useSSL' in serverProperties and serverProperties['authentication.ldap.useSSL'] == 'true':
-            ldap_protocol =  'ldaps://'
-          ldapUrl = ldap_protocol + serverProperties['authentication.ldap.primaryUrl'] if serverProperties['authentication.ldap.primaryUrl'] else serverProperties['authentication.ldap.primaryUrl']
-          putUserSyncProperty('SYNC_LDAP_URL', ldapUrl)
-        if 'authentication.ldap.userObjectClass' in serverProperties:
-          putUserSyncProperty('SYNC_LDAP_USER_OBJECT_CLASS', serverProperties['authentication.ldap.userObjectClass'])
-        if 'authentication.ldap.usernameAttribute' in serverProperties:
-          putUserSyncProperty('SYNC_LDAP_USER_NAME_ATTRIBUTE', serverProperties['authentication.ldap.usernameAttribute'])
-
-
-      # Set Ranger Admin Authentication method
-      if 'admin-properties' in services['configurations'] and 'usersync-properties' in services['configurations'] and \
-          'SYNC_SOURCE' in services['configurations']['usersync-properties']['properties']:
-        rangerUserSyncSource = services['configurations']['usersync-properties']['properties']['SYNC_SOURCE']
-        authenticationMethod = rangerUserSyncSource.upper()
-        if authenticationMethod != 'FILE':
-          putRangerAdminProperty('authentication_method', authenticationMethod)
-
-      # Recommend xasecure.audit.destination.hdfs.dir
-      # For Ranger version 0.4.0
-      include_hdfs = "HDFS" in servicesList
-      if include_hdfs:
-        if 'core-site' in services['configurations'] and ('fs.defaultFS' in services['configurations']['core-site']['properties']):
-          default_fs = services['configurations']['core-site']['properties']['fs.defaultFS']
-          default_fs += '/ranger/audit/%app-type%/%time:yyyyMMdd%'
-          putRangerEnvProperty('xasecure.audit.destination.hdfs.dir', default_fs)
-
-      # Recommend Ranger Audit properties for ranger supported services
-      # For Ranger version 0.4.0
-      ranger_services = [
-        {'service_name': 'STORM', 'audit_file': 'ranger-storm-plugin-properties'}
-      ]
-
-      for item in range(len(ranger_services)):
-        if ranger_services[item]['service_name'] in servicesList:
-          component_audit_file =  ranger_services[item]['audit_file']
-          if component_audit_file in services["configurations"]:
-            ranger_audit_dict = [
-              {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.db', 'target_configname': 'XAAUDIT.DB.IS_ENABLED'},
-              {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs', 'target_configname': 'XAAUDIT.HDFS.IS_ENABLED'},
-              {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs.dir', 'target_configname': 'XAAUDIT.HDFS.DESTINATION_DIRECTORY'}
-            ]
-            putRangerAuditProperty = self.putProperty(configurations, component_audit_file, services)
-
-            for item in ranger_audit_dict:
-              if item['filename'] in services["configurations"] and item['configname'] in  services["configurations"][item['filename']]["properties"]:
-                if item['filename'] in configurations and item['configname'] in  configurations[item['filename']]["properties"]:
-                  rangerAuditProperty = configurations[item['filename']]["properties"][item['configname']]
-                else:
-                  rangerAuditProperty = services["configurations"][item['filename']]["properties"][item['configname']]
-                putRangerAuditProperty(item['target_configname'], rangerAuditProperty)
 
     cluster_env = getServicesSiteProperties(services, "cluster-env")
     security_enabled = cluster_env is not None and "security_enabled" in cluster_env and \
@@ -427,30 +350,34 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     if 'ranger-ugsync-site' in services['configurations'] and 'ranger.usersync.source.impl.class' in services['configurations']["ranger-ugsync-site"]["properties"]:
       rangerUserSyncClass = services['configurations']["ranger-ugsync-site"]["properties"]["ranger.usersync.source.impl.class"]
       if rangerUserSyncClass in authMap:
-        rangerSqlConnectorProperty = authMap.get(rangerUserSyncClass)
-        putRangerAdminSiteProperty('ranger.authentication.method', rangerSqlConnectorProperty)
+        rangerAuthMethod = authMap.get(rangerUserSyncClass)
+        putRangerAdminSiteProperty('ranger.authentication.method', rangerAuthMethod)
 
+    # Recommend Logsearch solr properties
 
     if 'ranger-env' in services['configurations'] and 'is_solrCloud_enabled' in services['configurations']["ranger-env"]["properties"]:
       isSolrCloudEnabled = services['configurations']["ranger-env"]["properties"]["is_solrCloud_enabled"]  == "true"
     else:
       isSolrCloudEnabled = False
 
-    if isSolrCloudEnabled:
-      zookeeper_host_port = self.getZKHostPortString(services)
-      ranger_audit_zk_port = ''
-      if zookeeper_host_port:
-        ranger_audit_zk_port = '{0}/{1}'.format(zookeeper_host_port, 'ranger_audits')
-        putRangerAdminSiteProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
+    ranger_audit_zk_port = ''
+
+    if 'LOGSEARCH' in servicesList and zookeeper_host_port and isSolrCloudEnabled:
+      zookeeper_host_port = zookeeper_host_port.split(',')
+      zookeeper_host_port.sort()
+      zookeeper_host_port = ",".join(zookeeper_host_port)
+      logsearch_solr_znode = '/ambari-solr'
+
+      if 'logsearch-solr-env' in services['configurations'] and \
+        ('logsearch_solr_znode' in services['configurations']['logsearch-solr-env']['properties']):
+        logsearch_solr_znode = services['configurations']['logsearch-solr-env']['properties']['logsearch_solr_znode']
+        ranger_audit_zk_port = '{0}{1}'.format(zookeeper_host_port, logsearch_solr_znode)
+      putRangerAdminSiteProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
+    elif zookeeper_host_port and isSolrCloudEnabled:
+      ranger_audit_zk_port = '{0}/{1}'.format(zookeeper_host_port, 'ranger_audits')
+      putRangerAdminSiteProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
     else:
       putRangerAdminSiteProperty('ranger.audit.solr.zookeepers', 'NONE')
-
-    # Recommend ranger.audit.solr.zookeepers and xasecure.audit.destination.hdfs.dir
-    include_hdfs = "HDFS" in servicesList
-    if include_hdfs:
-      if 'core-site' in services['configurations'] and ('fs.defaultFS' in services['configurations']['core-site']['properties']):
-        default_fs = services['configurations']['core-site']['properties']['fs.defaultFS']
-        putRangerEnvProperty('xasecure.audit.destination.hdfs.dir', '{0}/{1}/{2}'.format(default_fs,'ranger','audit'))
 
     # Recommend Ranger supported service's audit properties
     ranger_services = [
@@ -463,9 +390,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         component_audit_file =  ranger_services[item]['audit_file']
         if component_audit_file in services["configurations"]:
           ranger_audit_dict = [
-            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.db', 'target_configname': 'xasecure.audit.destination.db'},
-            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs', 'target_configname': 'xasecure.audit.destination.hdfs'},
-            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs.dir', 'target_configname': 'xasecure.audit.destination.hdfs.dir'},
             {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.solr', 'target_configname': 'xasecure.audit.destination.solr'},
             {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.urls', 'target_configname': 'xasecure.audit.destination.solr.urls'},
             {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.zookeepers', 'target_configname': 'xasecure.audit.destination.solr.zookeepers'}
@@ -480,29 +404,16 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
                 rangerAuditProperty = services["configurations"][item['filename']]["properties"][item['configname']]
               putRangerAuditProperty(item['target_configname'], rangerAuditProperty)
 
-    audit_solr_flag = 'false'
-    audit_db_flag = 'false'
-    ranger_audit_source_type = 'solr'
-    if 'ranger-env' in services['configurations'] and 'xasecure.audit.destination.solr' in services['configurations']["ranger-env"]["properties"]:
-      audit_solr_flag = services['configurations']["ranger-env"]["properties"]['xasecure.audit.destination.solr']
-    if 'ranger-env' in services['configurations'] and 'xasecure.audit.destination.db' in services['configurations']["ranger-env"]["properties"]:
-      audit_db_flag = services['configurations']["ranger-env"]["properties"]['xasecure.audit.destination.db']
-
-    if audit_db_flag == 'true' and audit_solr_flag == 'false':
-      ranger_audit_source_type = 'db'
-    putRangerAdminSiteProperty('ranger.audit.source.type',ranger_audit_source_type)
-
     has_ranger_tagsync = False
     if 'RANGER' in servicesList:
-      ranger_tagsync_host = self.__getHostsForComponent(services, "RANGER", "RANGER_TAGSYNC")
+      ranger_tagsync_host = self.getComponentHostNames(services, "RANGER", "RANGER_TAGSYNC")
       has_ranger_tagsync = len(ranger_tagsync_host) > 0
 
-    if 'ATLAS' in servicesList:
+    if 'ATLAS' in servicesList and has_ranger_tagsync:
       putTagsyncSiteProperty('ranger.tagsync.source.atlas', 'true')
     else:
       putTagsyncSiteProperty('ranger.tagsync.source.atlas', 'false')
 
-    zookeeper_host_port = self.getZKHostPortString(services)
     if zookeeper_host_port and has_ranger_tagsync:
       zookeeper_host_list = zookeeper_host_port.split(',')
       putTagsyncAppProperty('atlas.kafka.zookeeper.connect', zookeeper_host_list[0])
@@ -623,7 +534,8 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
           notifier_plugin_value = ",".join(application_classes)
         else:
           notifier_plugin_value = " "
-      putStormStartupProperty(notifier_plugin_property, notifier_plugin_value)
+      if notifier_plugin_value != " ":
+        putStormStartupProperty(notifier_plugin_property, notifier_plugin_value)
 
   def recommendAmsConfigurations(self, configurations, clusterData, services, hosts):
     putAmsEnvProperty = self.putProperty(configurations, "ams-env", services)
@@ -1760,3 +1672,4 @@ def getMemorySizeRequired(components, configurations):
 
 def round_to_n(mem_size, n=128):
   return int(round(mem_size / float(n))) * int(n)
+
