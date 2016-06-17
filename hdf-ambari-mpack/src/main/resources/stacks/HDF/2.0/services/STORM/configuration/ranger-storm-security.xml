@@ -24,6 +24,7 @@
     <name>ranger.plugin.storm.policy.rest.ssl.config.file</name>
     <value>/usr/hdf/current/storm-client/conf/ranger-policymgr-ssl.xml</value>
     <description>Path to the file containing SSL details to contact Ranger Admin</description>
+    <on-ambari-upgrade add="true"/>
   </property>
 
 </configuration>
