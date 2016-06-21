@@ -20,12 +20,14 @@
     <name>nifi.node.port</name>
     <value>9090</value>
     <description>Port NiFi node runs on</description>
+    <on-ambari-upgrade add="true"/>
   </property>
 
   <property>
     <name>nifi.node.protocol.port</name>
     <value>9088</value>
     <description>Port NiFi node protocol runs on</description>
+    <on-ambari-upgrade add="true"/>
   </property>
 
 
@@ -33,12 +35,14 @@
     <name>nifi.initial_mem</name>
     <value>512m</value>
     <description>Initial memory allocation for NiFi JVM (Xms)</description>
+    <on-ambari-upgrade add="true"/>
   </property>
   
   <property>
     <name>nifi.max_mem</name>
     <value>512m</value>
     <description>Max memory allocation for Nifi JVM (Xmx)</description>
+    <on-ambari-upgrade add="true"/>
   </property>
     
 
@@ -46,18 +50,21 @@
     <name>nifi.ambari_reporting_frequency</name>
     <value>1 mins</value>
     <description>Frequency with which Nifi metrics will be reported to Ambari Metrics. Only used during initial install of service. Post-install this can be reconfigured from Nifi UI under Controller Settings</description>
+    <on-ambari-upgrade add="true"/>
   </property>
   
   <property>
     <name>nifi.nifi_znode</name>
     <value>/nifi</value>
     <description>Zookeeper znode for Nifi</description>
+    <on-ambari-upgrade add="true"/>
   </property>
 
   <property>
     <name>nifi.nifi_authorizer</name>
     <value>file-provider</value>
     <description>Authorizer for Nifi. Possible values are file-provider and ranger-provider</description>
+    <on-ambari-upgrade add="true"/>
   </property>  
 
   
