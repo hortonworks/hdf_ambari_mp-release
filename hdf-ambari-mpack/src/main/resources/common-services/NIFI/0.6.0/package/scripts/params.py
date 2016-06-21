@@ -156,9 +156,7 @@ xa_audit_db_user = config['configurations']['admin-properties']['audit_db_user']
 xa_db_host = config['configurations']['admin-properties']['db_host']
 repo_name = str(config['clusterName']) + '_nifi'
 
-nifi_home = config['configurations']['ranger-nifi-plugin-properties']['NIFI_HOME']
 common_name_for_certificate = config['configurations']['ranger-nifi-plugin-properties']['common.name.for.certificate']
-
 repo_config_username = config['configurations']['ranger-nifi-plugin-properties']['REPOSITORY_CONFIG_USERNAME']
 
 ranger_env = config['configurations']['ranger-env']
