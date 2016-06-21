@@ -41,10 +41,9 @@
             </osSpecifics>
       
       	    <configuration-dependencies>
-                <config-type>nifi-ambari-config</config-type>      	   
-                <!-- <config-type>nifi-flow</config-type> -->
-      	    </configuration-dependencies>
-            <restartRequiredAfterChange>false</restartRequiredAfterChange>
+                <config-type>nifi-ambari-config</config-type>
+            </configuration-dependencies>
+            <restartRequiredAfterChange>true</restartRequiredAfterChange>
             <widgetsFileName>widgets.json</widgetsFileName>
             <metricsFileName>metrics.json</metricsFileName>        
         </service>

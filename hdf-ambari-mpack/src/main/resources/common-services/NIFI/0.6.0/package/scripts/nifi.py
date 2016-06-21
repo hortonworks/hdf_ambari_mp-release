@@ -1,6 +1,7 @@
 import sys, os, pwd, grp, signal, time, glob, socket
 from resource_management import *
 from subprocess import call
+from setup_ranger_nifi import setup_ranger_nifi
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -77,8 +78,13 @@ class Master(Script):
     env_content=InlineTemplate(params.nifi_env_content)
     File(format("{params.bin_dir}/nifi-env.sh"), content=env_content, owner=params.nifi_user, group=params.nifi_group) 
     #File(format("{params.bin_dir}/nifi-env.sh"), content=env_content) 
-    
-    
+
+    #write out authorizers file
+    authorizers_content=InlineTemplate(params.nifi_authorizer_content)
+    File(format("{params.conf_dir}/authorizers.xml"), content=authorizers_content, owner=params.nifi_user, group=params.nifi_group)
+
+
+
   def stop(self, env):
     import params
     import status_params    
@@ -91,7 +97,8 @@ class Master(Script):
   def start(self, env):
     import params
     import status_params
-    self.configure(env) 
+    self.configure(env)
+    setup_ranger_nifi(upgrade_type=None)
 
     Execute('echo nifi nodes: ' + params.nifi_node_hosts)    
     Execute('echo pid file ' + status_params.nifi_node_pid_file)

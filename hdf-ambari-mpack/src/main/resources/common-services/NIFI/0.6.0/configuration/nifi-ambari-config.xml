@@ -54,13 +54,5 @@
     <description>Zookeeper znode for Nifi</description>
   </property>
 
-  <property>
-    <name>nifi.nifi_authorizer</name>
-    <value>file-provider</value>
-    <description>Authorizer for Nifi. Possible values are file-provider and ranger-provider</description>
-  </property>  
 
-  
-  
-    
 </configuration>  
