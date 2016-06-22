@@ -8,19 +8,22 @@
     <name>nifi_node_log_dir</name>
     <value>/var/log/nifi</value>    
     <description>NiFi Node Log dir</description>
+      <on-ambari-upgrade add="true"/>
   </property> 
   
  <property>
     <name>nifi_pid_dir</name>
     <value>/var/run/nifi</value>
     <description>Dir containing process ID file</description>
-  </property>
+     <on-ambari-upgrade add="true"/>
+ </property>
 
   <property>
     <name>nifi_user</name>
     <value>nifi</value>
     <property-type>USER</property-type>
     <description>User nifi daemon runs as</description>
+      <on-ambari-upgrade add="true"/>
   </property> 
         
   <property>
@@ -28,6 +31,7 @@
     <value>nifi</value>
     <property-type>GROUP</property-type>
     <description>nifi group</description>
+      <on-ambari-upgrade add="true"/>
   </property> 
           
             
@@ -66,7 +70,7 @@ export NIFI_LOG_DIR="{{nifi_node_log_dir}}"
 
   </value>
   <description>Template for nifi-env.sh</description>
-  
+      <on-ambari-upgrade add="true"/>
   </property>
 
 </configuration>

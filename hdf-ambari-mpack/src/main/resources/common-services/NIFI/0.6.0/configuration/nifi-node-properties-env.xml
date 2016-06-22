@@ -183,6 +183,7 @@ nifi.kerberos.keytab.location=
 nifi.kerberos.authentication.expiration=12 hours
 
   </value>
+    <on-ambari-upgrade add="true"/>
   </property>  
  
 </configuration>  

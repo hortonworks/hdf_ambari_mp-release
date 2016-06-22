@@ -89,7 +89,7 @@ notification.max.attempts=5
 
   </value>
   <description>Template for bootstrap.conf</description>
-  
+    <on-ambari-upgrade add="true"/>
   </property>
 
 </configuration>

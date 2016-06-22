@@ -18,11 +18,11 @@ class Master(Script):
     self.create_linux_user(params.nifi_user, params.nifi_group)
             
     #create the log, pid, conf dirs if not already present
-    Directory([status_params.nifi_pid_dir, params.nifi_node_log_dir, params.conf_dir, params.work_dir],
-            owner=params.nifi_user,
-            group=params.nifi_group,
-            create_parents=True
-    )   
+    #Directory([status_params.nifi_pid_dir, params.nifi_node_log_dir, params.conf_dir, params.work_dir],
+    #        owner=params.nifi_user,
+    #        group=params.nifi_group,
+    #        create_parents=True
+    #)   
          
     Execute('touch ' +  params.nifi_node_log_file, user=params.nifi_user)    
 

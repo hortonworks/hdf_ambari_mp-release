@@ -25,6 +25,7 @@
     <name>ranger.tagsync.dest.ranger.ssl.config.filename</name>
     <value>/usr/hdf/current/ranger-tagsync/conf/mytruststore.jks</value>
     <description>Truststore used for tagsync, required if tagsync -&gt; ranger admin communication is SSL enabled</description>
+    <on-ambari-upgrade add="true"/>
   </property>
 
   <property>
@@ -34,6 +35,7 @@
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>
+    <on-ambari-upgrade add="true"/>
   </property>
 
 </configuration>

@@ -70,7 +70,8 @@
 
   </value>
   <description>template for state-management.xml</description>
-  
+
+      <on-ambari-upgrade add="true"/>
   </property>
 
 </configuration>
