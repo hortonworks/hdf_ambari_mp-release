@@ -8,6 +8,7 @@ from resource_management.libraries.functions.default import default
     
 # server configurations
 config = Script.get_config()
+stack_version_buildnum = default("/commandParams/version", None)
 
 nifi_install_dir = '/usr/hdf/current/nifi'
 
