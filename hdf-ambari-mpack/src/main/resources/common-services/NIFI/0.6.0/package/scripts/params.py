@@ -118,8 +118,8 @@ has_namenode = not namenode_host == None
 
 nifi_authorizer = 'file-provider'
 
-nifi_host_name_in_cluster = config['hostname']
-nifi_host_port = config['configurations']['gateway-site']['gateway.port']
+nifi_host_name = config['hostname']
+nifi_host_port = config['configurations']['nifi-ambari-config']['nifi.node.port']
 java_home = config['hostLevelParams']['java_home']
 security_enabled = config['configurations']['cluster-env']['security_enabled']
 smokeuser = config['configurations']['cluster-env']['smokeuser']
@@ -258,7 +258,7 @@ if has_ranger_admin:
   if xa_audit_db_flavor == 'sqla':
     xa_audit_db_is_enabled = False
 
-  nifi_authorizer = 'file-provider'
+  nifi_authorizer = 'ranger-provider'
 
 hdfs_user = config['configurations']['hadoop-env']['hdfs_user'] if has_namenode else None
 hdfs_user_keytab = config['configurations']['hadoop-env']['hdfs_user_keytab'] if has_namenode else None
