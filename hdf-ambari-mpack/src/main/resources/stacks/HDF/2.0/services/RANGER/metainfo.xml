@@ -25,6 +25,12 @@
       <name>RANGER</name>
       <extends>common-services/RANGER/0.6.0</extends>
       <version>0.6.0.2.0</version>
+      <themes>
+        <theme>
+          <fileName>theme_version_4.json</fileName>
+          <default>true</default>
+        </theme>
+      </themes>
     </service>
   </services>
 </metainfo>

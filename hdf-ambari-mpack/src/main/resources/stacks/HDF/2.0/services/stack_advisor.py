@@ -83,6 +83,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
   def getServiceConfigurationRecommenderDict(self):
     return {
       "KAFKA": self.recommendKAFKAConfigurations,
+      "NIFI":  self.recommendNIFIConfigurations,
       "STORM": self.recommendStormConfigurations,
       "AMBARI_METRICS": self.recommendAmsConfigurations,
       "RANGER": self.recommendRangerConfigurations
@@ -206,7 +207,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     elif not security_enabled:
       putKafkaBrokerAttributes('authorizer.class.name', 'delete', 'true')
 
-
   def getDBConnectionHostPort(self, db_type, db_host):
     connection_string = ""
     if db_type is None or db_type == "":
@@ -222,6 +222,15 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         connection_string = db_host
 
     return connection_string
+
+  def recommendNIFIConfigurations(self, configurations, clusterData, services, hosts):
+    nifi = getServicesSiteProperties(services, "nifi")
+
+    if "ranger-env" in services["configurations"] and "ranger-nifi-plugin-properties" in services["configurations"] and \
+                    "ranger-nifi-plugin-enabled" in services["configurations"]["ranger-env"]["properties"]:
+      putNiFiRangerPluginProperty = self.putProperty(configurations, "ranger-nifi-plugin-properties", services)
+      rangerEnvNiFiPluginProperty = services["configurations"]["ranger-env"]["properties"]["ranger-nifi-plugin-enabled"]
+      putNiFiRangerPluginProperty("ranger-nifi-plugin-enabled", rangerEnvNiFiPluginProperty)
 
   def recommendRangerConfigurations(self, configurations, clusterData, services, hosts):
 
@@ -912,7 +921,8 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
               "ams-hbase-env": self.validateAmsHbaseEnvConfigurations,
               "ams-site": self.validateAmsSiteConfigurations},
       "RANGER": {"ranger-env": self.validateRangerConfigurationsEnv,
-                 "ranger-tagsync-site": self.validateRangerTagsyncConfigurations}
+                 "ranger-tagsync-site": self.validateRangerTagsyncConfigurations},
+      "NIFI": {"ranger-nifi-plugin-properties": self.validateNiFiRangerPluginConfigurations}
     }
 
   def validateMinMax(self, items, recommendedDefaults, configurations):
@@ -1295,6 +1305,20 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
 
     return self.toConfigurationValidationProblems(validationItems, "kafka-broker")
 
+  def validateNiFiRangerPluginConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+    validationItems = []
+    ranger_plugin_properties = getSiteProperties(configurations, "ranger-nifi-plugin-properties")
+    ranger_plugin_enabled = ranger_plugin_properties['ranger-nifi-plugin-enabled'] if ranger_plugin_properties else 'No'
+
+    if ranger_plugin_enabled.lower() == 'yes':
+      ranger_env = getServicesSiteProperties(services, 'ranger-env')
+      if not ranger_env or not 'ranger-nifi-plugin-enabled' in ranger_env or \
+                      ranger_env['ranger-nifi-plugin-enabled'].lower() != 'yes':
+        validationItems.append({"config-name": 'ranger-nifi-plugin-enabled',
+                                "item": self.getWarnItem(
+                                  "ranger-nifi-plugin-properties/ranger-nifi-plugin-enabled must correspond ranger-env/ranger-nifi-plugin-enabled")})
+
+    return self.toConfigurationValidationProblems(validationItems, "ranger-nifi-plugin-properties")
 
   def validateServiceConfigurations(self, serviceName):
     return self.getServiceConfigurationValidators().get(serviceName, None)

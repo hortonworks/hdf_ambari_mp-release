@@ -158,6 +158,8 @@ repo_name = str(config['clusterName']) + '_nifi'
 
 common_name_for_certificate = config['configurations']['ranger-nifi-plugin-properties']['common.name.for.certificate']
 repo_config_username = config['configurations']['ranger-nifi-plugin-properties']['REPOSITORY_CONFIG_USERNAME']
+nifi_authentication = config['configurations']['ranger-nifi-plugin-properties']['nifi.authentication']
+
 
 ranger_env = config['configurations']['ranger-env']
 ranger_plugin_properties = config['configurations']['ranger-nifi-plugin-properties']
@@ -212,12 +214,17 @@ if has_ranger_admin:
   previous_jdbc_jar = format("{stack_root}/current/nifi/ext/{previous_jdbc_jar_name}") if stack_supports_ranger_audit_db else None
   sql_connector_jar = ''
 
-  nifi_ranger_plugin_config = {
-    'username': repo_config_username,
-    'password': repo_config_password,
-    'nifi.url': format("https://{nifi_host_name}:{nifi_host_port}/gateway/admin/api/v1/topologies"),
-    'commonNameForCertificate': common_name_for_certificate
-  }
+  #need SSL option populated with parameters
+  if nifi_authentication == 'SSL':
+    nifi_ranger_plugin_config = {
+      'nifi.authentication': nifi_authentication,
+      'nifi.url': format("https://{nifi_host_name}:{nifi_host_port}/nifi-api/resources")
+    }
+  else:
+    nifi_ranger_plugin_config = {
+      'nifi.authentication': nifi_authentication,
+      'nifi.url': format("https://{nifi_host_name}:{nifi_host_port}/nifi-api/resources")
+    }
 
   nifi_ranger_plugin_repo = {
     'isActive': 'true',
@@ -225,7 +232,7 @@ if has_ranger_admin:
     'description': 'nifi repo',
     'name': repo_name,
     'repositoryType': 'nifi',
-    'assetType': '5',
+    'assetType': '5'
   }
 
   if stack_supports_ranger_kerberos and security_enabled:
