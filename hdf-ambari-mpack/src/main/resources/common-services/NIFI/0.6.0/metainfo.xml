@@ -42,6 +42,17 @@
       
       	    <configuration-dependencies>
                 <config-type>nifi-ambari-config</config-type>
+                <config-type>nifi-authorizers</config-type>
+                <config-type>nifi-bootstrap-env</config-type>
+                <config-type>nifi-env</config-type>
+                <config-type>nifi-flow-env</config-type>
+                <config-type>nifi-node-logback-env</config-type>
+                <config-type>nifi-node-properties-env</config-type>
+                <config-type>nifi-state-management-env</config-type>
+                <config-type>ranger-nifi-audit</config-type>
+                <config-type>ranger-nifi-plugin-properties</config-type>
+                <config-type>ranger-nifi-policymgr-ssl</config-type>
+                <config-type>ranger-nifi-security</config-type>
             </configuration-dependencies>
             <restartRequiredAfterChange>true</restartRequiredAfterChange>
             <widgetsFileName>widgets.json</widgetsFileName>

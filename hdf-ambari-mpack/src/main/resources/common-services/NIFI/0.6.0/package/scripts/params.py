@@ -214,11 +214,24 @@ if has_ranger_admin:
   previous_jdbc_jar = format("{stack_root}/current/nifi/ext/{previous_jdbc_jar_name}") if stack_supports_ranger_audit_db else None
   sql_connector_jar = ''
 
+  ssl_keystore_password = unicode(config['configurations']['ranger-nifi-policymgr-ssl']['xasecure.policymgr.clientssl.keystore.password']) if xml_configurations_supported else None
+  ssl_truststore_password = unicode(config['configurations']['ranger-nifi-policymgr-ssl']['xasecure.policymgr.clientssl.truststore.password']) if xml_configurations_supported else None
+  credential_file = format('/etc/ranger/{repo_name}/cred.jceks') if xml_configurations_supported else None
+  credential_file_type = 'jceks'
+  ranger_admin_username = config['configurations']['ranger-env']['ranger_admin_username']
+  ranger_admin_password = config['configurations']['ranger-env']['ranger_admin_password']
+
   #need SSL option populated with parameters
   if nifi_authentication == 'SSL':
     nifi_ranger_plugin_config = {
       'nifi.authentication': nifi_authentication,
-      'nifi.url': format("https://{nifi_host_name}:{nifi_host_port}/nifi-api/resources")
+      'nifi.url': format("https://{nifi_host_name}:{nifi_host_port}/nifi-api/resources"),
+      'nifi.ssl.keystore': credential_file,
+      'nifi.ssl.keystoreType':credential_file_type,
+      'nifi.ssl.keystorePassword': ssl_keystore_password,
+      'nifi.ssl.truststore': credential_file,
+      'nifi.ssl.truststoreType':credential_file_type,
+      'nifi.ssl.trsutstorePassword': ssl_truststore_password
     }
   else:
     nifi_ranger_plugin_config = {
@@ -257,11 +270,7 @@ if has_ranger_admin:
     xa_audit_db_is_enabled = config['configurations']['ranger-nifi-audit']['xasecure.audit.destination.db']
 
   xa_audit_hdfs_is_enabled = config['configurations']['ranger-nifi-audit']['xasecure.audit.destination.hdfs'] if xml_configurations_supported else None
-  ssl_keystore_password = unicode(config['configurations']['ranger-nifi-policymgr-ssl']['xasecure.policymgr.clientssl.keystore.password']) if xml_configurations_supported else None
-  ssl_truststore_password = unicode(config['configurations']['ranger-nifi-policymgr-ssl']['xasecure.policymgr.clientssl.truststore.password']) if xml_configurations_supported else None
-  credential_file = format('/etc/ranger/{repo_name}/cred.jceks') if xml_configurations_supported else None
-  ranger_admin_username = config['configurations']['ranger-env']['ranger_admin_username']
-  ranger_admin_password = config['configurations']['ranger-env']['ranger_admin_password']
+
 
   #For SQLA explicitly disable audit to DB for Ranger
   if xa_audit_db_flavor == 'sqla':
