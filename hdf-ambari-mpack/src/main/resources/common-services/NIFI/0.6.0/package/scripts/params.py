@@ -260,6 +260,8 @@ if has_ranger_admin:
   ssl_keystore_password = unicode(config['configurations']['ranger-nifi-policymgr-ssl']['xasecure.policymgr.clientssl.keystore.password']) if xml_configurations_supported else None
   ssl_truststore_password = unicode(config['configurations']['ranger-nifi-policymgr-ssl']['xasecure.policymgr.clientssl.truststore.password']) if xml_configurations_supported else None
   credential_file = format('/etc/ranger/{repo_name}/cred.jceks') if xml_configurations_supported else None
+  ranger_admin_username = config['configurations']['ranger-env']['ranger_admin_username']
+  ranger_admin_password = config['configurations']['ranger-env']['ranger_admin_password']
 
   #For SQLA explicitly disable audit to DB for Ranger
   if xa_audit_db_flavor == 'sqla':

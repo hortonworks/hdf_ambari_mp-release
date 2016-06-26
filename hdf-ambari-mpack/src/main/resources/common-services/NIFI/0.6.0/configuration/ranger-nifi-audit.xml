@@ -88,17 +88,42 @@
     <!-- Solr audit provider configuration -->
     <property>
         <name>xasecure.audit.destination.solr</name>
-        <value>true</value>
+        <value>false</value>
+        <display-name>Audit to SOLR</display-name>
+        <description>Is Solr audit enabled?</description>
+        <value-attributes>
+            <type>boolean</type>
+        </value-attributes>
+        <depends-on>
+            <property>
+                <type>ranger-env</type>
+                <name>xasecure.audit.destination.solr</name>
+            </property>
+        </depends-on>
+        <on-ambari-upgrade add="true"/>
     </property>
 
     <property>
         <name>xasecure.audit.destination.solr.batch.filespool.dir</name>
         <value>/tmp/audit/solr/spool</value>
+        <description>/tmp/audit/solr/spool</description>
+        <on-ambari-upgrade add="true"/>
     </property>
 
     <property>
         <name>xasecure.audit.destination.solr.urls</name>
-        <value>http://localhost:6083/solr/ranger_audits</value>
+        <value/>
+        <description>Solr URL</description>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <depends-on>
+            <property>
+                <type>ranger-admin-site</type>
+                <name>ranger.audit.solr.urls</name>
+            </property>
+        </depends-on>
+        <on-ambari-upgrade add="true"/>
     </property>
 
 </configuration>

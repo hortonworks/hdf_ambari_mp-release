@@ -82,14 +82,14 @@
     </property>
     <property>
         <name>REPOSITORY_CONFIG_USERNAME</name>
-        <value>nifitestuser@EXAMPLE.COM</value>
+        <value>{{ranger_admin_username}}</value>
         <display-name>Ranger repository config user</display-name>
         <description>Used for repository creation on ranger admin</description>
         <on-ambari-upgrade add="true"/>
     </property>
     <property>
         <name>REPOSITORY_CONFIG_PASSWORD</name>
-        <value>nifitestuser</value>
+        <value>{{ranger_admin_password}}</value>
         <display-name>Ranger repository config password</display-name>
         <property-type>PASSWORD</property-type>
         <description>Used for repository creation on ranger admin</description>
