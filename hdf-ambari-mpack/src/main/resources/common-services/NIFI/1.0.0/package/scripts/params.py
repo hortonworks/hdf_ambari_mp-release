@@ -5,7 +5,7 @@ import sys, os, glob
 from resource_management.libraries.functions.default import default
 
 
-    
+
 # server configurations
 config = Script.get_config()
 stack_version_buildnum = default("/commandParams/version", None)
@@ -22,20 +22,26 @@ nifi_node_protocol_port = config['configurations']['nifi-ambari-config']['nifi.n
 
 nifi_znode = config['configurations']['nifi-ambari-config']['nifi.nifi_znode']
 nifi_authorizer = config['configurations']['nifi-ambari-config']['nifi.nifi_authorizer']
-  
+nifi_flow_config_dir = config['configurations']['nifi-ambari-config']['nifi.flow.config.dir']
+
+nifi_database_dir=config['configurations']['nifi-ambari-config']['nifi.database.dir']
+nifi_flowfile_repo_dir=config['configurations']['nifi-ambari-config']['nifi.flowfile.repository.dir']
+nifi_content_repo_dir_default=config['configurations']['nifi-ambari-config']['nifi.content.repository.dir.default']
+nifi_provenance_repo_dir_default=config['configurations']['nifi-ambari-config']['nifi.provenance.repository.dir.default']
+
 master_configs = config['clusterHostInfo']
 
 nifi_num_nodes = len(master_configs['nifi_master_hosts'])
 if nifi_num_nodes > 1:
   nifi_is_node='true'
 else:
-  nifi_is_node='false'  
+  nifi_is_node='false'
 nifi_node_hosts = ",".join(master_configs['nifi_master_hosts'])
 
 
 
 nifi_node_dir=nifi_install_dir
- 
+
 conf_dir = os.path.join(*[nifi_node_dir,'conf'])
 bin_dir = os.path.join(*[nifi_node_dir,'bin'])
 work_dir = os.path.join(*[nifi_node_dir,'work'])
@@ -58,12 +64,18 @@ nifi_node_logback_content = config['configurations']['nifi-node-logback-env']['c
 # params from nifi-properties-env
 nifi_master_properties_content = config['configurations']['nifi-master-properties-env']['content']
 nifi_node_properties_content = config['configurations']['nifi-node-properties-env']['content']
-  
+
 # params from nifi-flow
 nifi_flow_content = config['configurations']['nifi-flow-env']['content']
 
 # params from nifi-state-management-env
 nifi_state_management_content = config['configurations']['nifi-state-management-env']['content']
+
+# params from nifi-authorizers-env
+nifi_authorizers_content = config['configurations']['nifi-authorizers-env']['content']
+
+# params from nifi-login-identity-providers-env
+nifi_login_identity_providers_content = config['configurations']['nifi-login-identity-providers-env']['content']
 
 # params from nifi-boostrap
 nifi_boostrap_content = config['configurations']['nifi-bootstrap-env']['content']
@@ -84,11 +96,10 @@ else:
 #detect zookeeper_quorum
 zookeeper_port=default('/configurations/zoo.cfg/clientPort', None)
 #get comma separated list of zookeeper hosts from clusterHostInfo
-index = 0 
+index = 0
 zookeeper_quorum=""
 for host in config['clusterHostInfo']['zookeeper_hosts']:
   zookeeper_quorum += host + ":"+str(zookeeper_port)
   index += 1
   if index < len(config['clusterHostInfo']['zookeeper_hosts']):
     zookeeper_quorum += ","
-

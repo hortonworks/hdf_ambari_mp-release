@@ -2,11 +2,11 @@
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 
 <configuration>
-  
+
   <property>
     <name>content</name>
     <description>This is the jinja template for nifi.properties file</description>
-    <value>      
+    <value>
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@
 
 # Core Properties #
 nifi.version=1.0.0.{{stack_version_buildnum}}
-nifi.flow.configuration.file=/var/lib/nifi/flow.xml.gz
+nifi.flow.configuration.file={{nifi_flow_config_dir}}/flow.xml.gz
 nifi.flow.configuration.archive.dir=/var/lib/nifi/archive
 nifi.flowcontroller.autoResumeState=true
 nifi.flowcontroller.graceful.shutdown.period=10 sec
@@ -57,12 +57,12 @@ nifi.state.management.embedded.zookeeper.properties=./conf/zookeeper.properties
 
 
 # H2 Settings
-nifi.database.directory=/var/lib/nifi/database_repository
+nifi.database.directory={{nifi_database_dir}}
 nifi.h2.url.append=;LOCK_TIMEOUT=25000;WRITE_DELAY=0;AUTO_SERVER=FALSE
 
 # FlowFile Repository
 nifi.flowfile.repository.implementation=org.apache.nifi.controller.repository.WriteAheadFlowFileRepository
-nifi.flowfile.repository.directory=/var/lib/nifi/flowfile_repository
+nifi.flowfile.repository.directory={{nifi_flowfile_repo_dir}}
 nifi.flowfile.repository.partitions=256
 nifi.flowfile.repository.checkpoint.interval=2 mins
 nifi.flowfile.repository.always.sync=false
@@ -78,7 +78,7 @@ nifi.swap.out.threads=4
 nifi.content.repository.implementation=org.apache.nifi.controller.repository.FileSystemRepository
 nifi.content.claim.max.appendable.size=10 MB
 nifi.content.claim.max.flow.files=100
-nifi.content.repository.directory.default=/var/lib/nifi/content_repository
+nifi.content.repository.directory.default={{nifi_content_repo_dir_default}}
 nifi.content.repository.archive.max.retention.period=12 hours
 nifi.content.repository.archive.max.usage.percentage=50%
 nifi.content.repository.archive.enabled=true
@@ -89,7 +89,7 @@ nifi.content.viewer.url=/nifi-content-viewer/
 nifi.provenance.repository.implementation=org.apache.nifi.provenance.PersistentProvenanceRepository
 
 # Persistent Provenance Repository Properties
-nifi.provenance.repository.directory.default=/var/lib/nifi/provenance_repository
+nifi.provenance.repository.directory.default={{nifi_provenance_repo_dir_default}}
 nifi.provenance.repository.max.storage.time=24 hours
 nifi.provenance.repository.max.storage.size=1 GB
 nifi.provenance.repository.rollover.time=30 secs
@@ -99,7 +99,7 @@ nifi.provenance.repository.index.threads=1
 nifi.provenance.repository.compress.on.rollover=true
 nifi.provenance.repository.always.sync=false
 nifi.provenance.repository.journal.count=16
-# Comma-separated list of fields. Fields that are not indexed will not be searchable. Valid fields are: 
+# Comma-separated list of fields. Fields that are not indexed will not be searchable. Valid fields are:
 # EventType, FlowFileUUID, Filename, TransitURI, ProcessorID, AlternateIdentifierURI, Relationship, Details
 nifi.provenance.repository.indexed.fields=EventType, FlowFileUUID, Filename, ProcessorID, Relationship
 # FlowFile Attributes that should be indexed and made searchable.  Some examples to consider are filename, uuid, mime.type
@@ -184,6 +184,6 @@ nifi.kerberos.authentication.expiration=12 hours
 
   </value>
     <on-ambari-upgrade add="true"/>
-  </property>  
- 
-</configuration>  
+  </property>
+
+</configuration>
