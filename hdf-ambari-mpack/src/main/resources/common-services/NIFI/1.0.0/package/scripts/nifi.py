@@ -98,7 +98,9 @@ class Master(Script):
 
     Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh stop >> ' + params.nifi_node_log_file, user=params.nifi_user)
     #Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh stop >> ' + params.nifi_node_log_file)
-    Execute ('rm ' + status_params.nifi_node_pid_file)
+    if os.path.isfile(status_params.nifi_node_pid_file):
+      Execute ('rm ' + status_params.nifi_node_pid_file)
+
 
 
   def start(self, env):
