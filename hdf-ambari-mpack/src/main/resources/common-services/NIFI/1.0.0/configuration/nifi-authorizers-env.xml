@@ -7,36 +7,43 @@
     <name>content</name>
     <description>This is the jinja template for authorizers.xml</description>
     <value>
-
-      &lt;!--
+        &lt;!--
         Licensed to the Apache Software Foundation (ASF) under one or more
         contributor license agreements.  See the NOTICE file distributed with
         this work for additional information regarding copyright ownership.
         The ASF licenses this file to You under the Apache License, Version 2.0
-        (the "License"); you may not use this file except in compliance with
+        (the &quot;License&quot;); you may not use this file except in compliance with
         the License.  You may obtain a copy of the License at
-            http://www.apache.org/licenses/LICENSE-2.0
+        http://www.apache.org/licenses/LICENSE-2.0
         Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
+        distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
         WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
         See the License for the specific language governing permissions and
         limitations under the License.
-      --&gt;
-      &lt;!--
-          This file lists the authority providers to use when running securely. In order
-          to use a specific provider it must be configured here and it's identifier
-          must be specified in the nifi.properties file.
-      --&gt;
-      &lt;authorizers&gt;
-          &lt;authorizer&gt;
-              &lt;identifier&gt;file-provider&lt;/identifier&gt;
-              &lt;class&gt;org.apache.nifi.authorization.FileAuthorizer&lt;/class&gt;
-              &lt;property name="Authorizations File"&gt;/var/lib/nifi/conf/authorizations.xml&lt;/property&gt;
-              &lt;property name="Initial Admin Identity"&gt;&lt;/property&gt;
-              &lt;property name="Legacy Authorized Users File"&gt;&lt;/property&gt;
-          &lt;/authorizer&gt;
-      &lt;/authorizers&gt;
-
+        --&gt;
+        &lt;!--
+        This file lists the authority providers to use when running securely. In order
+        to use a specific provider it must be configured here and it&apos;s identifier
+        must be specified in the nifi.properties file.
+        --&gt;
+        &lt;authorizers&gt;
+        &lt;authorizer&gt;
+        &lt;identifier&gt;{{nifi_authorizer}}&lt;/identifier&gt;
+        {% if has_ranger_admin and enable_ranger_nifi %}
+        &lt;class&gt;org.apache.nifi.ranger.authorization.RangerNiFiAuthorizer&lt;/class&gt;
+        &lt;property name=&quot;Ranger Audit Config Path&quot;&gt;{{conf_dir}}/ranger-nifi-audit.xml&lt;/property&gt;
+        &lt;property name=&quot;Ranger Security Config Path&quot;&gt;{{conf_dir}}/ranger-nifi-security.xml&lt;/property&gt;
+        &lt;property name=&quot;Ranger Service Type&quot;&gt;nifi&lt;/property&gt;
+        &lt;property name=&quot;Ranger Application Id&quot;&gt;nifi&lt;/property&gt;
+        &lt;property name=&quot;Allow Anonymous&quot;&gt;true&lt;/property&gt;
+        &lt;property name=&quot;Identity Transform 1&quot;&gt;s/[,]/_/g&lt;/property&gt;
+        {% else %}
+        &lt;class&gt;org.apache.nifi.authorization.FileAuthorizer&lt;/class&gt;
+        &lt;property name=&quot;Authorizations File&quot;&gt;{{conf_dir}}/authorizations.xml&lt;/property&gt;
+        &lt;property name=&quot;Initial Admin Identity&quot;&gt;&lt;/property&gt;
+        {% endif %}
+        &lt;/authorizer&gt;
+        &lt;/authorizers&gt;
     </value>
     <on-ambari-upgrade add="true"/>
   </property>

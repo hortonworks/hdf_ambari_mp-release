@@ -80,7 +80,7 @@ class Master(Script):
     File(format("{params.conf_dir}/state-management.xml"), content=statemgmt_content, owner=params.nifi_user, group=params.nifi_group)
 
     #write out authorizers file
-    authorizers_content=InlineTemplate(params.nifi_authorizer_content)
+    authorizers_content=InlineTemplate(params.nifi_authorizers_content)
     File(format("{params.conf_dir}/authorizers.xml"), content=authorizers_content, owner=params.nifi_user, group=params.nifi_group)
 
     #write out login-identity-providers.xml
