@@ -6,7 +6,7 @@
             <name>NIFI</name>
             <displayName>NiFi</displayName>
             <comment>Apache NiFi is an easy to use, powerful, and reliable system to process and distribute data.</comment>
-            <version>0.6.0</version>
+            <version>1.0.0</version>
             <components>
                 <component>
                   <name>NIFI_MASTER</name>
@@ -14,6 +14,21 @@
                   <category>MASTER</category>
                   <cardinality>1+</cardinality>
                   <timelineAppid>NIFI</timelineAppid>
+                  <logs>
+                    <log>
+                      <logId>nifi-app</logId>
+                      <primary>true</primary>
+                    </log>
+                    <log>
+                      <logId>nifi_bootstrap</logId>
+                    </log>
+                    <log> 
+                      <logId>nifi_setup</logId>
+                    </log>
+                    <log> 
+                      <logId>nifi_user</logId>
+                    </log>
+                  </logs>
                   <commandScript>
                     <script>scripts/nifi.py</script>
                     <scriptType>PYTHON</scriptType>

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
- 
+
 <configuration>
 
 
@@ -15,7 +15,7 @@
     <value>9088</value>
     <description>Port NiFi cluster manager protocol runs on</description>
   </property> -->
-  
+
   <property>
     <name>nifi.node.port</name>
     <value>9090</value>
@@ -37,14 +37,14 @@
     <description>Initial memory allocation for NiFi JVM (Xms)</description>
     <on-ambari-upgrade add="true"/>
   </property>
-  
+
   <property>
     <name>nifi.max_mem</name>
     <value>512m</value>
     <description>Max memory allocation for Nifi JVM (Xmx)</description>
     <on-ambari-upgrade add="true"/>
   </property>
-    
+
 
   <property>
     <name>nifi.ambari_reporting_frequency</name>
@@ -52,7 +52,7 @@
     <description>Frequency with which Nifi metrics will be reported to Ambari Metrics. Only used during initial install of service. Post-install this can be reconfigured from Nifi UI under Controller Settings</description>
     <on-ambari-upgrade add="true"/>
   </property>
-  
+
   <property>
     <name>nifi.nifi_znode</name>
     <value>/nifi</value>
@@ -61,4 +61,39 @@
   </property>
 
 
-</configuration>  
+  <property>
+    <name>nifi.flow.config.dir</name>
+    <value>/var/lib/nifi/conf</value>
+    <description>The directory to store the flow.xml.gz file. This directory must be writable by the nifi user</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.database.dir</name>
+    <value>/var/lib/nifi/database_repository</value>
+    <description>The directory for the database repository. This directory must be writable by the nifi user</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.flowfile.repository.dir</name>
+    <value>/var/lib/nifi/flowfile_repository</value>
+    <description>The directory for the flowfile repository. This directory must be writable by the nifi user</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.content.repository.dir.default</name>
+    <value>/var/lib/nifi/content_repository</value>
+    <description>The default directory for the content repository. This directory must be writable by the nifi user</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.provenance.repository.dir.default</name>
+    <value>/var/lib/nifi/provenance_repository</value>
+    <description>The default directory for the provenance repository. This directory must be writable by the nifi user</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+</configuration>
