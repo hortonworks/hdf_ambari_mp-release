@@ -57,7 +57,7 @@
       
       	    <configuration-dependencies>
                 <config-type>nifi-ambari-config</config-type>
-                <config-type>nifi-authorizers</config-type>
+                <config-type>nifi-authorizers-env</config-type>
                 <config-type>nifi-bootstrap-env</config-type>
                 <config-type>nifi-env</config-type>
                 <config-type>nifi-flow-env</config-type>

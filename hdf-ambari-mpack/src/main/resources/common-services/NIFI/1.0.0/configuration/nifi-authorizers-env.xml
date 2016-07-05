@@ -36,7 +36,6 @@
         &lt;property name=&quot;Ranger Service Type&quot;&gt;nifi&lt;/property&gt;
         &lt;property name=&quot;Ranger Application Id&quot;&gt;nifi&lt;/property&gt;
         &lt;property name=&quot;Allow Anonymous&quot;&gt;true&lt;/property&gt;
-        &lt;property name=&quot;Identity Transform 1&quot;&gt;s/[,]/_/g&lt;/property&gt;
         {% else %}
         &lt;class&gt;org.apache.nifi.authorization.FileAuthorizer&lt;/class&gt;
         &lt;property name=&quot;Authorizations File&quot;&gt;{{conf_dir}}/authorizations.xml&lt;/property&gt;
