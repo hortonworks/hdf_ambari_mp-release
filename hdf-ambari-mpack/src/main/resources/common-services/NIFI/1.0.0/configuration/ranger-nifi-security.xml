@@ -12,7 +12,7 @@
 
     <property>
         <name>ranger.plugin.nifi.service.name</name>
-        <value>nifi</value>
+        <value>{{repo_name}}</value>
         <description>
             Name of the Ranger service containing policies for this nifi instance
         </description>
