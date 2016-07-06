@@ -279,7 +279,7 @@ if has_ranger_admin:
   if xml_configurations_supported and stack_supports_ranger_audit_db:
     xa_audit_db_is_enabled = config['configurations']['ranger-nifi-audit']['xasecure.audit.destination.db']
 
-  xa_audit_hdfs_is_enabled = config['configurations']['ranger-nifi-audit']['xasecure.audit.destination.hdfs'] if xml_configurations_supported else None
+  xa_audit_hdfs_is_enabled =  default('/configurations/ranger-nifi-audit/xasecure.audit.destination.hdfs', False)
 
 
   #For SQLA explicitly disable audit to DB for Ranger
