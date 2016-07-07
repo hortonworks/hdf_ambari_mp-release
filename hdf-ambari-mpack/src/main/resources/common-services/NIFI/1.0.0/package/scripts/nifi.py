@@ -90,8 +90,8 @@ class Master(Script):
 
     #write out nifi-env in bin
     env_content=InlineTemplate(params.nifi_env_content)
-    File(format("{params.bin_dir}/nifi-env.sh"), content=env_content, owner=params.nifi_user, group=params.nifi_group) 
-    #File(format("{params.bin_dir}/nifi-env.sh"), content=env_content) 
+    File(format("{params.bin_dir}/nifi-env.sh"), content=env_content, owner=params.nifi_user, group=params.nifi_group, mode=0755) 
+
 
 
   def stop(self, env):
