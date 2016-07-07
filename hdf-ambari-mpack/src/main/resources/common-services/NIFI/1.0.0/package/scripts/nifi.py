@@ -58,14 +58,15 @@ class Master(Script):
         os.makedirs(format("{params.nifi_flow_config_dir}"))
     Execute('chown ' + params.nifi_user + ':' + params.nifi_group + ' ' + format("{params.nifi_flow_config_dir}"))
 
-    #write out flow.tar only if AMS installed and during first setup
-    #it is used to automate setup of Ambari metrics reporting task in Nifi
+    # write out flow.xml.gz only if AMS installed
+    # during first setup it is used to automate setup of Ambari metrics reporting task in Nifi
     if isInstall and params.metrics_collector_host:
-      Execute('echo "First time setup so generating flow.tar" >> ' + params.nifi_node_log_file)
+      Execute('echo "First time setup so generating flow.xml.gz" >> ' + params.nifi_node_log_file)
       flow_content=InlineTemplate(params.nifi_flow_content)
       File(format("{params.nifi_flow_config_dir}/flow.xml"), content=flow_content, owner=params.nifi_user, group=params.nifi_group)
-      Execute(format("cd {params.nifi_flow_config_dir}; mv flow.tar flow_$(date +%d-%m-%Y).tar ;"), user=params.nifi_user, ignore_failures=True)
-      Execute(format("cd {params.nifi_flow_config_dir}; tar -cvf flow.tar flow.xml;"), user=params.nifi_user)
+      Execute(format("cd {params.nifi_flow_config_dir}; mv flow.xml.gz flow_$(date +%d-%m-%Y).xml.gz ;"),user=params.nifi_user,ignore_failures=True)
+      Execute(format("cd {params.nifi_flow_config_dir}; gzip flow.xml;"), user=params.nifi_user)
+
 
     #write out boostrap.conf
     bootstrap_content=InlineTemplate(params.nifi_boostrap_content)
