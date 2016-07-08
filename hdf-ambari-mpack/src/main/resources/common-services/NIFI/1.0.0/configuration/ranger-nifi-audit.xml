@@ -59,4 +59,17 @@
         <on-ambari-upgrade add="true"/>
     </property>
 
+    <property>
+        <name>xasecure.audit.destination.solr.zookeepers</name>
+        <value>NONE</value>
+        <description>Solr Zookeeper string</description>
+        <depends-on>
+            <property>
+                <type>ranger-admin-site</type>
+                <name>ranger.audit.solr.zookeepers</name>
+            </property>
+        </depends-on>
+        <on-ambari-upgrade add="true"/>
+    </property>
+
 </configuration>
