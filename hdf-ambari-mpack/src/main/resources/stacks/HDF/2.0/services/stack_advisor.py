@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import math
 import re
 import os
 import sys
@@ -86,7 +86,8 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
       "NIFI":  self.recommendNIFIConfigurations,
       "STORM": self.recommendStormConfigurations,
       "AMBARI_METRICS": self.recommendAmsConfigurations,
-      "RANGER": self.recommendRangerConfigurations
+      "RANGER": self.recommendRangerConfigurations,
+      "LOGSEARCH" : self.recommendLogsearchConfigurations
     }
 
   def putProperty(self, config, configType, services=None):
@@ -207,6 +208,16 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     elif not security_enabled:
       putKafkaBrokerAttributes('authorizer.class.name', 'delete', 'true')
 
+  def getOracleDBConnectionHostPort(self, db_type, db_host, rangerDbName):
+    connection_string = self.getDBConnectionHostPort(db_type, db_host)
+    colon_count = db_host.count(':')
+    if colon_count == 1 and '/' in db_host:
+      connection_string = "//" + connection_string
+    elif colon_count == 0 or colon_count == 1:
+      connection_string = "//" + connection_string + "/" + rangerDbName if rangerDbName else "//" + connection_string
+
+    return connection_string
+
   def getDBConnectionHostPort(self, db_type, db_host):
     connection_string = ""
     if db_type is None or db_type == "":
@@ -219,6 +230,8 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         else:
           connection_string = db_host
       elif colon_count == 1:
+        connection_string = db_host
+      elif colon_count == 2:
         connection_string = db_host
 
     return connection_string
@@ -296,7 +309,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         'MYSQL': {'ranger.jpa.jdbc.driver': 'com.mysql.jdbc.Driver',
                   'ranger.jpa.jdbc.url': 'jdbc:mysql://' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + '/' + rangerDbName},
         'ORACLE': {'ranger.jpa.jdbc.driver': 'oracle.jdbc.driver.OracleDriver',
-                   'ranger.jpa.jdbc.url': 'jdbc:oracle:thin:@//' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + '/' + rangerDbName},
+                   'ranger.jpa.jdbc.url': 'jdbc:oracle:thin:@//' + self.getOracleDBConnectionHostPort(rangerDbFlavor, rangerDbHost, rangerDbName)},
         'POSTGRES': {'ranger.jpa.jdbc.driver': 'org.postgresql.Driver',
                      'ranger.jpa.jdbc.url': 'jdbc:postgresql://' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + '/' + rangerDbName},
         'MSSQL': {'ranger.jpa.jdbc.driver': 'com.microsoft.sqlserver.jdbc.SQLServerDriver',
@@ -315,7 +328,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         rangerDbHost =   services['configurations']["admin-properties"]["properties"]["db_host"]
         ranger_db_privelege_url_dict = {
           'MYSQL': {'ranger_privelege_user_jdbc_url': 'jdbc:mysql://' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost)},
-          'ORACLE': {'ranger_privelege_user_jdbc_url': 'jdbc:oracle:thin:@//' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost)},
+          'ORACLE': {'ranger_privelege_user_jdbc_url': 'jdbc:oracle:thin:@//' + self.getOracleDBConnectionHostPort(rangerDbFlavor, rangerDbHost, None)},
           'POSTGRES': {'ranger_privelege_user_jdbc_url': 'jdbc:postgresql://' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + '/postgres'},
           'MSSQL': {'ranger_privelege_user_jdbc_url': 'jdbc:sqlserver://' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + ';'},
           'SQLA': {'ranger_privelege_user_jdbc_url': 'jdbc:sqlanywhere:host=' + self.getDBConnectionHostPort(rangerDbFlavor, rangerDbHost) + ';'}
@@ -401,6 +414,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         component_audit_file =  ranger_services[item]['audit_file']
         if component_audit_file in services["configurations"]:
           ranger_audit_dict = [
+            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.db', 'target_configname': 'xasecure.audit.destination.db'},
             {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.solr', 'target_configname': 'xasecure.audit.destination.solr'},
             {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.urls', 'target_configname': 'xasecure.audit.destination.solr.urls'},
             {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.zookeepers', 'target_configname': 'xasecure.audit.destination.solr.zookeepers'}
@@ -414,6 +428,34 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
               else:
                 rangerAuditProperty = services["configurations"][item['filename']]["properties"][item['configname']]
               putRangerAuditProperty(item['target_configname'], rangerAuditProperty)
+
+    audit_solr_flag = 'false'
+    audit_db_flag = 'false'
+    ranger_audit_source_type = 'solr'
+    if 'ranger-env' in services['configurations'] and 'xasecure.audit.destination.solr' in services['configurations']["ranger-env"]["properties"]:
+      audit_solr_flag = services['configurations']["ranger-env"]["properties"]['xasecure.audit.destination.solr']
+    if 'ranger-env' in services['configurations'] and 'xasecure.audit.destination.db' in services['configurations']["ranger-env"]["properties"]:
+      audit_db_flag = services['configurations']["ranger-env"]["properties"]['xasecure.audit.destination.db']
+
+    if audit_db_flag == 'true' and audit_solr_flag == 'false':
+      ranger_audit_source_type = 'db'
+    putRangerAdminSiteProperty('ranger.audit.source.type',ranger_audit_source_type)
+
+    ranger_plugins_serviceuser = [
+      {'service_name': 'STORM', 'file_name': 'storm-env', 'config_name': 'storm_user', 'target_configname': 'ranger.plugins.storm.serviceuser'},
+      {'service_name': 'KAFKA', 'file_name': 'kafka-env', 'config_name': 'kafka_user', 'target_configname': 'ranger.plugins.kafka.serviceuser'},
+      {'service_name': 'NIFI', 'file_name': 'nifi-env', 'config_name': 'nifi_user', 'target_configname': 'ranger.plugins.nifi.serviceuser'}
+    ]
+
+    for item in range(len(ranger_plugins_serviceuser)):
+      if ranger_plugins_serviceuser[item]['service_name'] in servicesList:
+        file_name = ranger_plugins_serviceuser[item]['file_name']
+        config_name = ranger_plugins_serviceuser[item]['config_name']
+        target_configname = ranger_plugins_serviceuser[item]['target_configname']
+        if file_name in services["configurations"] and config_name in services["configurations"][file_name]["properties"]:
+          service_user = services["configurations"][file_name]["properties"][config_name]
+          putRangerAdminSiteProperty(target_configname, service_user)
+
 
     has_ranger_tagsync = False
     if 'RANGER' in servicesList:
@@ -921,9 +963,34 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
               "ams-hbase-env": self.validateAmsHbaseEnvConfigurations,
               "ams-site": self.validateAmsSiteConfigurations},
       "RANGER": {"ranger-env": self.validateRangerConfigurationsEnv,
+                 "admin-properties": self.validateRangerAdminConfigurations,
                  "ranger-tagsync-site": self.validateRangerTagsyncConfigurations},
       "NIFI": {"ranger-nifi-plugin-properties": self.validateNiFiRangerPluginConfigurations}
     }
+
+  def recommendLogsearchConfigurations(self, configurations, clusterData, services, hosts):
+    putLogsearchProperty = self.putProperty(configurations, "logsearch-properties", services)
+    logsearchSolrHosts = self.getComponentHostNames(services, "LOGSEARCH", "LOGSEARCH_SOLR")
+
+    if logsearchSolrHosts is not None and len(logsearchSolrHosts) > 0 \
+      and "logsearch-properties" in services["configurations"]:
+      recommendedMinShards = len(logsearchSolrHosts)
+      recommendedShards = 2 * len(logsearchSolrHosts)
+      recommendedMaxShards = 3 * len(logsearchSolrHosts)
+      # recommend number of shard
+      putLogsearchAttribute = self.putPropertyAttribute(configurations, "logsearch-properties")
+      putLogsearchAttribute('logsearch.collection.service.logs.numshards', 'minimum', recommendedMinShards)
+      putLogsearchAttribute('logsearch.collection.service.logs.numshards', 'maximum', recommendedMaxShards)
+      putLogsearchProperty("logsearch.collection.service.logs.numshards", recommendedShards)
+
+      putLogsearchAttribute('logsearch.collection.audit.logs.numshards', 'minimum', recommendedMinShards)
+      putLogsearchAttribute('logsearch.collection.audit.logs.numshards', 'maximum', recommendedMaxShards)
+      putLogsearchProperty("logsearch.collection.audit.logs.numshards", recommendedShards)
+      # recommend replication factor
+      replicationReccomendFloat = math.log(len(logsearchSolrHosts), 5)
+      recommendedReplicationFactor = int(1 + math.floor(replicationReccomendFloat))
+      putLogsearchProperty("logsearch.collection.service.logs.replication.factor", recommendedReplicationFactor)
+      putLogsearchProperty("logsearch.collection.audit.logs.replication.factor", recommendedReplicationFactor)
 
   def validateMinMax(self, items, recommendedDefaults, configurations):
 
@@ -1096,6 +1163,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     validationItems = []
     ranger_plugin_properties = getSiteProperties(configurations, "ranger-storm-plugin-properties")
     ranger_plugin_enabled = ranger_plugin_properties['ranger-storm-plugin-enabled'] if ranger_plugin_properties else 'No'
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
     if ranger_plugin_enabled.lower() == 'yes':
       # ranger-hdfs-plugin must be enabled in ranger-env
       ranger_env = getServicesSiteProperties(services, 'ranger-env')
@@ -1104,6 +1172,10 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         validationItems.append({"config-name": 'ranger-storm-plugin-enabled',
                                 "item": self.getWarnItem(
                                     "ranger-storm-plugin-properties/ranger-storm-plugin-enabled must correspond ranger-env/ranger-storm-plugin-enabled")})
+    if ("RANGER" in servicesList) and (ranger_plugin_enabled.lower() == 'Yes'.lower()) and not 'KERBEROS' in servicesList:
+      validationItems.append({"config-name": "ranger-storm-plugin-enabled",
+                              "item": self.getWarnItem(
+                                "Ranger Storm plugin should not be enabled in non-kerberos environment.")})
     return self.toConfigurationValidationProblems(validationItems, "ranger-storm-plugin-properties")
 
   def validateKafkaRangerPluginConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
@@ -1120,14 +1192,33 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
                                     "ranger-kafka-plugin-properties/ranger-kafka-plugin-enabled must correspond ranger-env/ranger-kafka-plugin-enabled")})
     return self.toConfigurationValidationProblems(validationItems, "ranger-kafka-plugin-properties")
 
-  def validateRangerConfigurationsEnv(self, properties, recommendedDefaults, configurations, services, hosts):
+  def validateRangerAdminConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+    ranger_site = properties
     validationItems = []
-    if "ranger-storm-plugin-enabled" in properties and "ranger-storm-plugin-enabled" in recommendedDefaults and \
-            properties["ranger-storm-plugin-enabled"] != recommendedDefaults["ranger-storm-plugin-enabled"]:
-      validationItems.append({"config-name": "ranger-storm-plugin-enabled",
-                              "item": self.getWarnItem(
-                                  "Ranger Storm plugin should not be enabled in non-kerberos environment.")})
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
+    if 'RANGER' in servicesList and 'policymgr_external_url' in ranger_site:
+      policymgr_mgr_url = ranger_site['policymgr_external_url']
+      if policymgr_mgr_url.endswith('/'):
+        validationItems.append({'config-name':'policymgr_external_url',
+                               'item':self.getWarnItem('Ranger External URL should not contain trailing slash "/"')})
+    return self.toConfigurationValidationProblems(validationItems,'admin-properties')
 
+  def validateRangerConfigurationsEnv(self, properties, recommendedDefaults, configurations, services, hosts):
+    ranger_env_properties = properties
+    validationItems = []
+    security_enabled = False
+
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
+    if 'KERBEROS' in servicesList:
+      security_enabled = True
+
+    if "ranger-storm-plugin-enabled" in ranger_env_properties and ranger_env_properties['ranger-storm-plugin-enabled'].lower() == 'yes' and not security_enabled:
+      validationItems.append({"config-name": "ranger-storm-plugin-enabled",
+                              "item": self.getWarnItem("Ranger Storm plugin should not be enabled in non-kerberos environment.")})
+    if "ranger-kafka-plugin-enabled" in ranger_env_properties and ranger_env_properties["ranger-kafka-plugin-enabled"].lower() == 'yes' and not security_enabled:
+      validationItems.append({"config-name": "ranger-kafka-plugin-enabled",
+                              "item": self.getWarnItem(
+                                "Ranger Kafka plugin should not be enabled in non-kerberos environment.")})
     return self.toConfigurationValidationProblems(validationItems, "ranger-env")
 
   def validateRangerTagsyncConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
@@ -1302,6 +1393,11 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
                                 "item": self.getWarnItem(
                                     "If Ranger Kafka Plugin is enabled." \
                                     "{0} needs to be set to {1}".format(prop_name,prop_val))})
+
+    if ("RANGER" in servicesList) and (ranger_plugin_enabled.lower() == 'Yes'.lower()) and not 'KERBEROS' in servicesList:
+      validationItems.append({"config-name": "ranger-kafka-plugin-enabled",
+                              "item": self.getWarnItem(
+                                "Ranger Kafka plugin should not be enabled in non-kerberos environment.")})
 
     return self.toConfigurationValidationProblems(validationItems, "kafka-broker")
 

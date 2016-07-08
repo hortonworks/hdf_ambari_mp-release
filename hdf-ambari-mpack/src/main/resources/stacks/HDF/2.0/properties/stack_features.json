@@ -166,6 +166,11 @@
       "max_version": "0.2.0.0"
     },
     {
+      "name": "falcon_extensions",
+      "description": "Falcon Extension",
+      "min_version": "2.0.0.0"
+    },
+    {
       "name": "hive_metastore_upgrade_schema",
       "description": "Hive metastore upgrade schema support (AMBARI-11176)",
       "min_version": "0.3.0.0"
@@ -219,6 +224,51 @@
     {
       "name": "ranger_usersync_password_jceks",
       "description": "Saving Ranger Usersync credentials in jceks",
+      "min_version": "2.0.0.0"
+    },
+    {
+      "name": "ranger_install_logsearch_client",
+      "description": "LogSearch Service support",
+      "min_version": "2.0.0.0"
+    },
+    {
+      "name": "hbase_home_directory",
+      "description": "Hbase home directory in HDFS needed for HBASE backup",
+      "min_version": "2.0.0.0"
+    },
+    {
+      "name": "spark_livy",
+      "description": "Livy as slave component of spark",
+      "min_version": "2.0.0.0"
+    },
+    {
+      "name": "atlas_ranger_plugin_support",
+      "description": "Atlas Ranger plugin support",
+      "min_version": "2.0.0.0"
+    },
+    {
+      "name": "atlas_upgrade_support",
+      "description": "Atlas supports express and rolling upgrades",
+      "min_version": "2.0.0.0"
+    },
+    {
+      "name": "ranger_pid_support",
+      "description": "Ranger Service support pid generation AMBARI-16756",
+      "min_version": "2.0.0.0"
+    },
+    {
+      "name": "ranger_kms_pid_support",
+      "description": "Ranger KMS Service support pid generation",
+      "min_version": "2.0.0.0"
+    },
+    {
+      "name": "ranger_admin_password_change",
+      "description": "Allow ranger admin credentials to be specified during cluster creation (AMBARI-17000)",
+      "min_version": "2.0.0.0"
+    },
+    {
+      "name": "ranger_localjceks_support",
+      "description": "Ranger Service support localjceks",
       "min_version": "2.0.0.0"
     }
   ]
