@@ -414,7 +414,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         component_audit_file =  ranger_services[item]['audit_file']
         if component_audit_file in services["configurations"]:
           ranger_audit_dict = [
-            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.db', 'target_configname': 'xasecure.audit.destination.db'},
             {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.solr', 'target_configname': 'xasecure.audit.destination.solr'},
             {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.urls', 'target_configname': 'xasecure.audit.destination.solr.urls'},
             {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.zookeepers', 'target_configname': 'xasecure.audit.destination.solr.zookeepers'}
@@ -428,18 +427,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
               else:
                 rangerAuditProperty = services["configurations"][item['filename']]["properties"][item['configname']]
               putRangerAuditProperty(item['target_configname'], rangerAuditProperty)
-
-    audit_solr_flag = 'false'
-    audit_db_flag = 'false'
-    ranger_audit_source_type = 'solr'
-    if 'ranger-env' in services['configurations'] and 'xasecure.audit.destination.solr' in services['configurations']["ranger-env"]["properties"]:
-      audit_solr_flag = services['configurations']["ranger-env"]["properties"]['xasecure.audit.destination.solr']
-    if 'ranger-env' in services['configurations'] and 'xasecure.audit.destination.db' in services['configurations']["ranger-env"]["properties"]:
-      audit_db_flag = services['configurations']["ranger-env"]["properties"]['xasecure.audit.destination.db']
-
-    if audit_db_flag == 'true' and audit_solr_flag == 'false':
-      ranger_audit_source_type = 'db'
-    putRangerAdminSiteProperty('ranger.audit.source.type',ranger_audit_source_type)
 
     ranger_plugins_serviceuser = [
       {'service_name': 'STORM', 'file_name': 'storm-env', 'config_name': 'storm_user', 'target_configname': 'ranger.plugins.storm.serviceuser'},
@@ -464,14 +451,9 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
 
     if 'ATLAS' in servicesList and has_ranger_tagsync:
       putTagsyncSiteProperty('ranger.tagsync.source.atlas', 'true')
-    else:
-      putTagsyncSiteProperty('ranger.tagsync.source.atlas', 'false')
 
     if zookeeper_host_port and has_ranger_tagsync:
-      zookeeper_host_list = zookeeper_host_port.split(',')
-      putTagsyncAppProperty('atlas.kafka.zookeeper.connect', zookeeper_host_list[0])
-    else:
-      putTagsyncAppProperty('atlas.kafka.zookeeper.connect', 'localhost:2181')
+      putTagsyncAppProperty('atlas.kafka.zookeeper.connect', zookeeper_host_port)
 
     if 'KAFKA' in servicesList and has_ranger_tagsync:
       kafka_hosts = self.getHostNamesWithComponent("KAFKA", "KAFKA_BROKER", services)
@@ -485,8 +467,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
 
       final_kafka_host = ",".join(kafka_host_port)
       putTagsyncAppProperty('atlas.kafka.bootstrap.servers', final_kafka_host)
-    else:
-      putTagsyncAppProperty('atlas.kafka.bootstrap.servers', 'localhost:6667')
 
   def getAmsMemoryRecommendation(self, services, hosts):
     # MB per sink in hbase heapsize
@@ -1165,7 +1145,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     ranger_plugin_enabled = ranger_plugin_properties['ranger-storm-plugin-enabled'] if ranger_plugin_properties else 'No'
     servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
     if ranger_plugin_enabled.lower() == 'yes':
-      # ranger-hdfs-plugin must be enabled in ranger-env
+      # ranger-storm-plugin must be enabled in ranger-env
       ranger_env = getServicesSiteProperties(services, 'ranger-env')
       if not ranger_env or not 'ranger-storm-plugin-enabled' in ranger_env or \
               ranger_env['ranger-storm-plugin-enabled'].lower() != 'yes':
@@ -1182,14 +1162,21 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     validationItems = []
     ranger_plugin_properties = getSiteProperties(configurations, "ranger-kafka-plugin-properties")
     ranger_plugin_enabled = ranger_plugin_properties['ranger-kafka-plugin-enabled'] if ranger_plugin_properties else 'No'
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
     if ranger_plugin_enabled.lower() == 'yes':
-      # ranger-hdfs-plugin must be enabled in ranger-env
+      # ranger-kafka-plugin must be enabled in ranger-env
       ranger_env = getServicesSiteProperties(services, 'ranger-env')
       if not ranger_env or not 'ranger-kafka-plugin-enabled' in ranger_env or \
               ranger_env['ranger-kafka-plugin-enabled'].lower() != 'yes':
         validationItems.append({"config-name": 'ranger-kafka-plugin-enabled',
                                 "item": self.getWarnItem(
                                     "ranger-kafka-plugin-properties/ranger-kafka-plugin-enabled must correspond ranger-env/ranger-kafka-plugin-enabled")})
+
+    if ("RANGER" in servicesList) and (ranger_plugin_enabled.lower() == 'yes') and not 'KERBEROS' in servicesList:
+      validationItems.append({"config-name": "ranger-kafka-plugin-enabled",
+                              "item": self.getWarnItem(
+                              "Ranger Kafka plugin should not be enabled in non-kerberos environment.")})
+
     return self.toConfigurationValidationProblems(validationItems, "ranger-kafka-plugin-properties")
 
   def validateRangerAdminConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
@@ -1222,7 +1209,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     return self.toConfigurationValidationProblems(validationItems, "ranger-env")
 
   def validateRangerTagsyncConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
-    ranger_tagsync_properties = getSiteProperties(configurations, "ranger-tagsync-site")
+    ranger_tagsync_properties = properties
     validationItems = []
     servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
 
@@ -1393,11 +1380,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
                                 "item": self.getWarnItem(
                                     "If Ranger Kafka Plugin is enabled." \
                                     "{0} needs to be set to {1}".format(prop_name,prop_val))})
-
-    if ("RANGER" in servicesList) and (ranger_plugin_enabled.lower() == 'Yes'.lower()) and not 'KERBEROS' in servicesList:
-      validationItems.append({"config-name": "ranger-kafka-plugin-enabled",
-                              "item": self.getWarnItem(
-                                "Ranger Kafka plugin should not be enabled in non-kerberos environment.")})
 
     return self.toConfigurationValidationProblems(validationItems, "kafka-broker")
 
