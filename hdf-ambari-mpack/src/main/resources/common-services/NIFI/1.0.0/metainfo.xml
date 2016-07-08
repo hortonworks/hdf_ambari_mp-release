@@ -69,6 +69,12 @@
                 <config-type>ranger-nifi-policymgr-ssl</config-type>
                 <config-type>ranger-nifi-security</config-type>
             </configuration-dependencies>
+            <quickLinksConfigurations>
+              <quickLinksConfiguration>
+                <fileName>quicklinks.json</fileName>
+                <default>true</default>
+              </quickLinksConfiguration>
+            </quickLinksConfigurations>            
             <restartRequiredAfterChange>true</restartRequiredAfterChange>
             <widgetsFileName>widgets.json</widgetsFileName>
             <metricsFileName>metrics.json</metricsFileName>        
