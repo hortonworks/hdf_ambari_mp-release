@@ -48,6 +48,37 @@
                 }
               ]
             }
+          },
+          {
+            "name" : "ranger_audit_settings",
+            "display-name" : "Ranger Audit",
+            "layout" : {
+              "sections" : [
+                {
+                  "subsections" : [
+                    {
+                      "name" : "subsection-ranger-solr-row1-col1",
+                      "removed" : false,
+                      "row-index" : "0",
+                      "column-span" : "1",
+                      "row-span" : "1",
+                      "column-index" : "0"
+                    }
+                  ],
+                  "name" : "section-ranger-audit-solr",
+                  "removed" : false,
+                  "display-name" : "Audit to Solr",
+                  "row-index" : "0",
+                  "section-rows" : "1",
+                  "column-span" : "1",
+                  "section-columns" : "1",
+                  "column-index" : "0",
+                  "row-span" : "1"
+                }
+              ],
+              "tab-rows" : "2",
+              "tab-columns" : "2"
+            }
           }
         ]
       }
@@ -114,6 +145,128 @@
               }
             }
           ]
+        },
+        {
+          "config" : "ranger-env/xasecure.audit.destination.solr",
+          "removed" : false,
+          "subsection-name" : "subsection-ranger-solr-row1-col1"
+        },
+        {
+          "config" : "ranger-env/is_solrCloud_enabled",
+          "removed" : false,
+          "subsection-name" : "subsection-ranger-solr-row1-col1",
+          "depends-on" : [
+            {
+              "configs" : [
+                "ranger-env/xasecure.audit.destination.solr"
+              ],
+              "then" : {
+                "property_value_attributes" : {
+                  "visible" : true
+                }
+              },
+              "if" : "${ranger-env/xasecure.audit.destination.solr}",
+              "else" : {
+                "property_value_attributes" : {
+                  "visible" : false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "config" : "ranger-admin-site/ranger.audit.solr.urls",
+          "removed" : false,
+          "subsection-name" : "subsection-ranger-solr-row1-col1",
+          "depends-on" : [
+            {
+              "configs" : [
+                "ranger-env/is_solrCloud_enabled",
+                "ranger-env/xasecure.audit.destination.solr"
+              ],
+              "then" : {
+                "property_value_attributes" : {
+                  "visible" : true
+                }
+              },
+              "if" : "${ranger-env/is_solrCloud_enabled} === false && ${ranger-env/xasecure.audit.destination.solr}",
+              "else" : {
+                "property_value_attributes" : {
+                  "visible" : false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "config" : "ranger-admin-site/ranger.audit.solr.zookeepers",
+          "removed" : false,
+          "subsection-name" : "subsection-ranger-solr-row1-col1",
+          "depends-on" : [
+            {
+              "configs" : [
+                "ranger-env/is_solrCloud_enabled",
+                "ranger-env/xasecure.audit.destination.solr"
+              ],
+              "then" : {
+                "property_value_attributes" : {
+                  "visible" : true
+                }
+              },
+              "if" : "${ranger-env/is_solrCloud_enabled} && ${ranger-env/xasecure.audit.destination.solr}",
+              "else" : {
+                "property_value_attributes" : {
+                  "visible" : false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "config" : "ranger-admin-site/ranger.audit.solr.username",
+          "removed" : false,
+          "subsection-name" : "subsection-ranger-solr-row1-col1",
+          "depends-on" : [
+            {
+              "configs" : [
+                "ranger-env/xasecure.audit.destination.solr"
+              ],
+              "then" : {
+                "property_value_attributes" : {
+                  "visible" : true
+                }
+              },
+              "if" : "${ranger-env/xasecure.audit.destination.solr}",
+              "else" : {
+                "property_value_attributes" : {
+                  "visible" : false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "config" : "ranger-admin-site/ranger.audit.solr.password",
+          "removed" : false,
+          "subsection-name" : "subsection-ranger-solr-row1-col1",
+          "depends-on" : [
+            {
+              "configs" : [
+                "ranger-env/xasecure.audit.destination.solr"
+              ],
+              "then" : {
+                "property_value_attributes" : {
+                  "visible" : true
+                }
+              },
+              "if" : "${ranger-env/xasecure.audit.destination.solr}",
+              "else" : {
+                "property_value_attributes" : {
+                  "visible" : false
+                }
+              }
+            }
+          ]
         }
       ]
     },
@@ -134,6 +287,42 @@
         "config": "ranger-env/ranger-storm-plugin-enabled",
         "widget": {
           "type": "toggle"
+        }
+      },
+      {
+        "config" : "ranger-env/xasecure.audit.destination.solr",
+        "widget" : {
+          "type" : "toggle"
+        }
+      },
+      {
+        "config" : "ranger-env/is_solrCloud_enabled",
+        "widget" : {
+          "type" : "toggle"
+        }
+      },
+      {
+        "config" : "ranger-admin-site/ranger.audit.solr.urls",
+        "widget" : {
+          "type" : "text-field"
+        }
+      },
+      {
+        "config" : "ranger-admin-site/ranger.audit.solr.zookeepers",
+        "widget" : {
+          "type" : "text-field"
+        }
+      },
+      {
+        "config" : "ranger-admin-site/ranger.audit.solr.username",
+        "widget" : {
+          "type" : "text-field"
+        }
+      },
+      {
+        "config" : "ranger-admin-site/ranger.audit.solr.password",
+        "widget" : {
+          "type" : "password"
         }
       }
     ]
