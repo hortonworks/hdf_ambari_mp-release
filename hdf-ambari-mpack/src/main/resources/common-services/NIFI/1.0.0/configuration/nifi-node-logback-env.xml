@@ -171,7 +171,10 @@
 
   </value>
   <description>Template for logback.xml</description>
-      <on-ambari-upgrade add="true"/>
+  <value-attributes>
+    <type>content</type>
+  </value-attributes>      
+  <on-ambari-upgrade add="true"/>
   </property>
 
 </configuration>

@@ -70,7 +70,10 @@ export NIFI_LOG_DIR="{{nifi_node_log_dir}}"
 
   </value>
   <description>Template for nifi-env.sh</description>
-      <on-ambari-upgrade add="true"/>
+  <value-attributes>
+    <type>content</type>
+  </value-attributes>  
+  <on-ambari-upgrade add="true"/>
   </property>
 
 </configuration>
