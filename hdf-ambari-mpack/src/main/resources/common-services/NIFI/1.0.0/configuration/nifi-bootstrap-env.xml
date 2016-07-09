@@ -32,8 +32,8 @@ run.as={{nifi_user}}
 ##run.as=root
 
 # Configure where NiFi's lib and conf directories live
-lib.dir=./lib
-conf.dir=./conf
+lib.dir={{nifi_install_dir}}/lib
+conf.dir={{nifi_config_dir}}
 
 # How long to wait after telling NiFi to shutdown before explicitly killing the Process
 graceful.shutdown.seconds=20
@@ -73,7 +73,7 @@ java.arg.16=-Dambari.application.id=nifi
 ###
 
 # XML File that contains the definitions of the notification services
-notification.services.file=./conf/bootstrap-notification-services.xml
+notification.services.file={{nifi_config_dir}}/bootstrap-notification-services.xml
 
 # In the case that we are unable to send a notification for an event, how many times should we retry?
 notification.max.attempts=5

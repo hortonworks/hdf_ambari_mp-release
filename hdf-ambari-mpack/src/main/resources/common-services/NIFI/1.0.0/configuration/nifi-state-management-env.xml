@@ -37,7 +37,7 @@
     &lt;local-provider&gt;
         &lt;id&gt;local-provider&lt;/id&gt;
         &lt;class&gt;org.apache.nifi.controller.state.providers.local.WriteAheadLocalStateProvider&lt;/class&gt;
-        &lt;property name="Directory"&gt;./state/local&lt;/property&gt;
+        &lt;property name="Directory"&gt;{{nifi_state_dir}}&lt;/property&gt;
     &lt;/local-provider&gt;
 
     &lt;!--

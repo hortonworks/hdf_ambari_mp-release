@@ -25,19 +25,30 @@ nifi_initial_mem = config['configurations']['nifi-ambari-config']['nifi.initial_
 nifi_max_mem = config['configurations']['nifi-ambari-config']['nifi.max_mem']
 nifi_ambari_reporting_frequency = config['configurations']['nifi-ambari-config']['nifi.ambari_reporting_frequency']
 
+nifi_ssl_enabled = config['configurations']['nifi-ambari-config']['nifi.node.ssl.isenabled']
+nifi_node_ssl_port = config['configurations']['nifi-ambari-config']['nifi.node.ssl.port']
 nifi_node_port = config['configurations']['nifi-ambari-config']['nifi.node.port']
 nifi_node_protocol_port = config['configurations']['nifi-ambari-config']['nifi.node.protocol.port']
 
-nifi_znode = config['configurations']['nifi-ambari-config']['nifi.nifi_znode']
-nifi_flow_config_dir = config['configurations']['nifi-ambari-config']['nifi.flow.config.dir']
 
+nifi_znode = config['configurations']['nifi-ambari-config']['nifi.nifi_znode']
+
+nifi_internal_dir=config['configurations']['nifi-ambari-config']['nifi.internal.dir']
+nifi_state_dir=config['configurations']['nifi-ambari-config']['nifi.state.dir']
 nifi_database_dir=config['configurations']['nifi-ambari-config']['nifi.database.dir']
 nifi_flowfile_repo_dir=config['configurations']['nifi-ambari-config']['nifi.flowfile.repository.dir']
 nifi_content_repo_dir_default=config['configurations']['nifi-ambari-config']['nifi.content.repository.dir.default']
 nifi_provenance_repo_dir_default=config['configurations']['nifi-ambari-config']['nifi.provenance.repository.dir.default']
+nifi_config_dir = config['configurations']['nifi-ambari-config']['nifi.config.dir']
+nifi_flow_config_dir = config['configurations']['nifi-ambari-config']['nifi.flow.config.dir']
+
+nifi_flow_config_dir = nifi_flow_config_dir.replace('{{nifi_internal_dir}}',nifi_internal_dir)
+nifi_state_dir = nifi_state_dir.replace('{{nifi_internal_dir}}',nifi_internal_dir)
+nifi_config_dir = nifi_config_dir.replace('{{nifi_install_dir}}',nifi_install_dir)
 
 master_configs = config['clusterHostInfo']
 
+#detect if running in single (sandbox) box
 nifi_num_nodes = len(master_configs['nifi_master_hosts'])
 if nifi_num_nodes > 1:
   nifi_is_node='true'
@@ -48,10 +59,8 @@ nifi_node_hosts = ",".join(master_configs['nifi_master_hosts'])
 
 
 nifi_node_dir=nifi_install_dir
-
-conf_dir = os.path.join(*[nifi_node_dir,'conf'])
 bin_dir = os.path.join(*[nifi_node_dir,'bin'])
-work_dir = os.path.join(*[nifi_node_dir,'work'])
+
 
 # params from nifi-env
 nifi_user = config['configurations']['nifi-env']['nifi_user']

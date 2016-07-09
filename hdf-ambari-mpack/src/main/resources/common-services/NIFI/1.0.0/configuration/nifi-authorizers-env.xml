@@ -31,14 +31,14 @@
         &lt;identifier&gt;{{nifi_authorizer}}&lt;/identifier&gt;
         {% if has_ranger_admin and enable_ranger_nifi %}
         &lt;class&gt;org.apache.nifi.ranger.authorization.RangerNiFiAuthorizer&lt;/class&gt;
-        &lt;property name=&quot;Ranger Audit Config Path&quot;&gt;{{conf_dir}}/ranger-nifi-audit.xml&lt;/property&gt;
-        &lt;property name=&quot;Ranger Security Config Path&quot;&gt;{{conf_dir}}/ranger-nifi-security.xml&lt;/property&gt;
+        &lt;property name=&quot;Ranger Audit Config Path&quot;&gt;{{nifi_config_dir}}/ranger-nifi-audit.xml&lt;/property&gt;
+        &lt;property name=&quot;Ranger Security Config Path&quot;&gt;{{nifi_config_dir}}/ranger-nifi-security.xml&lt;/property&gt;
         &lt;property name=&quot;Ranger Service Type&quot;&gt;nifi&lt;/property&gt;
         &lt;property name=&quot;Ranger Application Id&quot;&gt;nifi&lt;/property&gt;
         &lt;property name=&quot;Allow Anonymous&quot;&gt;true&lt;/property&gt;
         {% else %}
         &lt;class&gt;org.apache.nifi.authorization.FileAuthorizer&lt;/class&gt;
-        &lt;property name=&quot;Authorizations File&quot;&gt;{{conf_dir}}/authorizations.xml&lt;/property&gt;
+        &lt;property name=&quot;Authorizations File&quot;&gt;{{nifi_config_dir}}/authorizations.xml&lt;/property&gt;
         &lt;property name=&quot;Initial Admin Identity&quot;&gt;&lt;/property&gt;
         {% endif %}
         &lt;/authorizer&gt;

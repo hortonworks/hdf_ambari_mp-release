@@ -18,15 +18,15 @@ class Master(Script):
     self.create_linux_user(params.nifi_user, params.nifi_group)
 
     #create the log, pid, conf dirs if not already present
-    #Directory([status_params.nifi_pid_dir, params.nifi_node_log_dir, params.conf_dir, params.work_dir],
-    #        owner=params.nifi_user,
-    #        group=params.nifi_group,
-    #        create_parents=True
-    #)
+    Directory([status_params.nifi_pid_dir, params.nifi_node_log_dir, params.nifi_internal_dir, params.nifi_database_dir, params.nifi_flowfile_repo_dir, params.nifi_content_repo_dir_default, params.nifi_provenance_repo_dir_default, params.nifi_config_dir, params.nifi_flow_config_dir, params.nifi_state_dir],
+            owner=params.nifi_user,
+            group=params.nifi_group,
+            create_parents=True
+    )
+
 
     Execute('touch ' +  params.nifi_node_log_file, user=params.nifi_user)
 
-    Execute('chown '+params.nifi_user+':'+params.nifi_group+' '+params.nifi_node_dir)
     Execute('chown -R '+params.nifi_user+':'+params.nifi_group+' '+params.nifi_node_dir+'/*')
 
     #update the configs specified by user
@@ -48,15 +48,25 @@ class Master(Script):
     env.set_params(params)
     env.set_params(status_params)
 
+    
     #write out nifi.properties
-    params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_host}}",socket.getfqdn())
-    #properties_content=InlineTemplate(params.nifi_node_properties_content)
-    File(format("{params.conf_dir}/nifi.properties"), content=InlineTemplate(params.nifi_node_properties_content), owner=params.nifi_user, group=params.nifi_group) # , mode=0777)
+    #params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_host}}",socket.getfqdn())
+    
+    if params.nifi_ssl_enabled:
+      params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_ssl_host}}",socket.getfqdn())
+      params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_port}}","")
+    else:
+      params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_host}}",socket.getfqdn())
+      params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_ssl_port}}","")
+        
+    #params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_internal_dir}}",params.nifi_internal_dir)
+
+    File(format("{params.nifi_config_dir}/nifi.properties"), content=InlineTemplate(params.nifi_node_properties_content), owner=params.nifi_user, group=params.nifi_group)
 
     # create the nifi flow config dir if it doesn't exist, and change ownership to NiFi user
-    if not os.path.exists(format("{params.nifi_flow_config_dir}")):
-        os.makedirs(format("{params.nifi_flow_config_dir}"))
-    Execute('chown ' + params.nifi_user + ':' + params.nifi_group + ' ' + format("{params.nifi_flow_config_dir}"))
+    #if not os.path.exists(format("{params.nifi_flow_config_dir}")):
+    #    os.makedirs(format("{params.nifi_flow_config_dir}"))
+    #Execute('chown ' + params.nifi_user + ':' + params.nifi_group + ' ' + format("{params.nifi_flow_config_dir}"))
 
     # write out flow.xml.gz only if AMS installed
     # during first setup it is used to automate setup of Ambari metrics reporting task in Nifi
@@ -70,23 +80,23 @@ class Master(Script):
 
     #write out boostrap.conf
     bootstrap_content=InlineTemplate(params.nifi_boostrap_content)
-    File(format("{params.conf_dir}/bootstrap.conf"), content=bootstrap_content, owner=params.nifi_user, group=params.nifi_group)
+    File(format("{params.nifi_config_dir}/bootstrap.conf"), content=bootstrap_content, owner=params.nifi_user, group=params.nifi_group)
 
-    #write out logback.xml - this does not seem to be required now: the log dir can be controlled by nifi-env.sh
-    #logback_content=InlineTemplate(params.nifi_node_logback_content)
-    #File(format("{params.conf_dir}/logback.xml"), content=logback_content, owner=params.nifi_user, group=params.nifi_group)
+    #write out logback.xml
+    logback_content=InlineTemplate(params.nifi_node_logback_content)
+    File(format("{params.nifi_config_dir}/logback.xml"), content=logback_content, owner=params.nifi_user, group=params.nifi_group)
 
     #write out state-management.xml
     statemgmt_content=InlineTemplate(params.nifi_state_management_content)
-    File(format("{params.conf_dir}/state-management.xml"), content=statemgmt_content, owner=params.nifi_user, group=params.nifi_group)
+    File(format("{params.nifi_config_dir}/state-management.xml"), content=statemgmt_content, owner=params.nifi_user, group=params.nifi_group)
 
     #write out authorizers file
     authorizers_content=InlineTemplate(params.nifi_authorizers_content)
-    File(format("{params.conf_dir}/authorizers.xml"), content=authorizers_content, owner=params.nifi_user, group=params.nifi_group)
+    File(format("{params.nifi_config_dir}/authorizers.xml"), content=authorizers_content, owner=params.nifi_user, group=params.nifi_group)
 
     #write out login-identity-providers.xml
     login_identity_providers_content=InlineTemplate(params.nifi_login_identity_providers_content)
-    File(format("{params.conf_dir}/login-identity-providers.xml"), content=login_identity_providers_content, owner=params.nifi_user, group=params.nifi_group)
+    File(format("{params.nifi_config_dir}/login-identity-providers.xml"), content=login_identity_providers_content, owner=params.nifi_user, group=params.nifi_group)
 
     #write out nifi-env in bin
     env_content=InlineTemplate(params.nifi_env_content)
@@ -116,7 +126,7 @@ class Master(Script):
     Execute('echo JAVA_HOME=' + params.jdk64_home)
 
     Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh start >> ' + params.nifi_node_log_file, user=params.nifi_user)
-    #Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh start >> ' + params.nifi_node_log_file)
+    Execute ('sleep 2')
     Execute('cat '+status_params.nifi_pid_dir+'/nifi.pid'+" | grep pid | sed 's/pid=\(\.*\)/\\1/' > " + status_params.nifi_node_pid_file)
     Execute('chown '+params.nifi_user+':'+params.nifi_group+' ' + status_params.nifi_node_pid_file)
 

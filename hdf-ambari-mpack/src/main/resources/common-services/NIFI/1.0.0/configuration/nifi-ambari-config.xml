@@ -4,22 +4,10 @@
 <configuration>
 
 
-  <!-- <property>
-    <name>nifi.master.port</name>
-    <value>9090</value>
-    <description>Port NiFi cluster manager runs on</description>
-  </property>
-
-  <property>
-    <name>nifi.master.protocol.port</name>
-    <value>9088</value>
-    <description>Port NiFi cluster manager protocol runs on</description>
-  </property> -->
-
   <property>
     <name>nifi.node.port</name>
     <value>9090</value>
-    <description>Port NiFi node runs on</description>
+    <description>Port NiFi node runs on when SSL is not enabled</description>
     <on-ambari-upgrade add="true"/>
   </property>
 
@@ -30,6 +18,19 @@
     <on-ambari-upgrade add="true"/>
   </property>
 
+  <property>
+    <name>nifi.node.ssl.isenabled</name>
+    <value>false</value>
+    <description>whether SSL is enabled (false by default)</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  
+  <property>
+    <name>nifi.node.ssl.port</name>
+    <value>9091</value>
+    <description>Port NiFi node runs on when SSL is enabled</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
 
   <property>
     <name>nifi.initial_mem</name>
@@ -62,12 +63,33 @@
 
 
   <property>
-    <name>nifi.flow.config.dir</name>
-    <value>/var/lib/nifi/conf</value>
-    <description>The directory to store the flow.xml.gz file. This directory must be writable by the nifi user</description>
+    <name>nifi.internal.dir</name>
+    <value>/var/lib/nifi</value>
+    <description>Internal directory for Nifi (used to store archive, templates, work dirs). This directory must be writable by the nifi user</description>
     <on-ambari-upgrade add="true"/>
   </property>
 
+  <property>
+    <name>nifi.config.dir</name>
+    <value>{{nifi_install_dir}}/conf</value>
+    <description>The directory to store config files (nifi.properties, bootstrap.conf etc). This directory must be writable by the nifi user</description>
+    <on-ambari-upgrade add="true"/>
+  </property> 
+    
+  <property>
+    <name>nifi.flow.config.dir</name>
+    <value>{{nifi_internal_dir}}/conf</value>
+    <description>The directory to store the flow.xml.gz file. This directory must be writable by the nifi user</description>
+    <on-ambari-upgrade add="true"/>
+  </property> 
+
+  <property>
+    <name>nifi.state.dir</name>
+    <value>{{nifi_internal_dir}}/state/local</value>
+    <description>The directory to store the state. This directory must be writable by the nifi user</description>
+    <on-ambari-upgrade add="true"/>
+  </property> 
+  
   <property>
     <name>nifi.database.dir</name>
     <value>/var/lib/nifi/database_repository</value>
