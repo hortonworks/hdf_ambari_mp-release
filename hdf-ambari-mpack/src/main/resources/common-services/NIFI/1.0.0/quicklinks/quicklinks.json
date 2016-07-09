@@ -17,8 +17,8 @@
         "port":{
           "http_property": "nifi.node.port",
           "http_default_port": "9090",
-          "https_property": "nifi.node.port",
-          "https_default_port": "9090",
+          "https_property": "nifi.node.ssl.port",
+          "https_default_port": "9091",
           "regex": "^(\\d+)$",
           "site": "nifi-ambari-config"
         }
