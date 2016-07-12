@@ -83,7 +83,7 @@ class Master(Script):
     # write out flow.xml.gz only if AMS installed
     # during first setup it is used to automate setup of Ambari metrics reporting task in Nifi
     if isInstall and params.metrics_collector_host:
-      Execute('echo "First time setup so generating flow.xml.gz" >> ' + params.nifi_node_log_file)
+      Execute('echo "First time setup so generating flow.xml.gz" >> ' + params.nifi_node_log_file, user=params.nifi_user)
       flow_content=InlineTemplate(params.nifi_flow_content)
       File(format("{params.nifi_flow_config_dir}/flow.xml"), content=flow_content, owner=params.nifi_user, group=params.nifi_group)
       Execute(format("cd {params.nifi_flow_config_dir}; mv flow.xml.gz flow_$(date +%d-%m-%Y).xml.gz ;"),user=params.nifi_user,ignore_failures=True)
