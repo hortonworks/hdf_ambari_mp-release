@@ -17,21 +17,12 @@ class Master(Script):
     #Create user and group if they don't exist
     self.create_linux_user(params.nifi_user, params.nifi_group)
 
-    #create the log, pid, conf dirs if not already present
-    Directory([status_params.nifi_pid_dir, params.nifi_node_log_dir, params.nifi_internal_dir, params.nifi_database_dir, params.nifi_flowfile_repo_dir, params.nifi_content_repo_dir_default, params.nifi_provenance_repo_dir_default, params.nifi_config_dir, params.nifi_flow_config_dir, params.nifi_state_dir],
-            owner=params.nifi_user,
-            group=params.nifi_group,
-            create_parents=True
-    )
-
-
-    Execute('touch ' +  params.nifi_node_log_file, user=params.nifi_user)
-
     Execute('chown -R '+params.nifi_user+':'+params.nifi_group+' '+params.nifi_node_dir+'/*')
 
     #update the configs specified by user
     self.configure(env, True)
 
+    Execute('touch ' +  params.nifi_node_log_file, user=params.nifi_user)
 
 
   def create_linux_user(self, user, group):
@@ -47,6 +38,27 @@ class Master(Script):
     import status_params
     env.set_params(params)
     env.set_params(status_params)
+
+    #create the log, pid, conf dirs if not already present
+    Directory([status_params.nifi_pid_dir, params.nifi_node_log_dir, params.nifi_internal_dir, params.nifi_database_dir, params.nifi_flowfile_repo_dir, params.nifi_content_repo_dir_default, params.nifi_provenance_repo_dir_default, params.nifi_config_dir, params.nifi_flow_config_dir, params.nifi_state_dir],
+            owner=params.nifi_user,
+            group=params.nifi_group,
+            create_parents=True
+    )
+
+    # On some OS this folder may not exist, so we will create it before pushing files there
+    Directory(params.limits_conf_dir,
+              create_parents = True,
+              owner='root',
+              group='root'
+    )
+
+    File(os.path.join(params.limits_conf_dir, 'nifi.conf'),
+         owner='root',
+         group='root',
+         mode=0644,
+         content=Template("nifi.conf.j2")
+    )
 
     
     #write out nifi.properties
@@ -71,7 +83,7 @@ class Master(Script):
     # write out flow.xml.gz only if AMS installed
     # during first setup it is used to automate setup of Ambari metrics reporting task in Nifi
     if isInstall and params.metrics_collector_host:
-      Execute('echo "First time setup so generating flow.xml.gz" >> ' + params.nifi_node_log_file)
+      Execute('echo "First time setup so generating flow.xml.gz" >> ' + params.nifi_node_log_file, user=params.nifi_user)
       flow_content=InlineTemplate(params.nifi_flow_content)
       File(format("{params.nifi_flow_config_dir}/flow.xml"), content=flow_content, owner=params.nifi_user, group=params.nifi_group)
       Execute(format("cd {params.nifi_flow_config_dir}; mv flow.xml.gz flow_$(date +%d-%m-%Y).xml.gz ;"),user=params.nifi_user,ignore_failures=True)
