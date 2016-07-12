@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from resource_management import *
 from resource_management.libraries.script.script import Script
-import sys, os, glob
+import sys, os, glob, socket
 from resource_management.libraries.functions import format
 from resource_management.libraries.functions.default import default
 from resource_management.libraries.functions.version import format_stack_version
@@ -30,6 +30,12 @@ nifi_node_ssl_port = config['configurations']['nifi-ambari-config']['nifi.node.s
 nifi_node_port = config['configurations']['nifi-ambari-config']['nifi.node.port']
 nifi_node_protocol_port = config['configurations']['nifi-ambari-config']['nifi.node.protocol.port']
 
+if nifi_ssl_enabled:
+  nifi_node_ssl_host = socket.getfqdn()
+  nifi_node_port = ""
+else:
+  nifi_node_host = socket.getfqdn()
+  nifi_node_ssl_port = ""
 
 nifi_znode = config['configurations']['nifi-ambari-config']['nifi.nifi_znode']
 

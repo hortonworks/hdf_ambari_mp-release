@@ -62,16 +62,6 @@ class Master(Script):
 
     
     #write out nifi.properties
-    #params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_host}}",socket.getfqdn())
-    
-    #if params.nifi_ssl_enabled:
-      #params.nifi_properties=params.nifi_properties.replace("{{nifi_node_ssl_host}}",socket.getfqdn())
-      #params.nifi_properties=params.nifi_properties.replace("{{nifi_node_port}}","")
-    #else:
-      #params.nifi_properties=params.nifi_properties.replace("{{nifi_node_host}}",socket.getfqdn())
-      #params.nifi_properties=params.nifi_properties.replace("{{nifi_node_ssl_port}}","")
-        
-    #params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_internal_dir}}",params.nifi_internal_dir)
 
     PropertiesFile(params.nifi_config_dir + '/nifi.properties',
                    properties = params.nifi_properties,
