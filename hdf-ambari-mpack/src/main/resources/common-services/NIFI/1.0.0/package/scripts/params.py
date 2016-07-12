@@ -69,6 +69,11 @@ nifi_group = config['configurations']['nifi-env']['nifi_group']
 nifi_node_log_dir = config['configurations']['nifi-env']['nifi_node_log_dir']
 nifi_node_log_file = os.path.join(nifi_node_log_dir,'nifi-setup.log')
 
+# limits related params
+limits_conf_dir = '/etc/security/limits.d'
+nifi_user_nofile_limit = config['configurations']['nifi-env']['nifi_user_nofile_limit']
+nifi_user_nproc_limit = config['configurations']['nifi-env']['nifi_user_nproc_limit']
+
 # params from nifi-boostrap
 nifi_env_content = config['configurations']['nifi-env']['content']
 

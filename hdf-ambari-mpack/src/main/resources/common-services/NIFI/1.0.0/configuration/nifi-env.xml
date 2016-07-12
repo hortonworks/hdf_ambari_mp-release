@@ -33,8 +33,21 @@
     <description>nifi group</description>
       <on-ambari-upgrade add="true"/>
   </property> 
-          
-            
+
+  <property>
+    <name>nifi_user_nofile_limit</name>
+    <value>50000</value>
+    <description>Max open files limit setting for Nifi user.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  
+  <property>
+    <name>nifi_user_nproc_limit</name>
+    <value>10000</value>
+    <description>Max number of processes limit setting for Nifi user.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+                      
   <property>
     <name>content</name>
     <value>
