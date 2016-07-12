@@ -1,0 +1,643 @@
+<?xml version="1.0"?>
+
+<configuration supports_final="false">
+  <!--# Core Properties #-->
+  <property>
+    <name>nifi.version</name>
+    <value>1.0.0.{{stack_version_buildnum}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.flow.configuration.file</name>
+    <value>{{nifi_flow_config_dir}}/flow.xml.gz</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.flow.configuration.archive.dir</name>
+    <value>{{nifi_internal_dir}}/archive/</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.flowcontroller.graceful.shutdown.period</name>
+    <value>10 sec</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.flowcontroller.autoResumeState</name>
+    <value>true</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.flowservice.writedelay.interval</name>
+    <value>500 ms</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.administrative.yield.duration</name>
+    <value>30 sec</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.bored.yield.duration</name>
+    <value>10 millis</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.authorizer.configuration.file</name>
+    <value>{{nifi_config_dir}}/authorizers.xml</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.login.identity.provider.configuration.file</name>
+    <value>{{nifi_config_dir}}/login-identity-providers.xml</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.templates.directory</name>
+    <value>{{nifi_internal_dir}}/templates</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.ui.banner.text</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.ui.autorefresh.interval</name>
+    <value>30 sec</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.nar.library.directory</name>
+    <value>{{nifi_install_dir}}/lib</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.nar.working.directory</name>
+    <value>{{nifi_internal_dir}}/work/nar</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.documentation.working.directory</name>
+    <value>{{nifi_internal_dir}}/work/docs/components</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <!-- State Management -->
+  <property>
+    <name>nifi.state.management.configuration.file</name>
+    <value>{{nifi_config_dir}}/state-management.xml</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.state.management.provider.cluster</name>
+    <value>zk-provider</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.state.management.embedded.zookeeper.start</name>
+    <value>false</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.state.management.embedded.zookeeper.properties</name>
+    <value>{{nifi_config_dir}}/zookeeper.properties</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.state.management.provider.local</name>
+    <value>local-provider</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <!-- H2 Settings-->
+  <property>
+    <name>nifi.database.directory</name>
+    <value>{{nifi_database_dir}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.h2.url.append</name>
+    <value>;LOCK_TIMEOUT=25000;WRITE_DELAY=0;AUTO_SERVER=FALSE</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <!-- Flowfile repository-->
+  <property>
+    <name>nifi.flowfile.repository.always.sync</name>
+    <value>false</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.flowfile.repository.partitions</name>
+    <value>256</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.flowfile.repository.checkpoint.interval</name>
+    <value>2 mins</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.flowfile.repository.directory</name>
+    <value>{{nifi_flowfile_repo_dir}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.flowfile.repository.implementation</name>
+    <value>org.apache.nifi.controller.repository.WriteAheadFlowFileRepository</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.swap.in.period</name>
+    <value>5 sec</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.swap.in.threads</name>
+    <value>1</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.swap.out.period</name>
+    <value>5 sec</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.swap.out.threads</name>
+    <value>4</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.swap.manager.implementation</name>
+    <value>org.apache.nifi.controller.FileSystemSwapManager</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.queue.swap.threshold</name>
+    <value>20000</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.content.repository.archive.max.usage.percentage</name>
+    <value>50%</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.content.claim.max.flow.files</name>
+    <value>100</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.content.repository.always.sync</name>
+    <value>false</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.content.claim.max.appendable.size</name>
+    <value>10 MB</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.content.repository.directory.default</name>
+    <value>{{nifi_content_repo_dir_default}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.content.repository.implementation</name>
+    <value>org.apache.nifi.controller.repository.FileSystemRepository</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.content.viewer.url</name>
+    <value>/nifi-content-viewer/</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.content.repository.archive.enabled</name>
+    <value>true</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.content.repository.archive.max.retention.period</name>
+    <value>12 hours</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.provenance.repository.rollover.size</name>
+    <value>100 MB</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.max.storage.size</name>
+    <value>1 GB</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.implementation</name>
+    <value>org.apache.nifi.provenance.PersistentProvenanceRepository</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.indexed.attributes</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.indexed.fields</name>
+    <value>EventType, FlowFileUUID, Filename, ProcessorID, Relationship</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.compress.on.rollover</name>
+    <value>true</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.buffer.size</name>
+    <value>100000</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.index.shard.size</name>
+    <value>500 MB</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.max.attribute.length</name>
+    <value>65536</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.directory.default</name>
+    <value>{{nifi_provenance_repo_dir_default}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.always.sync</name>
+    <value>false</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.journal.count</name>
+    <value>16</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.max.storage.time</name>
+    <value>24 hours</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.query.threads</name>
+    <value>2</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.rollover.time</name>
+    <value>30 secs</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.provenance.repository.index.threads</name>
+    <value>1</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+
+  <property>
+    <name>nifi.remote.input.socket.port</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.remote.input.http.transaction.ttl</name>
+    <value>30 sec</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.remote.input.secure</name>
+    <value>{{nifi_ssl_enabled}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.remote.input.http.enabled</name>
+    <value>true</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.remote.input.host</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.components.status.snapshot.frequency</name>
+    <value>1 min</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.components.status.repository.buffer.size</name>
+    <value>1440</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.components.status.repository.implementation</name>
+    <value>org.apache.nifi.controller.status.history.VolatileComponentStatusRepository</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+
+  <!--# web properties #-->
+
+  <property>
+    <name>nifi.web.war.directory</name>
+    <value>{{nifi_install_dir}}/lib</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.web.http.host</name>
+    <value>{{nifi_node_host}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.web.http.port</name>
+    <value>{{nifi_node_port}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.web.https.host</name>
+    <value>{{nifi_node_ssl_host}}</value>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.web.https.port</name>
+    <value>{{nifi_node_ssl_port}}</value>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.web.jetty.working.directory</name>
+    <value>{{nifi_internal_dir}}/work/jetty</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.web.jetty.threads</name>
+    <value>200</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+
+  <!--# security properties #-->
+  <property>
+    <name>nifi.sensitive.props.key</name>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.sensitive.props.algorithm</name>
+    <value>PBEWITHMD5AND256BITAES-CBC-OPENSSL</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.sensitive.props.provider</name>
+    <value>BC</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.security.keystore</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.security.keystoreType</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.security.keystorePasswd</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.security.keyPasswd</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.security.truststore</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.security.truststoreType</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.security.truststorePasswd</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.security.needClientAuth</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.security.user.authorizer</name>
+    <value>{{nifi_authorizer}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.security.user.login.identity.provider</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.security.ocsp.responder.url</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.security.ocsp.responder.certificate</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <!--# cluster common properties (all nodes must have same values) #-->
+
+  <property>
+    <name>nifi.cluster.protocol.heartbeat.interval</name>
+    <value>5 sec</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.cluster.protocol.is.secure</name>
+    <value>false</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <!--# cluster node properties (only configure for cluster nodes) #-->
+
+  <property>
+    <name>nifi.cluster.is.node</name>
+    <value>{{nifi_is_node}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.cluster.node.address</name>
+    <value>{{nifi_node_host}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.cluster.node.protocol.port</name>
+    <value>{{nifi_node_protocol_port}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.cluster.node.protocol.threads</name>
+    <value>10</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.cluster.node.event.history.size</name>
+    <value>25</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.cluster.node.connection.timeout</name>
+    <value>5 sec</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.cluster.node.read.timeout</name>
+    <value>5 sec</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.cluster.firewall.file</name>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <!--# How long a request should be allowed to hold a 'lock' on a component. #-->
+  <property>
+    <name>nifi.cluster.request.replication.claim.timeout</name>
+    <value>15 secs</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <!--# zookeeper properties, used for cluster management # -->
+  <property>
+    <name>nifi.zookeeper.connect.string</name>
+    <value>{{zookeeper_quorum}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.zookeeper.connect.timeout</name>
+    <value>3 secs</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.zookeeper.session.timeout</name>
+    <value>3 secs</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.zookeeper.root.node</name>
+    <value>{{nifi_znode}}</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+
+  <property>
+    <name>nifi.kerberos.krb5.file</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.kerberos.service.principal</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.kerberos.keytab.location</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+  <property>
+    <name>nifi.kerberos.authentication.expiration</name>
+    <value>12 hours</value>
+    <on-ambari-upgrade add="true"/>
+  </property>
+
+</configuration>

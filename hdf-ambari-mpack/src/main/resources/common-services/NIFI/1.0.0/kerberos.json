@@ -2,14 +2,40 @@
   "services": [
     {
       "name": "NIFI",
-      "identities": [
-        {
-          "name": "/smokeuser"
-        }
-      ],
       "components": [
         {
-          "name": "NIFI_MASTER"
+          "name": "NIFI_MASTER",
+          "identities": [
+            {
+              "name": "nifi_principal",
+              "principal": {
+                "value": "${nifi-env/nifi_user}/_HOST@${realm}",
+                "type" : "service",
+                "configuration": "nifi-properties/nifi.kerberos.service.principal",
+                "local_username": "${nifi-env/nifi_user}"
+
+              },
+              "keytab": {
+                "file": "${keytab_dir}/nifi.service.keytab",
+                "owner": {
+                  "name": "${nifi-env/nifi_user}",
+                  "access": "r"
+                },
+                "group": {
+                  "name": "${cluster-env/user_group}",
+                  "access": ""
+                },
+                "configuration": "nifi-properties/nifi.kerberos.keytab.location"
+              }
+            }
+          ],
+          "configurations": [
+            {
+              "nifi-properties": {
+                "nifi.kerberos.krb5.file": "/etc/krb5.conf"
+              }
+            }
+          ]
         }
       ]
     }

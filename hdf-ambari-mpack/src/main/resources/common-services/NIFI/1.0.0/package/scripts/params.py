@@ -84,7 +84,7 @@ nifi_node_logback_content = config['configurations']['nifi-node-logback-env']['c
 
 # params from nifi-properties-env
 nifi_master_properties_content = config['configurations']['nifi-master-properties-env']['content']
-nifi_node_properties_content = config['configurations']['nifi-node-properties-env']['content']
+nifi_properties = config['configurations']['nifi-properties']['content']
 
 # params from nifi-flow
 nifi_flow_content = config['configurations']['nifi-flow-env']['content']
