@@ -74,7 +74,7 @@ class Master(Script):
     #    os.makedirs(format("{params.nifi_flow_config_dir}"))
     #Execute('chown ' + params.nifi_user + ':' + params.nifi_group + ' ' + format("{params.nifi_flow_config_dir}"))
 
-    # write out flow.xml.gz only if AMS installed
+    # write out flow.xml.gz to internal dir only if AMS installed (must be writable by Nifi)
     # during first setup it is used to automate setup of Ambari metrics reporting task in Nifi
     if isInstall and params.metrics_collector_host:
       Execute('echo "First time setup so generating flow.xml.gz" >> ' + params.nifi_node_log_file, user=params.nifi_user)
@@ -107,6 +107,14 @@ class Master(Script):
     #write out nifi-env in bin
     env_content=InlineTemplate(params.nifi_env_content)
     File(format("{params.bin_dir}/nifi-env.sh"), content=env_content, owner=params.nifi_user, group=params.nifi_group, mode=0755) 
+    
+    #write out bootstrap-notification-services.xml
+    boostrap_notification_content=InlineTemplate(params.nifi_boostrap_notification_content)
+    File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group) 
+
+    #write out authorizations.xml to internal dir (must be writable by nifi)
+    authorizations_content=InlineTemplate(params.nifi_authorizations_content)
+    File(format("{params.nifi_flow_config_dir}/authorizations.xml"), content=authorizations_content, owner=params.nifi_user, group=params.nifi_group) 
 
 
 

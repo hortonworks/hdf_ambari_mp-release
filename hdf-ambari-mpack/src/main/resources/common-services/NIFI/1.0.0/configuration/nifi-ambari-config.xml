@@ -65,56 +65,56 @@
   <property>
     <name>nifi.internal.dir</name>
     <value>/var/lib/nifi</value>
-    <description>Internal directory for Nifi (used to store archive, templates, work dirs). This directory must be writable by the nifi user</description>
+    <description>Internal directory for Nifi (used to store archive, templates, work dirs). This directory will be created (if not already existing)</description>
     <on-ambari-upgrade add="true"/>
   </property>
 
   <property>
     <name>nifi.config.dir</name>
     <value>{{nifi_install_dir}}/conf</value>
-    <description>The directory to store config files (nifi.properties, bootstrap.conf etc). This directory must be writable by the nifi user</description>
+    <description>The directory to store config files (nifi.properties, bootstrap.conf etc). This directory will be created (if not already existing)</description>
     <on-ambari-upgrade add="true"/>
   </property> 
     
   <property>
     <name>nifi.flow.config.dir</name>
     <value>{{nifi_internal_dir}}/conf</value>
-    <description>The directory to store the flow.xml.gz file. This directory must be writable by the nifi user</description>
+    <description>The directory to store the flow.xml.gz file. This directory will be created (if not already existing)</description>
     <on-ambari-upgrade add="true"/>
   </property> 
 
   <property>
     <name>nifi.state.dir</name>
     <value>{{nifi_internal_dir}}/state/local</value>
-    <description>The directory to store the state. This directory must be writable by the nifi user</description>
+    <description>The directory to store the state. This directory will be created (if not already existing)</description>
     <on-ambari-upgrade add="true"/>
   </property> 
   
   <property>
     <name>nifi.database.dir</name>
     <value>/var/lib/nifi/database_repository</value>
-    <description>The directory for the database repository. This directory must be writable by the nifi user</description>
+    <description>The directory for the database repository. This directory will be created (if not already existing)</description>
     <on-ambari-upgrade add="true"/>
   </property>
 
   <property>
     <name>nifi.flowfile.repository.dir</name>
     <value>/var/lib/nifi/flowfile_repository</value>
-    <description>The directory for the flowfile repository. This directory must be writable by the nifi user</description>
+    <description>The directory for the flowfile repository. This directory will be created (if not already existing)</description>
     <on-ambari-upgrade add="true"/>
   </property>
 
   <property>
     <name>nifi.content.repository.dir.default</name>
     <value>/var/lib/nifi/content_repository</value>
-    <description>The default directory for the content repository. This directory must be writable by the nifi user</description>
+    <description>The default directory for the content repository. This directory will be created (if not already existing)</description>
     <on-ambari-upgrade add="true"/>
   </property>
 
   <property>
     <name>nifi.provenance.repository.dir.default</name>
     <value>/var/lib/nifi/provenance_repository</value>
-    <description>The default directory for the provenance repository. This directory must be writable by the nifi user</description>
+    <description>The default directory for the provenance repository. This directory will be created (if not already existing)</description>
     <on-ambari-upgrade add="true"/>
   </property>
 
