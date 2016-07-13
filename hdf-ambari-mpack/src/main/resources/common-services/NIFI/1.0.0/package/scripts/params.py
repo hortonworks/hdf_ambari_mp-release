@@ -54,15 +54,16 @@ nifi_config_dir = nifi_config_dir.replace('{{nifi_install_dir}}',nifi_install_di
 
 master_configs = config['clusterHostInfo']
 
-#detect if running in single (sandbox) box
-nifi_num_nodes = len(master_configs['nifi_master_hosts'])
-if nifi_num_nodes > 1:
-  nifi_is_node='true'
-else:
-  nifi_is_node='false'
-nifi_node_hosts = ",".join(master_configs['nifi_master_hosts'])
+# detect if running in single (sandbox) box
+#nifi_num_nodes = len(master_configs['nifi_master_hosts'])
+#if nifi_num_nodes > 1:
+#  nifi_is_node='true'
+#else:
+#  nifi_is_node='false'
+#nifi_node_hosts = ",".join(master_configs['nifi_master_hosts'])
 
-
+# In sandbox scenario, Ambari should still setup nifi in clustered mode for now
+nifi_is_node='true'
 
 nifi_node_dir=nifi_install_dir
 bin_dir = os.path.join(*[nifi_node_dir,'bin'])
