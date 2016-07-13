@@ -39,6 +39,10 @@
 	  </fileSets>
   -->
   <fileSets>
+    <fileSet>
+      <directory>src/main/resources/hooks</directory>
+      <outputDirectory>hooks</outputDirectory>
+    </fileSet>
      <fileSet>
       <directory>src/main/resources/common-services</directory>
       <outputDirectory>common-services</outputDirectory>

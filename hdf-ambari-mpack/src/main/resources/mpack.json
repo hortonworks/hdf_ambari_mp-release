@@ -7,6 +7,13 @@
     "min-ambari-version" : "${minAmbariVersion}",
     "max-ambari-version" : "${maxAmbariVersion}"
   },
+  "hooks": [
+    {
+      "name": "after-install",
+      "type": "python",
+      "script": "hooks/after_install.py"
+    }
+  ],
   "artifacts": [
     {
       "name" : "hdf-service-definitions",
