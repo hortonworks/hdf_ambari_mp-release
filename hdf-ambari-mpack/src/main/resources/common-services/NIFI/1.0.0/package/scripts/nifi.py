@@ -62,18 +62,12 @@ class Master(Script):
 
     
     #write out nifi.properties
-    #params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_host}}",socket.getfqdn())
-    
-    if params.nifi_ssl_enabled:
-      params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_ssl_host}}",socket.getfqdn())
-      params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_port}}","")
-    else:
-      params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_host}}",socket.getfqdn())
-      params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_node_ssl_port}}","")
-        
-    #params.nifi_node_properties_content=params.nifi_node_properties_content.replace("{{nifi_internal_dir}}",params.nifi_internal_dir)
 
-    File(format("{params.nifi_config_dir}/nifi.properties"), content=InlineTemplate(params.nifi_node_properties_content), owner=params.nifi_user, group=params.nifi_group)
+    PropertiesFile(params.nifi_config_dir + '/nifi.properties',
+                   properties = params.nifi_properties,
+                   mode = 0644,
+                   owner = params.nifi_user,
+                   group = params.nifi_group)
 
     # create the nifi flow config dir if it doesn't exist, and change ownership to NiFi user
     #if not os.path.exists(format("{params.nifi_flow_config_dir}")):

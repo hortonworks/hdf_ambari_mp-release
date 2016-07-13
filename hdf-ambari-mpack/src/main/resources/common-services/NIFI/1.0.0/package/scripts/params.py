@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from resource_management import *
 from resource_management.libraries.script.script import Script
-import sys, os, glob
+import sys, os, glob, socket
 from resource_management.libraries.functions import format
 from resource_management.libraries.functions.default import default
 from resource_management.libraries.functions.version import format_stack_version
@@ -30,6 +30,12 @@ nifi_node_ssl_port = config['configurations']['nifi-ambari-config']['nifi.node.s
 nifi_node_port = config['configurations']['nifi-ambari-config']['nifi.node.port']
 nifi_node_protocol_port = config['configurations']['nifi-ambari-config']['nifi.node.protocol.port']
 
+if nifi_ssl_enabled:
+  nifi_node_ssl_host = socket.getfqdn()
+  nifi_node_port = ""
+else:
+  nifi_node_host = socket.getfqdn()
+  nifi_node_ssl_port = ""
 
 nifi_znode = config['configurations']['nifi-ambari-config']['nifi.nifi_znode']
 
@@ -84,7 +90,7 @@ nifi_node_logback_content = config['configurations']['nifi-node-logback-env']['c
 
 # params from nifi-properties-env
 nifi_master_properties_content = config['configurations']['nifi-master-properties-env']['content']
-nifi_node_properties_content = config['configurations']['nifi-node-properties-env']['content']
+nifi_properties = config['configurations']['nifi-properties']
 
 # params from nifi-flow
 nifi_flow_content = config['configurations']['nifi-flow-env']['content']
@@ -150,11 +156,6 @@ smokeuser = config['configurations']['cluster-env']['smokeuser']
 smokeuser_principal = config['configurations']['cluster-env']['smokeuser_principal_name']
 smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executable_search_paths', None))
-
-if security_enabled:
-  nifi_keytab_path = config['configurations']['nifi-env']['nifi_keytab_path']
-  _hostname_lowercase = config['hostname'].lower()
-  nifi_principal_name = config['configurations']['nifi-env']['nifi_principal_name'].replace('_HOST',_hostname_lowercase)
 
 # ranger host
 # E.g., 2.3
