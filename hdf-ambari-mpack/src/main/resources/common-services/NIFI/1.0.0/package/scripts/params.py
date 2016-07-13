@@ -92,6 +92,11 @@ nifi_node_logback_content = config['configurations']['nifi-node-logback-env']['c
 nifi_master_properties_content = config['configurations']['nifi-master-properties-env']['content']
 nifi_properties = config['configurations']['nifi-properties']
 
+#kerberos params
+nifi_kerberos_krb5_file = config['configurations']['nifi-properties']['nifi.kerberos.krb5.file']
+nifi_kerberos_authentication_expiration = config['configurations']['nifi-properties']['nifi.kerberos.authentication.expiration']
+nifi_kerberos_realm = default("/configurations/kerberos-env/realm", None)
+
 # params from nifi-flow
 nifi_flow_content = config['configurations']['nifi-flow-env']['content']
 
