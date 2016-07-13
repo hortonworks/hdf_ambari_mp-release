@@ -90,7 +90,7 @@ nifi_node_logback_content = config['configurations']['nifi-node-logback-env']['c
 
 # params from nifi-properties-env
 nifi_master_properties_content = config['configurations']['nifi-master-properties-env']['content']
-nifi_properties = config['configurations']['nifi-properties']
+nifi_properties = config['configurations']['nifi-properties'].copy()
 
 #kerberos params
 nifi_kerberos_krb5_file = config['configurations']['nifi-properties']['nifi.kerberos.krb5.file']
@@ -166,6 +166,10 @@ smokeuser = config['configurations']['cluster-env']['smokeuser']
 smokeuser_principal = config['configurations']['cluster-env']['smokeuser_principal_name']
 smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executable_search_paths', None))
+
+if security_enabled:
+  _hostname_lowercase = nifi_host_name.lower()
+  nifi_properties['nifi.kerberos.service.principal'] = nifi_properties['nifi.kerberos.service.principal'].replace('_HOST',_hostname_lowercase)
 
 # ranger host
 # E.g., 2.3
