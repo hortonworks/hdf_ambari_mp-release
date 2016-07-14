@@ -6,14 +6,16 @@
   
   <property>
     <name>nifi_node_log_dir</name>
-    <value>/var/log/nifi</value>    
-    <description>NiFi Node Log dir</description>
+    <value>/var/log/nifi</value>
+    <display-name>NiFi Log dir</display-name>    
+    <description>NiFi Log dir</description>
       <on-ambari-upgrade add="true"/>
   </property> 
   
  <property>
     <name>nifi_pid_dir</name>
     <value>/var/run/nifi</value>
+    <display-name>NiFi PID dir</display-name>
     <description>Dir containing process ID file</description>
      <on-ambari-upgrade add="true"/>
  </property>
@@ -22,6 +24,7 @@
     <name>nifi_user</name>
     <value>nifi</value>
     <property-type>USER</property-type>
+    <display-name>Nifi User</display-name>
     <description>User nifi daemon runs as</description>
       <on-ambari-upgrade add="true"/>
   </property> 
@@ -30,6 +33,7 @@
     <name>nifi_group</name>
     <value>nifi</value>
     <property-type>GROUP</property-type>
+    <display-name>Kafka Group</display-name>
     <description>nifi group</description>
       <on-ambari-upgrade add="true"/>
   </property> 
@@ -37,14 +41,16 @@
   <property>
     <name>nifi_user_nofile_limit</name>
     <value>50000</value>
-    <description>Max open files limit setting for Nifi user.</description>
+    <display-name>Open files limit for Nifi</display-name>
+    <description>Max open files (nofile) limit setting for Nifi user.</description>
     <on-ambari-upgrade add="true"/>
   </property>
   
   <property>
     <name>nifi_user_nproc_limit</name>
     <value>10000</value>
-    <description>Max number of processes limit setting for Nifi user.</description>
+    <display-name>Process limit for Nifi</display-name>
+    <description>Max number of processes (nproc) limit setting for Nifi user.</description>
     <on-ambari-upgrade add="true"/>
   </property>
                       

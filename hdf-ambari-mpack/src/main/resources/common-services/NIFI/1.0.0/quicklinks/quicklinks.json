@@ -9,7 +9,7 @@
         {
           "property":"nifi.node.ssl.isenabled",
           "desired":"true",
-          "site":"nifi-ambari-config"
+          "site":"nifi-ambari-ssl-config"
         }
       ]
     },

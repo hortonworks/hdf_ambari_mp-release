@@ -21,22 +21,6 @@
   </property>
 
   <property>
-    <name>nifi.node.ssl.isenabled</name>
-    <value>false</value>
-    <display-name>SSL enabled?</display-name>
-    <description>whether SSL is enabled (false by default)</description>
-    <on-ambari-upgrade add="true"/>
-  </property>
-  
-  <property>
-    <name>nifi.node.ssl.port</name>
-    <value>9091</value>
-    <display-name>Nifi HTTP port (SSL)</display-name>
-    <description>HTTP port NiFi node runs on when SSL is enabled</description>
-    <on-ambari-upgrade add="true"/>
-  </property>
-
-  <property>
     <name>nifi.initial_mem</name>
     <value>512m</value>
     <display-name>Initial memory allocation</display-name>

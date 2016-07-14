@@ -25,17 +25,8 @@ nifi_initial_mem = config['configurations']['nifi-ambari-config']['nifi.initial_
 nifi_max_mem = config['configurations']['nifi-ambari-config']['nifi.max_mem']
 nifi_ambari_reporting_frequency = config['configurations']['nifi-ambari-config']['nifi.ambari_reporting_frequency']
 
-nifi_ssl_enabled = config['configurations']['nifi-ambari-config']['nifi.node.ssl.isenabled']
-nifi_node_ssl_port = config['configurations']['nifi-ambari-config']['nifi.node.ssl.port']
 nifi_node_port = config['configurations']['nifi-ambari-config']['nifi.node.port']
 nifi_node_protocol_port = config['configurations']['nifi-ambari-config']['nifi.node.protocol.port']
-
-if nifi_ssl_enabled:
-  nifi_node_ssl_host = socket.getfqdn()
-  nifi_node_port = ""
-else:
-  nifi_node_host = socket.getfqdn()
-  nifi_node_ssl_port = ""
 
 nifi_znode = config['configurations']['nifi-ambari-config']['nifi.nifi_znode']
 
@@ -70,6 +61,26 @@ nifi_is_node='true'
 
 nifi_node_dir=nifi_install_dir
 bin_dir = os.path.join(*[nifi_node_dir,'bin'])
+
+# params from nifi-ambari-ssl-config
+
+nifi_ssl_enabled = config['configurations']['nifi-ambari-ssl-config']['nifi.node.ssl.isenabled']
+nifi_node_ssl_port = config['configurations']['nifi-ambari-ssl-config']['nifi.node.ssl.port']
+nifi_keystore = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystore']
+nifi_keystoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystoreType']
+nifi_keystorePasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystorePasswd']
+nifi_keyPasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keyPasswd']
+nifi_truststore = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststore']
+nifi_truststoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststoreType']
+nifi_truststorePasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststorePasswd']
+
+if nifi_ssl_enabled:
+  nifi_node_ssl_host = socket.getfqdn()
+  nifi_node_port = ""
+else:
+  nifi_node_host = socket.getfqdn()
+  nifi_node_ssl_port = ""
+
 
 
 # params from nifi-env

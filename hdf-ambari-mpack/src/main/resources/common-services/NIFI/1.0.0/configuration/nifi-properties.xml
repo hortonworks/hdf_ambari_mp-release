@@ -505,66 +505,46 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
     <on-ambari-upgrade add="true"/>
     <description>The sensitive property provider. The default value is BC.</description>
   </property>
+  <!-- SSL related configs -->  
   <property>
     <name>nifi.security.keystore</name>
-    <value/>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
+    <value>{{nifi_keystore}}</value>
     <on-ambari-upgrade add="true"/>
     <description>The full path and name of the keystore. It is blank by default.</description>
   </property>
   <property>
     <name>nifi.security.keystoreType</name>
-    <value/>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
+    <value>{{nifi_keystoreType}}</value>
     <on-ambari-upgrade add="true"/>
     <description>The keystore type. It is blank by default.</description>
   </property>
   <property>
     <name>nifi.security.keystorePasswd</name>
-    <value/>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
+    <value>{{nifi_keystorePasswd}}</value>
     <on-ambari-upgrade add="true"/>
     <description>The keystore password. It is blank by default.</description>
   </property>
   <property>
     <name>nifi.security.keyPasswd</name>
-    <value/>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
+    <value>{{nifi_keyPasswd}}</value>
     <on-ambari-upgrade add="true"/>
     <description>The key password. It is blank by default.</description>
   </property>
   <property>
     <name>nifi.security.truststore</name>
-    <value/>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
+    <value>{{nifi_truststore}}</value>
     <on-ambari-upgrade add="true"/>
     <description>The full path and name of the truststore. It is blank by default.</description>
   </property>
   <property>
     <name>nifi.security.truststoreType</name>
-    <value/>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
+    <value>{{nifi_truststoreType}}</value>
     <on-ambari-upgrade add="true"/>
     <description>The truststore type. It is blank by default.</description>
   </property>
   <property>
     <name>nifi.security.truststorePasswd</name>
-    <value/>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
+    <value>{{nifi_truststorePasswd}}</value>
     <on-ambari-upgrade add="true"/>
     <description>The truststore password. It is blank by default.</description>
   </property>
@@ -622,7 +602,7 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
   </property>
   <property>
     <name>nifi.cluster.protocol.is.secure</name>
-    <value>false</value>
+    <value>{{nifi_ssl_enabled}}</value>
     <on-ambari-upgrade add="true"/>
     <description>This indicates whether cluster communications are secure. The default value is false.</description>
   </property>
