@@ -291,6 +291,8 @@ if has_ranger_admin:
   if stack_supports_ranger_kerberos and security_enabled:
     nifi_ranger_plugin_config['policy.download.auth.users'] = nifi_user
     nifi_ranger_plugin_config['tag.download.auth.users'] = nifi_user
+    ranger_nifi_principal = config['configurations']['nifi-properties']['nifi.kerberos.service.principal'].replace('_HOST',_hostname_lowercase)
+    ranger_nifi_keytab = config['configurations']['nifi-properties']['nifi.kerberos.keytab.location']
 
   if stack_supports_ranger_kerberos:
     nifi_ranger_plugin_config['ambari.service.check.user'] = policy_user

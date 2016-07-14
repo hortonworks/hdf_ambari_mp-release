@@ -76,8 +76,8 @@ def setup_ranger_nifi(upgrade_type=None):
                             stack_version_override = stack_version, skip_if_rangeradmin_down= not params.retryAble,api_version=api_version,
                             is_security_enabled = params.security_enabled,
                             is_stack_supports_ranger_kerberos = params.stack_supports_ranger_kerberos,
-                            component_user_principal=None,
-                            component_user_keytab=None)
+                            component_user_principal=params.ranger_nifi_principal if params.security_enabled else None,
+                            component_user_keytab=params.ranger_nifi_keytab if params.security_enabled else None)
 
     else:
         Logger.info('Ranger admin not installed')
