@@ -38,8 +38,12 @@
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>
     <on-ambari-upgrade add="true"/>
-    <display-name>Keystore password</display-name>
+    <display-name>Keystore password</display-name>    
     <description>The keystore password. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
+    <property-type>PASSWORD</property-type>
+    <value-attributes>
+      <type>password</type>
+    </value-attributes>    
   </property>
   <property>
     <name>nifi.security.keyPasswd</name>
@@ -50,6 +54,10 @@
     <on-ambari-upgrade add="true"/>
     <display-name>Key password</display-name>    
     <description>The key password. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
+    <property-type>PASSWORD</property-type>
+    <value-attributes>
+      <type>password</type>
+    </value-attributes>    
   </property>
   <property>
     <name>nifi.security.truststore</name>
@@ -58,7 +66,7 @@
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>
     <on-ambari-upgrade add="true"/>
-    <display-name>Truststore path</display-name>        
+    <display-name>Truststore path</display-name>
     <description>The full path and name of the truststore. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
   </property>
   <property>
@@ -68,7 +76,7 @@
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>
     <on-ambari-upgrade add="true"/>
-    <display-name>Truststore type</display-name>            
+    <display-name>Truststore type</display-name>    
     <description>The truststore type. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
   </property>
   <property>
@@ -78,8 +86,12 @@
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>
     <on-ambari-upgrade add="true"/>
-    <display-name>Truststore password</display-name>            
+    <display-name>Truststore password</display-name>    
     <description>The truststore password. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
+    <property-type>PASSWORD</property-type>
+    <value-attributes>
+      <type>password</type>
+    </value-attributes>    
   </property>
   <property>
     <name>nifi.security.needClientAuth</name>
