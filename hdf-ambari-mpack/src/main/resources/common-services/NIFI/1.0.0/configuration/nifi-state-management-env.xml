@@ -63,7 +63,7 @@
         &lt;property name="Connect String"&gt;{{zookeeper_quorum}}&lt;/property&gt;
         &lt;property name="Root Node"&gt;{{nifi_znode}}&lt;/property&gt;
         &lt;property name="Session Timeout"&gt;30 seconds&lt;/property&gt;
-        &lt;property name="Access Control"&gt;CreatorOnly&lt;/property&gt;
+        &lt;property name="Access Control"&gt;Open&lt;/property&gt;
     &lt;/cluster-provider&gt;
 &lt;/stateManagement&gt;
 
@@ -72,9 +72,8 @@
   <description>template for state-management.xml</description>
   <value-attributes>
     <type>content</type>
-  </value-attributes>    
+  </value-attributes>
   <on-ambari-upgrade add="true"/>
   </property>
 
 </configuration>
-
