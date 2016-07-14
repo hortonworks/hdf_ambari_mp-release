@@ -11,16 +11,6 @@
     <description>whether SSL is enabled (false by default)</description>
     <on-ambari-upgrade add="true"/>
   </property>
-  
-  <property>
-    <name>nifi.node.ssl.port</name>
-    <value>9091</value>
-    <display-name>Nifi HTTP port (SSL)</display-name>
-    <description>HTTP port NiFi node runs on when SSL is enabled</description>
-    <on-ambari-upgrade add="true"/>
-  </property>
-
-
   <property>
     <name>nifi.security.keystore</name>
     <value/>
@@ -29,7 +19,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
     <display-name>Keystore path</display-name>
-    <description>The full path and name of the keystore. It is blank by default.</description>
+    <description>The full path and name of the keystore. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
   </property>
   <property>
     <name>nifi.security.keystoreType</name>
@@ -39,7 +29,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
     <display-name>Keystore type</display-name>
-    <description>The keystore type. It is blank by default.</description>
+    <description>The keystore type. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
   </property>
   <property>
     <name>nifi.security.keystorePasswd</name>
@@ -49,7 +39,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
     <display-name>Keystore password</display-name>
-    <description>The keystore password. It is blank by default.</description>
+    <description>The keystore password. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
   </property>
   <property>
     <name>nifi.security.keyPasswd</name>
@@ -59,7 +49,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
     <display-name>Key password</display-name>    
-    <description>The key password. It is blank by default.</description>
+    <description>The key password. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
   </property>
   <property>
     <name>nifi.security.truststore</name>
@@ -69,7 +59,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
     <display-name>Truststore path</display-name>        
-    <description>The full path and name of the truststore. It is blank by default.</description>
+    <description>The full path and name of the truststore. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
   </property>
   <property>
     <name>nifi.security.truststoreType</name>
@@ -79,7 +69,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
     <display-name>Truststore type</display-name>            
-    <description>The truststore type. It is blank by default.</description>
+    <description>The truststore type. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
   </property>
   <property>
     <name>nifi.security.truststorePasswd</name>
@@ -89,7 +79,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
     <display-name>Truststore password</display-name>            
-    <description>The truststore password. It is blank by default.</description>
+    <description>The truststore password. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
   </property>
 
 

@@ -3,7 +3,9 @@
 
 <configuration>
 
-
+  
+  
+  <!-- Note: these two properties must be in same xml file for quicklinks to correctly work -->
   <property>
     <name>nifi.node.port</name>
     <value>9090</value>
@@ -13,13 +15,23 @@
   </property>
 
   <property>
+    <name>nifi.node.ssl.port</name>
+    <value>9091</value>
+    <display-name>Nifi HTTP port (SSL)</display-name>
+    <description>HTTP port NiFi node runs on when SSL is enabled</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  
+  <!-- End Note -->
+  
+  <property>
     <name>nifi.node.protocol.port</name>
     <value>9088</value>
     <display-name>Nifi protocol port</display-name>
     <description>HTTP port NiFi node protocol runs on</description>
     <on-ambari-upgrade add="true"/>
   </property>
-
+    
   <property>
     <name>nifi.initial_mem</name>
     <value>512m</value>

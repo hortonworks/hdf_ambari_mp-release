@@ -25,7 +25,9 @@ nifi_initial_mem = config['configurations']['nifi-ambari-config']['nifi.initial_
 nifi_max_mem = config['configurations']['nifi-ambari-config']['nifi.max_mem']
 nifi_ambari_reporting_frequency = config['configurations']['nifi-ambari-config']['nifi.ambari_reporting_frequency']
 
+# note: nifi.node.port and nifi.node.ssl.port must be defined in same xml file for quicklinks to work
 nifi_node_port = config['configurations']['nifi-ambari-config']['nifi.node.port']
+nifi_node_ssl_port = config['configurations']['nifi-ambari-config']['nifi.node.ssl.port']
 nifi_node_protocol_port = config['configurations']['nifi-ambari-config']['nifi.node.protocol.port']
 
 nifi_znode = config['configurations']['nifi-ambari-config']['nifi.nifi_znode']
@@ -65,7 +67,6 @@ bin_dir = os.path.join(*[nifi_node_dir,'bin'])
 # params from nifi-ambari-ssl-config
 
 nifi_ssl_enabled = config['configurations']['nifi-ambari-ssl-config']['nifi.node.ssl.isenabled']
-nifi_node_ssl_port = config['configurations']['nifi-ambari-ssl-config']['nifi.node.ssl.port']
 nifi_keystore = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystore']
 nifi_keystoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystoreType']
 nifi_keystorePasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystorePasswd']
