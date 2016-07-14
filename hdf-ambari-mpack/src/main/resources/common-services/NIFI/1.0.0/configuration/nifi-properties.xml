@@ -550,7 +550,7 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
   </property>
   <property>
     <name>nifi.security.needClientAuth</name>
-    <value/>
+    <value>{{nifi_needClientAuth}}</value>
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>

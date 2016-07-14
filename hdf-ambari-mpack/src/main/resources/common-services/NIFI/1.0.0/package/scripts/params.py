@@ -74,6 +74,7 @@ nifi_keyPasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.securi
 nifi_truststore = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststore']
 nifi_truststoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststoreType']
 nifi_truststorePasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststorePasswd']
+nifi_needClientAuth = config['configurations']['nifi-ambari-ssl-config']['nifi.security.needClientAuth']
 
 if nifi_ssl_enabled:
   nifi_node_ssl_host = socket.getfqdn()
@@ -82,8 +83,7 @@ else:
   nifi_node_host = socket.getfqdn()
   nifi_node_ssl_port = ""
 
-
-
+  
 # params from nifi-env
 nifi_user = config['configurations']['nifi-env']['nifi_user']
 nifi_group = config['configurations']['nifi-env']['nifi_group']
