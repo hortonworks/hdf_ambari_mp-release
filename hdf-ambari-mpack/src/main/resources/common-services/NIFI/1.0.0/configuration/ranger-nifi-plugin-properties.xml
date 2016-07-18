@@ -27,15 +27,6 @@
         <on-ambari-upgrade add="true"/>
     </property>
     <property>
-        <name>common.name.for.certificate</name>
-        <value/>
-        <description>Common name for certificate, this value should match what is specified in repo within ranger admin</description>
-        <value-attributes>
-            <empty-value-valid>true</empty-value-valid>
-        </value-attributes>
-        <on-ambari-upgrade add="true"/>
-    </property>
-    <property>
         <name>ranger-nifi-plugin-enabled</name>
         <value>No</value>
         <display-name>Enable Ranger for NIFI</display-name>
@@ -77,6 +68,79 @@
                 </entry>
             </entries>
             <selection-cardinality>1</selection-cardinality>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+    </property>
+    <property>
+        <name>nifi.ssl.keystore</name>
+        <value></value>
+        <display-name>Keystore for Ranger Service Accessing NiFi</display-name>
+        <description>Used by the Ranger Service to access NiFi protected with SSL</description>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+    </property>
+    <property>
+        <name>nifi.ssl.keystoreType</name>
+        <value></value>
+        <display-name>Keystore Type</display-name>
+        <description>Keystore Type</description>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+    </property>
+    <property>
+        <name>nifi.ssl.keystorePassword</name>
+        <value></value>
+        <display-name>Keystore password</display-name>
+        <property-type>PASSWORD</property-type>
+        <description>Keystore password</description>
+        <value-attributes>
+            <type>password</type>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+    </property>
+    <property>
+        <name>nifi.ssl.truststore</name>
+        <value></value>
+        <display-name>Truststore for Ranger Service Accessing NiFi</display-name>
+        <description>Used by the Ranger Service to access/identify NiFi protected with SSL</description>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+    </property>
+    <property>
+        <name>nifi.ssl.truststoreType</name>
+        <value></value>
+        <display-name>Truststore Type</display-name>
+        <description>Truststore Type</description>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+    </property>
+    <property>
+        <name>nifi.ssl.truststorePassword</name>
+        <value></value>
+        <display-name>Truststore password</display-name>
+        <property-type>PASSWORD</property-type>
+        <description>Truststore password</description>
+        <value-attributes>
+            <type>password</type>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+    </property>
+    <property>
+        <name>owner.for.certificate</name>
+        <value/>
+        <description>Full identity of certificate owner (created when keystore was generated)</description>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
         </value-attributes>
         <on-ambari-upgrade add="true"/>
     </property>

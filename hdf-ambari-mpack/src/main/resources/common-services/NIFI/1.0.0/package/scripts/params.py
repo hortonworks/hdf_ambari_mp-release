@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from resource_management import *
 from resource_management.libraries.script.script import Script
-import sys, os, glob, socket
+import sys, os, glob, socket, re
 from resource_management.libraries.functions import format
 from resource_management.libraries.functions.default import default
 from resource_management.libraries.functions.version import format_stack_version
@@ -211,10 +211,7 @@ xa_audit_db_user = config['configurations']['admin-properties']['audit_db_user']
 xa_db_host = config['configurations']['admin-properties']['db_host']
 repo_name = str(config['clusterName']) + '_nifi'
 
-common_name_for_certificate = config['configurations']['ranger-nifi-plugin-properties']['common.name.for.certificate']
 repo_config_username = config['configurations']['ranger-nifi-plugin-properties']['REPOSITORY_CONFIG_USERNAME']
-nifi_authentication = config['configurations']['ranger-nifi-plugin-properties']['nifi.authentication']
-
 
 ranger_env = config['configurations']['ranger-env']
 ranger_plugin_properties = config['configurations']['ranger-nifi-plugin-properties']
@@ -276,17 +273,26 @@ if has_ranger_admin:
   ranger_admin_username = config['configurations']['ranger-env']['ranger_admin_username']
   ranger_admin_password = config['configurations']['ranger-env']['ranger_admin_password']
 
-  #need SSL option populated with parameters
+  #create ranger service's nifi client properties
+  nifi_authentication = config['configurations']['ranger-nifi-plugin-properties']['nifi.authentication']
+  ranger_id_owner_for_certificate = config['configurations']['ranger-nifi-plugin-properties']['owner.for.certificate']
+  nifi_id_owner_for_certificate = config['configurations']['ranger-nifi-policymgr-ssl']['owner.for.certificate']
+
   if nifi_authentication == 'SSL':
+
+    regex = r"(CN)=([a-zA-Z0-9\.\-\* ]*)"
+    match = re.search(regex, nifi_id_owner_for_certificate)
+
     nifi_ranger_plugin_config = {
       'nifi.authentication': nifi_authentication,
-      'nifi.url': format("https://{nifi_host_name}:{nifi_host_port}/nifi-api/resources"),
-      'nifi.ssl.keystore': credential_file,
-      'nifi.ssl.keystoreType':credential_file_type,
-      'nifi.ssl.keystorePassword': ssl_keystore_password,
-      'nifi.ssl.truststore': credential_file,
-      'nifi.ssl.truststoreType':credential_file_type,
-      'nifi.ssl.trsutstorePassword': ssl_truststore_password
+      'nifi.url': format("https://{nifi_host_name}:{nifi_node_ssl_port}/nifi-api/resources"),
+      'nifi.ssl.keystore': config['configurations']['ranger-nifi-plugin-properties']['nifi.ssl.keystore'],
+      'nifi.ssl.keystoreType':config['configurations']['ranger-nifi-plugin-properties']['nifi.ssl.keystoreType'],
+      'nifi.ssl.keystorePassword': config['configurations']['ranger-nifi-plugin-properties']['nifi.ssl.keystorePassword'],
+      'nifi.ssl.truststore': config['configurations']['ranger-nifi-plugin-properties']['nifi.ssl.truststore'],
+      'nifi.ssl.truststoreType': config['configurations']['ranger-nifi-plugin-properties']['nifi.ssl.truststoreType'],
+      'nifi.ssl.truststorePassword': config['configurations']['ranger-nifi-plugin-properties']['nifi.ssl.truststorePassword'],
+      'commonNameForCertificate': match.group(2) if match else ''
     }
   else:
     nifi_ranger_plugin_config = {
@@ -302,6 +308,9 @@ if has_ranger_admin:
     'repositoryType': 'nifi',
     'assetType': '5'
   }
+
+  # used in nifi authorizers
+  ranger_admin_identity = ranger_id_owner_for_certificate
 
   if stack_supports_ranger_kerberos and security_enabled:
     nifi_ranger_plugin_config['policy.download.auth.users'] = nifi_user
