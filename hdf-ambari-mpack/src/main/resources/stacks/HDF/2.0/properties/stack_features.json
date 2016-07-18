@@ -247,6 +247,12 @@
       "min_version": "2.0.0.0"
     },
     {
+      "name": "atlas_conf_dir_in_path",
+      "description": "Prepend the Atlas conf dir (/etc/atlas/conf) to the classpath of Storm and Falcon",
+      "min_version": "0.3.0.0",
+      "max_version": "0.4.99.99"
+    },
+    {
       "name": "atlas_upgrade_support",
       "description": "Atlas supports express and rolling upgrades",
       "min_version": "2.0.0.0"
@@ -267,8 +273,8 @@
       "min_version": "2.0.0.0"
     },
     {
-      "name": "ranger_localjceks_support",
-      "description": "Ranger Service support localjceks",
+      "name": "storm_metrics_apache_classes",
+      "description": "Metrics sink for Storm that uses Apache class names",
       "min_version": "2.0.0.0"
     }
   ]
