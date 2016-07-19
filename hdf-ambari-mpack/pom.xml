@@ -11,6 +11,47 @@
     <minAmbariVersion>2.4.0.0</minAmbariVersion>
     <maxAmbariVersion></maxAmbariVersion>
   </properties>
+  <profiles>
+    <profile>
+      <id>test</id>
+      <properties>
+        <executable.python>python</executable.python>
+        <pathsep>:</pathsep>
+        <custom.tests>false</custom.tests>
+        <ambari.path>${basedir}/../../ambari</ambari.path>
+        <path.python.1>${ambari.path}/ambari-common/src/main/python</path.python.1>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.2.1</version>
+            <executions>
+              <execution>
+                <configuration>
+                  <executable>${executable.python}</executable>
+                  <workingDirectory>src/test/python</workingDirectory>
+                  <arguments>
+                    <argument>unitTests.py</argument>
+                    <argument>${custom.tests}</argument>
+                  </arguments>
+                  <environmentVariables>
+                      <PYTHONPATH>${path.python.1}${pathsep}$PYTHONPATH</PYTHONPATH>
+                  </environmentVariables>
+                </configuration>
+                <id>python-test</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
   <build>
     <plugins>
       <plugin>
@@ -36,6 +77,31 @@
               <regex>^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)(\.|-).*</regex>
               <replacement>$1.$2.$3.$4</replacement>
               <failIfNoMatch>false</failIfNoMatch>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.nifi</groupId>
+                  <artifactId>nifi-toolkit-assembly</artifactId>
+                  <classifier>bin</classifier>
+                  <type>zip</type>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/nifi-toolkit</outputDirectory>
+                </artifactItem>
+              </artifactItems>
             </configuration>
           </execution>
         </executions>
@@ -86,6 +152,13 @@
     </plugins>
   </build>
   <dependencies>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-toolkit-assembly</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <classifier>bin</classifier>
+      <type>zip</type>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

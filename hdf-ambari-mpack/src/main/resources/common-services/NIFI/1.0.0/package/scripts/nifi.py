@@ -1,4 +1,4 @@
-import sys, os, pwd, grp, signal, time, glob, socket
+import sys, nifi_ca_util, os, pwd, linux_utils, grp, signal, time, glob, socket, json
 from resource_management import *
 from subprocess import call
 from setup_ranger_nifi import setup_ranger_nifi
@@ -15,23 +15,16 @@ class Master(Script):
     self.install_packages(env)
 
     #Create user and group if they don't exist
-    self.create_linux_user(params.nifi_user, params.nifi_group)
+    linux_utils.create_linux_user(params.nifi_user, params.nifi_group)
+
+    linux_utils.chown(params.nifi_node_dir, params.nifi_user, params.nifi_group, True)
 
     #update the configs specified by user
     self.configure(env, True)
 
     Execute('touch ' +  params.nifi_node_log_file, user=params.nifi_user)
 
-
-  def create_linux_user(self, user, group):
-    try: pwd.getpwnam(user)
-    except KeyError: Execute('adduser ' + user)
-    try: grp.getgrnam(group)
-    except KeyError: Execute('groupadd ' + group)
-
-
-
-  def configure(self, env, isInstall=False):
+  def configure(self, env, isInstall=False, is_starting = False):
     import params
     import status_params
     env.set_params(params)
@@ -60,14 +53,25 @@ class Master(Script):
     )
 
     
-    #write out nifi.properties
+    ca_client_script = nifi_ca_util.get_toolkit_script('tls-toolkit.sh')
+    os.chmod(ca_client_script, 0755)
 
+    if params.nifi_ca_host:
+      ca_client_json = os.path.realpath(os.path.join(params.nifi_config_dir, 'nifi-certificate-authority-client.json'))
+      def execute_client():
+        linux_utils.chown(ca_client_json, params.nifi_user, params.nifi_group)
+        if is_starting:
+          Execute('JAVA_HOME='+params.jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=params.nifi_user)
+
+      ca_client_dict = nifi_ca_util.load_overlay_dump_and_execute(ca_client_json, params.nifi_ca_client_config, execute_client)
+      nifi_ca_util.update_nifi_properties(ca_client_dict, params.nifi_properties)
+
+    #write out nifi.properties
     PropertiesFile(params.nifi_config_dir + '/nifi.properties',
                    properties = params.nifi_properties,
                    mode = 0400,
                    owner = params.nifi_user,
                    group = params.nifi_group)
-
 
     #write out boostrap.conf
     bootstrap_content=InlineTemplate(params.nifi_boostrap_content)
@@ -97,8 +101,6 @@ class Master(Script):
     boostrap_notification_content=InlineTemplate(params.nifi_boostrap_notification_content)
     File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group, mode=0400) 
 
-
-
   def stop(self, env):
     import params
     import status_params
@@ -107,12 +109,10 @@ class Master(Script):
     if os.path.isfile(status_params.nifi_node_pid_file):
       Execute ('rm ' + status_params.nifi_node_pid_file)
 
-
-
   def start(self, env):
     import params
     import status_params
-    self.configure(env)
+    self.configure(env, is_starting = True)
     setup_ranger_nifi(upgrade_type=None)
 
     # Write out flow.xml.gz to internal dir only if AMS installed (must be writable by Nifi)

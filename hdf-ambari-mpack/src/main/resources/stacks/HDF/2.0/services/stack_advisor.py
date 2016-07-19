@@ -954,7 +954,8 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
       "RANGER": {"ranger-env": self.validateRangerConfigurationsEnv,
                  "admin-properties": self.validateRangerAdminConfigurations,
                  "ranger-tagsync-site": self.validateRangerTagsyncConfigurations},
-      "NIFI": {"ranger-nifi-plugin-properties": self.validateNiFiRangerPluginConfigurations}
+      "NIFI": {"ranger-nifi-plugin-properties": self.validateNiFiRangerPluginConfigurations,
+               "nifi-ambari-ssl-config": self.validateNiFiSslProperties }
     }
 
   def recommendLogsearchConfigurations(self, configurations, clusterData, services, hosts):
@@ -1391,6 +1392,45 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
                                     "{0} needs to be set to {1}".format(prop_name,prop_val))})
 
     return self.toConfigurationValidationProblems(validationItems, "kafka-broker")
+
+  def __find_ca(self, services):
+    for service in services['services']:
+      if 'components' in service:
+        for component in service['components']:
+          stackServiceComponent = component['StackServiceComponents']
+          if 'NIFI_CA' == stackServiceComponent['component_name'] and stackServiceComponent['hostnames']:
+            return True
+    return False
+    
+  def validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method):
+    if siteName == 'nifi-ambari-ssl-config':
+      return method(self.getSiteProperties(configurations, siteName), None, configurations, services, hosts)
+    else:
+      return DefaultStackAdvisor.validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method)
+
+  def validateNiFiSslProperties(self, properties, recommendedDefaults, configurations, services, hosts):
+    validationItems = []
+    ssl_enabled = properties['nifi.node.ssl.isenabled'] and str(properties['nifi.node.ssl.isenabled']).lower() != 'false'
+    if (self.__find_ca(services)):
+      if not properties['nifi.toolkit.tls.token']:
+        validationItems.append({"config-name": 'nifi.toolkit.tls.token', 'item': self.getErrorItem('If NiFi Certificate Authority is used, nifi.toolkit.tls.token must be set')})
+      if not ssl_enabled:
+        validationItems.append({"config-name": 'nifi.node.ssl.isenabled', 'item': self.getWarnItem('For NiFi Certificate Authority to be useful, ssl should be enabled')})
+    else:
+      if properties['nifi.toolkit.tls.token']:
+        validationItems.append({"config-name": 'nifi.toolkit.tls.token', 'item': self.getWarnItem("If NiFi Certificate Authority is not used, nifi.toolkit.tls.token doesn't do anything.")})
+      if ssl_enabled:
+        if not properties['nifi.security.keystorePasswd']:
+          validationItems.append({"config-name": 'nifi.security.keystorePasswd', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.keystorePasswd')})
+        if not properties['nifi.security.keyPasswd']:
+          validationItems.append({"config-name": 'nifi.security.keyPasswd', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.keyPasswd')})
+        if not properties['nifi.security.truststorePasswd']:
+          validationItems.append({"config-name": 'nifi.security.truststorePasswd', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.truststorePasswd')})
+        if not properties['nifi.security.keystoreType']:
+          validationItems.append({"config-name": 'nifi.security.keystoreType', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.keystoreType')})
+        if not properties['nifi.security.truststoreType']:
+          validationItems.append({"config-name": 'nifi.security.truststoreType', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.truststoreType')})
+    return self.toConfigurationValidationProblems(validationItems, "nifi-ambari-ssl-config")
 
   def validateNiFiRangerPluginConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
     validationItems = []
