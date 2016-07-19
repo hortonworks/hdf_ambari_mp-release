@@ -32,6 +32,9 @@
     <value>true</value>
     <on-ambari-upgrade add="true"/>
     <description>Indicates whether -upon restart- the components on the NiFi graph should return to their last state. The default value is true.</description>    
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>
   </property>
   <property>
     <name>nifi.flowservice.writedelay.interval</name>
@@ -122,6 +125,9 @@
     <value>false</value>
     <on-ambari-upgrade add="true"/>
     <description>Specifies whether or not this instance of NiFi should start an embedded ZooKeeper Server. This is used in conjunction with the ZooKeeperStateProvider.</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>    
   </property>
   <property>
     <name>nifi.state.management.embedded.zookeeper.properties</name>
@@ -156,6 +162,9 @@
     <value>false</value>
     <on-ambari-upgrade add="true"/>
     <description>If set to true, any change to the repository will be synchronized to the disk, meaning that NiFi will ask the operating system not to cache the information. This is very expensive and can significantly reduce NiFi performance. However, if it is false, there could be the potential for data loss if either there is a sudden power loss or the operating system crashes. The default value is false.</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>    
   </property>
   <property>
     <name>nifi.flowfile.repository.partitions</name>
@@ -236,6 +245,9 @@
     <value>false</value>
     <on-ambari-upgrade add="true"/>
     <description>If set to true, any change to the repository will be synchronized to the disk, meaning that NiFi will ask the operating system not to cache the information. This is very expensive and can significantly reduce NiFi performance. However, if it is false, there could be the potential for data loss if either there is a sudden power loss or the operating system crashes. The default value is false.</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>    
   </property>
   <property>
     <name>nifi.content.claim.max.appendable.size</name>
@@ -266,6 +278,9 @@
     <value>true</value>
     <on-ambari-upgrade add="true"/>
     <description>To enable archiving, set this to true and specify a value for the nifi.content.repository.archive.max.usage.percentage property above. By default, archiving is enabled.</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>
   </property>
   <property>
     <name>nifi.content.repository.archive.max.retention.period</name>
@@ -313,6 +328,9 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
     <value>true</value>
     <on-ambari-upgrade add="true"/>
     <description>Indicates whether to compress the provenance information when rolling it over. The default value is true.</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>
   </property>
   <property>
     <name>nifi.provenance.repository.buffer.size</name>
@@ -343,6 +361,9 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
     <value>false</value>
     <on-ambari-upgrade add="true"/>
     <description>If set to true, any change to the repository will be synchronized to the disk, meaning that NiFi will ask the operating system not to cache the information. This is very expensive and can significantly reduce NiFi performance. However, if it is false, there could be the potential for data loss if either there is a sudden power loss or the operating system crashes. The default value is false.</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>    
   </property>
   <property>
     <name>nifi.provenance.repository.journal.count</name>
@@ -402,6 +423,9 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
     <value>true</value>
     <on-ambari-upgrade add="true"/>
     <description></description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>
   </property>
   <property>
     <name>nifi.remote.input.host</name>

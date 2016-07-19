@@ -42,9 +42,9 @@ nifi_config_dir = config['configurations']['nifi-ambari-config']['nifi.config.di
 nifi_flow_config_dir = config['configurations']['nifi-ambari-config']['nifi.flow.config.dir']
 nifi_sensitive_props_key = config['configurations']['nifi-ambari-config']['nifi.sensitive.props.key']
 
-nifi_flow_config_dir = nifi_flow_config_dir.replace('{{nifi_internal_dir}}',nifi_internal_dir)
-nifi_state_dir = nifi_state_dir.replace('{{nifi_internal_dir}}',nifi_internal_dir)
-nifi_config_dir = nifi_config_dir.replace('{{nifi_install_dir}}',nifi_install_dir)
+nifi_flow_config_dir = nifi_flow_config_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
+nifi_state_dir = nifi_state_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
+nifi_config_dir = nifi_config_dir.replace('{nifi_install_dir}',nifi_install_dir)
 
 
 

@@ -9,6 +9,9 @@
     <value>false</value>
     <display-name>Enable SSL?</display-name>
     <description>whether SSL is enabled (false by default)</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>    
     <on-ambari-upgrade add="true"/>
   </property>
   <property>
@@ -89,12 +92,16 @@
   </property>
   <property>
     <name>nifi.security.needClientAuth</name>
-    <value/>
+    <value>false</value>
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>
     <on-ambari-upgrade add="true"/>
-    <description>This indicates whether client authentication in the cluster protocol. It is blank by default.</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>      
+    <display-name>Clients need to authenticate?</display-name>      
+    <description>Specifies whether or not connecting clients must authenticate themselves. Specifically this property is used by the NiFi cluster protocol. If the Truststore properties are not set, this must be false. Otherwise, a value of true indicates that nodes in the cluster will be authenticated and must have certificates that are trusted by the Truststores.</description>
   </property>
 
 
