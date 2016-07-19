@@ -71,12 +71,15 @@
     <value>/var/lib/nifi</value>
     <display-name>Nifi internal dir</display-name>
     <description>Internal directory for Nifi (used to store archive, templates, work dirs). This directory will be created (if not already existing)</description>
+    <value-attributes>
+      <type>directory</type>
+    </value-attributes>        
     <on-ambari-upgrade add="true"/>
   </property>
 
   <property>
     <name>nifi.config.dir</name>
-    <value>{{nifi_install_dir}}/conf</value>
+    <value>{nifi_install_dir}/conf</value>
     <display-name>Nifi config dir</display-name>    
     <description>The directory to store config files (nifi.properties, bootstrap.conf etc). This directory will be created (if not already existing)</description>
     <on-ambari-upgrade add="true"/>
@@ -84,7 +87,7 @@
     
   <property>
     <name>nifi.flow.config.dir</name>
-    <value>{{nifi_internal_dir}}/conf</value>
+    <value>{nifi_internal_dir}/conf</value>
     <display-name>Nifi internal config dir</display-name>
     <description>The directory to store the state, flow.xml.gz and authorizations.xml files. This directory will be created (if not already existing)</description>
     <on-ambari-upgrade add="true"/>
@@ -92,7 +95,7 @@
 
   <property>
     <name>nifi.state.dir</name>
-    <value>{{nifi_internal_dir}}/state/local</value>
+    <value>{nifi_internal_dir}/state/local</value>
     <display-name>Nifi internal state dir</display-name>
     <description>The directory to store the state. This directory will be created (if not already existing)</description>
     <on-ambari-upgrade add="true"/>
@@ -103,6 +106,9 @@
     <value>/var/lib/nifi/database_repository</value>
     <display-name>Nifi H2 database dir</display-name>
     <description>The directory for the H2 database repository. The H2 database keeps track of user access and flow controller history. This directory will be created (if not already existing)</description>
+    <value-attributes>
+      <type>directory</type>
+    </value-attributes>    
     <on-ambari-upgrade add="true"/>
   </property>
 
@@ -111,6 +117,9 @@
     <value>/var/lib/nifi/flowfile_repository</value>
     <display-name>Nifi flowfile repository dir</display-name>
     <description>The directory for the flowfile repository. This directory will be created (if not already existing)</description>
+    <value-attributes>
+      <type>directory</type>
+    </value-attributes>    
     <on-ambari-upgrade add="true"/>
   </property>
 
@@ -119,6 +128,9 @@
     <value>/var/lib/nifi/content_repository</value>
     <display-name>Nifi content repository default dir</display-name>
     <description>The default directory for the content repository. This directory will be created (if not already existing).  NOTE: Multiple content repositories can be specified by using the nifi.content.repository.directory. prefix with unique suffixes and separate paths as values. For example, to provide two additional locations to act as part of the content repository, a user could also specify additional properties with keys of: nifi.content.repository.directory.content1=/repos/content1</description>
+    <value-attributes>
+      <type>directory</type>
+    </value-attributes>    
     <on-ambari-upgrade add="true"/>
   </property>
 
@@ -127,6 +139,9 @@
     <value>/var/lib/nifi/provenance_repository</value>
     <display-name>Nifi provenance repository default dir</display-name>
     <description>The default directory for the provenance repository. This directory will be created (if not already existing).  NOTE: Multiple provenance repositories can be specified by using the nifi.provenance.repository.directory. prefix with unique suffixes and separate paths as values. For example, to provide two additional locations to act as part of the provenance repository, a user could also specify additional properties with keys of: nifi.provenance.repository.directory.content1=/repos/provenance1</description>
+    <value-attributes>
+      <type>directory</type>
+    </value-attributes>    
     <on-ambari-upgrade add="true"/>
   </property>
 

@@ -135,17 +135,10 @@ class Master(Script):
     self.configure(env)
     setup_ranger_nifi(upgrade_type=None)
 
-    #Execute('echo nifi nodes: ' + params.nifi_node_hosts)
-    #Execute('echo pid file ' + status_params.nifi_node_pid_file)
-    #Execute('echo JAVA_HOME=' + params.jdk64_home)
-
     Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh start >> ' + params.nifi_node_log_file, user=params.nifi_user)
     #If nifi pid file not created yet, wait a bit
     if not os.path.isfile(status_params.nifi_pid_dir+'/nifi.pid'):
       Execute ('sleep 5')
-    #use nifi pid to populate Ambari pid file  
-    Execute('cat '+status_params.nifi_pid_dir+'/nifi.pid'+" | grep pid | sed 's/pid=\(\.*\)/\\1/' > " + status_params.nifi_node_pid_file)
-    Execute('chown '+params.nifi_user+':'+params.nifi_group+' ' + status_params.nifi_node_pid_file)
 
 
   def status(self, env):
