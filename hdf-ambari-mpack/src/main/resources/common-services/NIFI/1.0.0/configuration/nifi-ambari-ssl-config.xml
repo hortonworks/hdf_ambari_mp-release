@@ -32,7 +32,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
     <display-name>Keystore type</display-name>
-    <description>The keystore type. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
+    <description>The keystore type. It is blank by default but required if nifi.node.ssl.isenabled=true. e.g. jks</description>
   </property>
   <property>
     <name>nifi.security.keystorePasswd</name>
@@ -76,7 +76,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
     <display-name>Truststore type</display-name>    
-    <description>The truststore type. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
+    <description>The truststore type. It is blank by default but required if nifi.node.ssl.isenabled=true. e.g. jks</description>
   </property>
   <property>
     <name>nifi.security.truststorePasswd</name>
