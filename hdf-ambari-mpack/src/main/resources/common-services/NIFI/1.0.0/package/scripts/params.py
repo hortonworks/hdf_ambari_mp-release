@@ -83,6 +83,10 @@ else:
   nifi_node_host = socket.getfqdn()
   nifi_node_ssl_port = ""
 
+
+nifi_truststore = nifi_truststore.replace('{nifi_node_ssl_host}',nifi_node_ssl_host)
+nifi_keystore = nifi_keystore.replace('{nifi_node_ssl_host}',nifi_node_ssl_host)
+
   
 # params from nifi-env
 nifi_user = config['configurations']['nifi-env']['nifi_user']

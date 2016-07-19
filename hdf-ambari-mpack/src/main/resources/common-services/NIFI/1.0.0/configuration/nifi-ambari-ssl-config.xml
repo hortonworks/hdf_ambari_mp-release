@@ -22,7 +22,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
     <display-name>Keystore path</display-name>
-    <description>The full path and name of the keystore. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
+    <description>The full path and name of the keystore. It is blank by default but required if nifi.node.ssl.isenabled=true. To reference paths that include hostnames you can use format such as: /etc/security/nifi-certs/{nifi_node_ssl_host}/{nifi_node_ssl_host}.jks</description>
   </property>
   <property>
     <name>nifi.security.keystoreType</name>
@@ -66,7 +66,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
     <display-name>Truststore path</display-name>
-    <description>The full path and name of the truststore. It is blank by default but required if nifi.node.ssl.isenabled=true.</description>
+    <description>The full path and name of the truststore. It is blank by default but required if nifi.node.ssl.isenabled=true. To reference paths that include hostnames you can use format such as: /etc/security/nifi-certs/{nifi_node_ssl_host}/truststore.jks</description>
   </property>
   <property>
     <name>nifi.security.truststoreType</name>
