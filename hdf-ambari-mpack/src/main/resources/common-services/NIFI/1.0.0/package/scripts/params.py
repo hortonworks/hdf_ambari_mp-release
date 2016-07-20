@@ -283,11 +283,11 @@ if has_ranger_admin:
   nifi_authentication = config['configurations']['ranger-nifi-plugin-properties']['nifi.authentication']
   ranger_id_owner_for_certificate = config['configurations']['ranger-nifi-plugin-properties']['owner.for.certificate']
   nifi_id_owner_for_certificate = config['configurations']['ranger-nifi-policymgr-ssl']['owner.for.certificate']
+  regex = r"(CN)=([a-zA-Z0-9\.\-\* ]*)"
+  match = re.search(regex, nifi_id_owner_for_certificate)
+  common_name_for_certificate = match.group(2) if match else 'NONE'
 
   if nifi_authentication == 'SSL':
-
-    regex = r"(CN)=([a-zA-Z0-9\.\-\* ]*)"
-    match = re.search(regex, nifi_id_owner_for_certificate)
 
     nifi_ranger_plugin_config = {
       'nifi.authentication': nifi_authentication,
@@ -298,12 +298,13 @@ if has_ranger_admin:
       'nifi.ssl.truststore': config['configurations']['ranger-nifi-plugin-properties']['nifi.ssl.truststore'],
       'nifi.ssl.truststoreType': config['configurations']['ranger-nifi-plugin-properties']['nifi.ssl.truststoreType'],
       'nifi.ssl.truststorePassword': config['configurations']['ranger-nifi-plugin-properties']['nifi.ssl.truststorePassword'],
-      'commonNameForCertificate': match.group(2) if match else ''
+      'commonNameForCertificate': common_name_for_certificate
     }
   else:
     nifi_ranger_plugin_config = {
       'nifi.authentication': nifi_authentication,
-      'nifi.url': format("https://{nifi_host_name}:{nifi_host_port}/nifi-api/resources")
+      'nifi.url': format("https://{nifi_host_name}:{nifi_host_port}/nifi-api/resources"),
+      'commonNameForCertificate': common_name_for_certificate
     }
 
   nifi_ranger_plugin_repo = {
