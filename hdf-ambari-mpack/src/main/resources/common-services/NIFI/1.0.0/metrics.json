@@ -54,6 +54,11 @@
               "pointInTime": false,
               "temporal": true
             },
+            "metrics/nifi/TotalTaskDurationNanoSeconds": {
+              "metric": "TotalTaskDurationNanoSeconds",
+              "pointInTime": false,
+              "temporal": true
+            },
             "metrics/jvm/uptime": {
               "metric": "jvm.uptime",
               "pointInTime": true,

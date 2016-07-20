@@ -222,22 +222,22 @@
           }
         },
 		 {
-          "widget_name": "Total Task Duration Seconds",
-          "description": "The total task duration in seconds.",
+          "widget_name": "Total Task Duration Milliseconds",
+          "description": "The total task duration in Milliseconds.",
           "widget_type": "GRAPH",
           "is_visible": true,
           "metrics": [
             {
-              "name": "TotalTaskDurationSeconds",
-              "metric_path": "metrics/nifi/TotalTaskDurationSeconds",
+              "name": "TotalTaskDurationNanoSeconds",
+              "metric_path": "metrics/nifi/TotalTaskDurationNanoSeconds",
               "service_name": "NIFI",
               "component_name": "NIFI_MASTER"
             }
           ],
           "values": [
             {
-              "name": "Total Task Duration Seconds",
-              "value": "${TotalTaskDurationSeconds}"
+              "name": "Total Task Duration Milliseconds",
+              "value": "${TotalTaskDurationNanoSeconds/1000}"
             }
           ],
           "properties": {
