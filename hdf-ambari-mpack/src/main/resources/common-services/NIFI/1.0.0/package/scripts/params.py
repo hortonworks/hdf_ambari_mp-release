@@ -76,11 +76,17 @@ nifi_truststoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.s
 nifi_truststorePasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststorePasswd']
 nifi_needClientAuth = config['configurations']['nifi-ambari-ssl-config']['nifi.security.needClientAuth']
 
+#property that is set to hostname regardless of whether SSL enabled
+nifi_node_host = socket.getfqdn()
+
+#populate properties whose values depend on whether SSL enabled
 if nifi_ssl_enabled:
   nifi_node_ssl_host = socket.getfqdn()
   nifi_node_port = ""
+  nifi_truststore = nifi_truststore.replace('{nifi_node_ssl_host}',nifi_node_ssl_host)
+  nifi_keystore = nifi_keystore.replace('{nifi_node_ssl_host}',nifi_node_ssl_host)
 else:
-  nifi_node_host = socket.getfqdn()
+  nifi_node_nonssl_host = socket.getfqdn()
   nifi_node_ssl_port = ""
 
   

@@ -468,7 +468,7 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
   </property>
   <property>
     <name>nifi.web.http.host</name>
-    <value>{{nifi_node_host}}</value>
+    <value>{{nifi_node_nonssl_host}}</value>
     <on-ambari-upgrade add="true"/>
     <description>The HTTP host</description>
   </property>
@@ -615,6 +615,53 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
     <on-ambari-upgrade add="true"/>
     <description>This is the location of the OCSP responder certificate if one is being used. It is blank by default.</description>
   </property>
+
+  <!-- Identity Mapping Properties -->
+  
+  
+
+  <property>
+    <name>nifi.security.identity.mapping.pattern.dn</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+    <description>Sample DN pattern property to demonstrate normalizing DNs from certificates into a common identity string. Create your own patterns using nifi.security.identity.mapping.pattern.XXX convention. Sample DN pattern: ^CN=(.*?), OU=(.*?), O=(.*?), L=(.*?), ST=(.*?), C=(.*?)$</description>
+  </property>
+  
+  <property>
+    <name>nifi.security.identity.mapping.value.dn</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+    <description>Sample DN value property to demonstrate normalizing DNs from certificates into a common identity string. Set values for your own patterns using nifi.security.identity.mapping.pattern.XXX convention. Sample DN value: $1@$2</description>
+  </property>
+
+  <property>
+    <name>nifi.security.identity.mapping.pattern.kerb</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+    <description>Sample kerberos pattern property to demonstrate normalizing DNs from Kerberos principals into a common identity string. Create your own patterns using nifi.security.identity.mapping.pattern.XXX convention. Sample kerberos pattern: ^(.*?)/instance@(.*?)$</description>
+  </property>
+  
+  <property>
+    <name>nifi.security.identity.mapping.value.kerb</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+    <description>Sample kerberos value property to demonstrate normalizing DNs from Kerberos principals into a common identity string. Set values for your own patterns using nifi.security.identity.mapping.pattern.XXX convention. Sample kerberos value: $1@$2</description>
+  </property>
+
+
+
 
   <!--# cluster common properties (all nodes must have same values) #-->
 
