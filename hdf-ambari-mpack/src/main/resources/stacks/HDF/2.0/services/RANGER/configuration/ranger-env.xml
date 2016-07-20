@@ -24,12 +24,12 @@
 
   <property>
     <name>xasecure.audit.destination.hdfs</name>
-    <on-ambari-upgrade delete="true"/>
+    <deleted>true</deleted>
   </property>
 
   <property>
     <name>xasecure.audit.destination.hdfs.dir</name>
-    <on-ambari-upgrade delete="true"/>
+    <deleted>true</deleted>
   </property>
 
   <property>
