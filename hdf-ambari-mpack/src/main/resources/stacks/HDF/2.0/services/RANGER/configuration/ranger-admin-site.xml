@@ -19,6 +19,12 @@
 <configuration>
 
   <property>
+    <name>ranger.plugins.atlas.serviceuser</name>
+    <deleted>true</deleted>
+    <on-ambari-upgrade add="false"/>
+  </property>
+
+  <property>
     <name>ranger.plugins.nifi.serviceuser</name>
     <value>nifi</value>
     <depends-on>
