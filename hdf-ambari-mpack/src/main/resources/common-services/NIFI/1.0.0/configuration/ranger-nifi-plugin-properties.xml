@@ -53,6 +53,10 @@
                 <type>ranger-env</type>
                 <name>ranger-nifi-plugin-enabled</name>
             </property>
+            <property>
+                <type>nifi-ambari-ssl-config</type>
+                <name>nifi.node.ssl.isenabled</name>
+            </property>
         </depends-on>
         <value-attributes>
             <overridable>false</overridable>
@@ -138,6 +142,7 @@
     <property>
         <name>owner.for.certificate</name>
         <value/>
+        <display-name>Owner for Certificate</display-name>
         <description>Full identity of certificate owner (created when keystore was generated)</description>
         <value-attributes>
             <empty-value-valid>true</empty-value-valid>

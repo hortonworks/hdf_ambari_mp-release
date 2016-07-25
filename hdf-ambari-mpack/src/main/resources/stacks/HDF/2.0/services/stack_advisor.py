@@ -245,6 +245,12 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
       rangerEnvNiFiPluginProperty = services["configurations"]["ranger-env"]["properties"]["ranger-nifi-plugin-enabled"]
       putNiFiRangerPluginProperty("ranger-nifi-plugin-enabled", rangerEnvNiFiPluginProperty)
 
+      if rangerEnvNiFiPluginProperty == 'Yes' and \
+                      "nifi.authentication" in services["configurations"]["ranger-nifi-plugin-properties"]["properties"] and \
+                      "nifi.node.ssl.isenabled" in services["configurations"]["nifi-ambari-ssl-config"]["properties"]:
+        nifiAmbariSSLConfig = 'SSL' if services["configurations"]["nifi-ambari-ssl-config"]["properties"]["nifi.node.ssl.isenabled"] == 'true' else 'NONE'
+        putNiFiRangerPluginProperty("nifi.authentication",nifiAmbariSSLConfig)
+
   def recommendRangerConfigurations(self, configurations, clusterData, services, hosts):
 
     servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
