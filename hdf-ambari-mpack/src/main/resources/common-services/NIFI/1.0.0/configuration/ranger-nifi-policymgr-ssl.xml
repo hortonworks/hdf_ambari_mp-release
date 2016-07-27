@@ -14,7 +14,7 @@
 </property>
 <property>
     <name>xasecure.policymgr.clientssl.keystore.password</name>
-    <value></value>
+    <value>changeme</value>
     <property-type>PASSWORD</property-type>
     <description>password for keystore</description>
     <value-attributes>
@@ -34,7 +34,7 @@
 </property>
 <property>
     <name>xasecure.policymgr.clientssl.truststore.password</name>
-    <value></value>
+    <value>changeme</value>
     <property-type>PASSWORD</property-type>
     <description>java truststore password</description>
     <value-attributes>
