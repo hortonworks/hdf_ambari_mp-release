@@ -33,7 +33,7 @@
     <name>nifi_group</name>
     <value>nifi</value>
     <property-type>GROUP</property-type>
-    <display-name>Kafka Group</display-name>
+    <display-name>Nifi Group</display-name>
     <description>nifi group</description>
       <on-ambari-upgrade add="true"/>
   </property> 
