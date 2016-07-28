@@ -65,7 +65,7 @@ class Master(Script):
 
     PropertiesFile(params.nifi_config_dir + '/nifi.properties',
                    properties = params.nifi_properties,
-                   mode = 0644,
+                   mode = 0400,
                    owner = params.nifi_user,
                    group = params.nifi_group)
 
@@ -79,42 +79,42 @@ class Master(Script):
     if isInstall and params.metrics_collector_host:
       Execute('echo "First time setup so generating flow.xml.gz" >> ' + params.nifi_node_log_file, user=params.nifi_user)
       flow_content=InlineTemplate(params.nifi_flow_content)
-      File(format("{params.nifi_flow_config_dir}/flow.xml"), content=flow_content, owner=params.nifi_user, group=params.nifi_group)
+      File(format("{params.nifi_flow_config_dir}/flow.xml"), content=flow_content, owner=params.nifi_user, group=params.nifi_group, mode=0600)
       Execute(format("cd {params.nifi_flow_config_dir}; mv flow.xml.gz flow_$(date +%d-%m-%Y).xml.gz ;"),user=params.nifi_user,ignore_failures=True)
       Execute(format("cd {params.nifi_flow_config_dir}; gzip flow.xml;"), user=params.nifi_user)
 
 
     #write out boostrap.conf
     bootstrap_content=InlineTemplate(params.nifi_boostrap_content)
-    File(format("{params.nifi_config_dir}/bootstrap.conf"), content=bootstrap_content, owner=params.nifi_user, group=params.nifi_group)
+    File(format("{params.nifi_config_dir}/bootstrap.conf"), content=bootstrap_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
     #write out logback.xml
     logback_content=InlineTemplate(params.nifi_node_logback_content)
-    File(format("{params.nifi_config_dir}/logback.xml"), content=logback_content, owner=params.nifi_user, group=params.nifi_group)
+    File(format("{params.nifi_config_dir}/logback.xml"), content=logback_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
     #write out state-management.xml
     statemgmt_content=InlineTemplate(params.nifi_state_management_content)
-    File(format("{params.nifi_config_dir}/state-management.xml"), content=statemgmt_content, owner=params.nifi_user, group=params.nifi_group)
+    File(format("{params.nifi_config_dir}/state-management.xml"), content=statemgmt_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
     #write out authorizers file
     authorizers_content=InlineTemplate(params.nifi_authorizers_content)
-    File(format("{params.nifi_config_dir}/authorizers.xml"), content=authorizers_content, owner=params.nifi_user, group=params.nifi_group)
+    File(format("{params.nifi_config_dir}/authorizers.xml"), content=authorizers_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
     #write out login-identity-providers.xml
     login_identity_providers_content=InlineTemplate(params.nifi_login_identity_providers_content)
-    File(format("{params.nifi_config_dir}/login-identity-providers.xml"), content=login_identity_providers_content, owner=params.nifi_user, group=params.nifi_group)
+    File(format("{params.nifi_config_dir}/login-identity-providers.xml"), content=login_identity_providers_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
-    #write out nifi-env in bin
+    #write out nifi-env in bin as 0755 (see BUG-61769)
     env_content=InlineTemplate(params.nifi_env_content)
     File(format("{params.bin_dir}/nifi-env.sh"), content=env_content, owner=params.nifi_user, group=params.nifi_group, mode=0755) 
     
     #write out bootstrap-notification-services.xml
     boostrap_notification_content=InlineTemplate(params.nifi_boostrap_notification_content)
-    File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group) 
+    File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group, mode=0400) 
 
     #write out authorizations.xml to internal dir (must be writable by nifi)
     authorizations_content=InlineTemplate(params.nifi_authorizations_content)
-    File(format("{params.nifi_flow_config_dir}/authorizations.xml"), content=authorizations_content, owner=params.nifi_user, group=params.nifi_group) 
+    File(format("{params.nifi_flow_config_dir}/authorizations.xml"), content=authorizations_content, owner=params.nifi_user, group=params.nifi_group, mode=0600) 
 
 
 

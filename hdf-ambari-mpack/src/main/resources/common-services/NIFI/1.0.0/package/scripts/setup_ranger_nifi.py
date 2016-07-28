@@ -20,7 +20,7 @@ limitations under the License.
 from resource_management.core.logger import Logger
 
 def setup_ranger_nifi(upgrade_type=None):
-    import params
+    import params, os
 
     if params.has_ranger_admin and params.enable_ranger_nifi:
 
@@ -32,27 +32,6 @@ def setup_ranger_nifi(upgrade_type=None):
             Logger.info("nifi: Setup ranger: command retry enables thus retrying if ranger admin is down !")
         else:
             Logger.info("nifi: Setup ranger: command retry not enabled thus skipping if ranger admin is down !")
-
-        if params.xa_audit_hdfs_is_enabled:
-
-            if params.has_namenode:
-                params.HdfsResource("/ranger/audit",
-                                    type="directory",
-                                    action="create_on_execute",
-                                    owner=params.hdfs_user,
-                                    group=params.hdfs_user,
-                                    mode=0755,
-                                    recursive_chmod=True
-                                    )
-                params.HdfsResource("/ranger/audit/nifi",
-                                    type="directory",
-                                    action="create_on_execute",
-                                    owner=params.nifi_user,
-                                    group=params.nifi_user,
-                                    mode=0700,
-                                    recursive_chmod=True
-                                    )
-                params.HdfsResource(None, action="execute")
 
 
         api_version=None
@@ -78,6 +57,10 @@ def setup_ranger_nifi(upgrade_type=None):
                             is_stack_supports_ranger_kerberos = params.stack_supports_ranger_kerberos,
                             component_user_principal=params.ranger_nifi_principal if params.security_enabled else None,
                             component_user_keytab=params.ranger_nifi_keytab if params.security_enabled else None)
+                            
+        os.chmod(params.nifi_config_dir+'/ranger-nifi-audit.xml', 0400)
+        os.chmod(params.nifi_config_dir+'/ranger-nifi-security.xml', 0400)
+        os.chmod(params.nifi_config_dir+'/ranger-policymgr-ssl.xml', 0400)
 
     else:
         Logger.info('Ranger admin not installed')
