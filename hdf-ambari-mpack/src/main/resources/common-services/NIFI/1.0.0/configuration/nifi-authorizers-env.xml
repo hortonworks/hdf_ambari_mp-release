@@ -44,8 +44,8 @@
         {% endif %}
         {% else %}
         &lt;class&gt;org.apache.nifi.authorization.FileAuthorizer&lt;/class&gt;
-        &lt;property name=&quot;Authorizations File&quot;&gt;{{nifi_config_dir}}/authorizations.xml&lt;/property&gt;
-        &lt;property name=&quot;Users File&quot;&gt;{{nifi_config_dir}}/users.xml&lt;/property&gt;
+        &lt;property name=&quot;Authorizations File&quot;&gt;{{nifi_flow_config_dir}}/authorizations.xml&lt;/property&gt;
+        &lt;property name=&quot;Users File&quot;&gt;{{nifi_flow_config_dir}}/users.xml&lt;/property&gt;
         &lt;property name=&quot;Initial Admin Identity&quot;&gt;&lt;/property&gt;
         &lt;property name=&quot;Legacy Authorized Users File&quot;&gt;&lt;/property&gt;
         {% endif %}
