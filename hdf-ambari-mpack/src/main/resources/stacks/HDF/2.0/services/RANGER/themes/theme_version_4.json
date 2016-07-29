@@ -252,6 +252,55 @@
           ]
         },
         {
+          "config": "ranger-env/is_external_solrCloud_enabled",
+          "removed" : false,
+          "subsection-name": "subsection-ranger-solr-row1-col1",
+          "depends-on": [
+            {
+              "configs":[
+                "ranger-env/xasecure.audit.destination.solr",
+                "ranger-env/is_solrCloud_enabled"
+              ],
+              "if": "${ranger-env/xasecure.audit.destination.solr} && ${ranger-env/is_solrCloud_enabled}",
+              "then": {
+                "property_value_attributes": {
+                  "visible": true
+                }
+              },
+              "else": {
+                "property_value_attributes": {
+                  "visible": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "config": "ranger-env/is_external_solrCloud_kerberos",
+          "removed" : false,
+          "subsection-name": "subsection-ranger-solr-row1-col1",
+          "depends-on": [
+            {
+              "configs":[
+                "ranger-env/xasecure.audit.destination.solr",
+                "ranger-env/is_solrCloud_enabled",
+                "ranger-env/is_external_solrCloud_enabled"
+              ],
+              "if": "${ranger-env/xasecure.audit.destination.solr} && ${ranger-env/is_solrCloud_enabled} && ${ranger-env/is_external_solrCloud_enabled}",
+              "then": {
+                "property_value_attributes": {
+                  "visible": true
+                }
+              },
+              "else": {
+                "property_value_attributes": {
+                  "visible": false
+                }
+              }
+            }
+          ]
+        },
+        {
           "config" : "ranger-admin-site/ranger.audit.solr.urls",
           "removed" : false,
           "subsection-name" : "subsection-ranger-solr-row1-col1",
@@ -340,28 +389,6 @@
               "else" : {
                 "property_value_attributes" : {
                   "visible" : false
-                }
-              }
-            }
-          ]
-        },
-        {
-          "config": "ranger-admin-site/ranger.is.solr.kerberised",
-          "subsection-name": "subsection-ranger-solr-row1-col1",
-          "depends-on": [
-            {
-              "configs":[
-                "ranger-env/xasecure.audit.destination.solr"
-              ],
-              "if": "${ranger-env/xasecure.audit.destination.solr}",
-              "then": {
-                "property_value_attributes": {
-                  "visible": true
-                }
-              },
-              "else": {
-                "property_value_attributes": {
-                  "visible": false
                 }
               }
             }
