@@ -134,9 +134,6 @@ nifi_login_identity_providers_content = config['configurations']['nifi-login-ide
 # params from nifi-boostrap
 nifi_boostrap_content = config['configurations']['nifi-bootstrap-env']['content']
 
-# params from nifi-authorizations-env
-nifi_authorizations_content = config['configurations']['nifi-authorizations-env']['content']
-
 # params from nifi-bootstrap-notification-services-env
 nifi_boostrap_notification_content = config['configurations']['nifi-bootstrap-notification-services-env']['content']
 

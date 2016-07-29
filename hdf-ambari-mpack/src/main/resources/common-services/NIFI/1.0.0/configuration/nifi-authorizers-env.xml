@@ -45,8 +45,14 @@
         {% else %}
         &lt;class&gt;org.apache.nifi.authorization.FileAuthorizer&lt;/class&gt;
         &lt;property name=&quot;Authorizations File&quot;&gt;{{nifi_flow_config_dir}}/authorizations.xml&lt;/property&gt;
+        &lt;property name=&quot;Users File&quot;&gt;{{nifi_flow_config_dir}}/users.xml&lt;/property&gt;
         &lt;property name=&quot;Initial Admin Identity&quot;&gt;&lt;/property&gt;
+        &lt;property name=&quot;Legacy Authorized Users File&quot;&gt;&lt;/property&gt;
         {% endif %}
+        &lt;!-- Provide the identity (typically a DN) of each node when clustered, see above description of Node Identity.
+        &lt;property name=&quot;Node Identity 1&quot;&gt;&lt;/property&gt;
+        &lt;property name=&quot;Node Identity 2&quot;&gt;&lt;/property&gt;
+        --&gt;
         &lt;/authorizer&gt;
         &lt;/authorizers&gt;
     </value>

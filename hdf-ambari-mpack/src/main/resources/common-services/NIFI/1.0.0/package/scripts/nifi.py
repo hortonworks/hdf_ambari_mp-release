@@ -112,10 +112,6 @@ class Master(Script):
     boostrap_notification_content=InlineTemplate(params.nifi_boostrap_notification_content)
     File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group, mode=0400) 
 
-    #write out authorizations.xml to internal dir (must be writable by nifi)
-    authorizations_content=InlineTemplate(params.nifi_authorizations_content)
-    File(format("{params.nifi_flow_config_dir}/authorizations.xml"), content=authorizations_content, owner=params.nifi_user, group=params.nifi_group, mode=0600) 
-
 
 
   def stop(self, env):
