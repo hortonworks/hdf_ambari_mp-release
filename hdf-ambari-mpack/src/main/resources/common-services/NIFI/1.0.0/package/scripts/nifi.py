@@ -17,8 +17,6 @@ class Master(Script):
     #Create user and group if they don't exist
     self.create_linux_user(params.nifi_user, params.nifi_group)
 
-    Execute('chown -R '+params.nifi_user+':'+params.nifi_group+' '+params.nifi_node_dir+'/*')
-
     #update the configs specified by user
     self.configure(env, True)
 
@@ -40,10 +38,11 @@ class Master(Script):
     env.set_params(status_params)
 
     #create the log, pid, conf dirs if not already present
-    Directory([status_params.nifi_pid_dir, params.nifi_node_log_dir, params.nifi_internal_dir, params.nifi_database_dir, params.nifi_flowfile_repo_dir, params.nifi_content_repo_dir_default, params.nifi_provenance_repo_dir_default, params.nifi_config_dir, params.nifi_flow_config_dir, params.nifi_state_dir],
+    Directory([status_params.nifi_pid_dir, params.nifi_node_log_dir, params.nifi_internal_dir, params.nifi_database_dir, params.nifi_flowfile_repo_dir, params.nifi_content_repo_dir_default, params.nifi_provenance_repo_dir_default, params.nifi_config_dir, params.nifi_flow_config_dir, params.nifi_state_dir, params.lib_dir],
             owner=params.nifi_user,
             group=params.nifi_group,
-            create_parents=True
+            create_parents=True,
+            recursive_ownership=True
     )
 
     # On some OS this folder may not exist, so we will create it before pushing files there

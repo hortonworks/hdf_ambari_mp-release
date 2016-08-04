@@ -63,6 +63,7 @@ nifi_is_node='true'
 
 nifi_node_dir=nifi_install_dir
 bin_dir = os.path.join(*[nifi_node_dir,'bin'])
+lib_dir = os.path.join(*[nifi_node_dir,'lib'])
 
 # params from nifi-ambari-ssl-config
 
