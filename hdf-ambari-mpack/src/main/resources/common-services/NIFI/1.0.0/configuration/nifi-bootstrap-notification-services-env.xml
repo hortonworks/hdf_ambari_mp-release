@@ -5,6 +5,7 @@
 
   <property>
     <name>content</name>
+    <display-name>Template for bootstrap-notification-services.xml</display-name>    
     <description>This is the jinja template for bootstrap-notification-services.xml</description>
     <value>
 &lt;!--

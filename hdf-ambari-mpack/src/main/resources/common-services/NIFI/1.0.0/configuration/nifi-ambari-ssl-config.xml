@@ -103,7 +103,52 @@
     <display-name>Clients need to authenticate?</display-name>      
     <description>Specifies whether or not connecting clients must authenticate themselves. Specifically this property is used by the NiFi cluster protocol. If the Truststore properties are not set, this must be false. Otherwise, a value of true indicates that nodes in the cluster will be authenticated and must have certificates that are trusted by the Truststores.</description>
   </property>
+  
+  <property>
+    <name>nifi.tinitial.admin.identity</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+    <display-name>Initial Admin Identity</display-name>
+    <description>
+    The identity of an initial admin user that will be granted access to the UI and
+            given the ability to create additional users, groups, and policies. Must be specified when Ranger plugin for
+            Nifi will not be used for authorization. The value of this property could be
+            a DN when using certificates or LDAP, or a Kerberos principal. This property will only be used when there
+            are no other users, groups, and policies defined. If this property is specified then a Legacy Authorized
+            Users File can not be specified.
+    </description>
+  </property>
+  
+  <property>
+    <name>content</name>
+    <display-name>Node Identities</display-name>
+    <description>
+    Node Identity [unique key] - The identity of a NiFi cluster node. When clustered, a property for each node
+            should be defined, so that every node knows about every other node. If not clustered these properties can be ignored.
+            Also must be specified when Ranger Nifi plugin will not be used for authorization.
+            The name of each property must be unique, for example for a three node cluster:
+            &quot;Node Identity A&quot;, &quot;Node Identity B&quot;, &quot;Node Identity C&quot; or &quot;Node Identity 1&quot;, &quot;Node Identity 2&quot;, &quot;Node Identity 3&quot;
+            NOTE: Any identity mapping rules specified in nifi.properties will also be applied to the node identities,
+            so the values should be the unmapped identities (i.e. full DN from a certificate).
+    </description>
+    <value>
+&lt;!-- Provide the identity (typically a DN) of each node when clustered (see tool tip for detailed description of Node Identity). Must be specified when Ranger Nifi plugin will not be used for authorization. --&gt;
 
-
+&lt;!--
+&lt;property name="Node Identity 1"&gt;&lt;/property&gt;
+&lt;property name="Node Identity 2"&gt;&lt;/property&gt;
+&lt;property name="Node Identity 3"&gt;&lt;/property&gt;
+&lt;property name="Node Identity 4"&gt;&lt;/property&gt;
+--&gt;
+    </value>
+    <value-attributes>
+      <type>content</type>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  
 
 </configuration>

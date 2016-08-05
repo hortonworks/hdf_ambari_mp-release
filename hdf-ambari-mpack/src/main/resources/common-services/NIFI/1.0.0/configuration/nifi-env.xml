@@ -56,6 +56,7 @@
                       
   <property>
     <name>content</name>
+    <display-name>Template for nifi-env.sh</display-name>        
     <value>
 #!/bin/sh
 #

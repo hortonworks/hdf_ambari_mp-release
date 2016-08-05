@@ -6,6 +6,7 @@
   <property>
     <name>content</name>
     <description>This is the jinja template for login-identity-providers.xml</description>
+    <display-name>Template for login-identity-providers.xml</display-name>                
     <value>
 
 &lt;!--

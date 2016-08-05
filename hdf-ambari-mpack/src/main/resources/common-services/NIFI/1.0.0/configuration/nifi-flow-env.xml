@@ -5,6 +5,7 @@
 
   <property>
     <name>content</name>
+    <display-name>Template for flow.xml</display-name>            
     <value>
 &lt;flowController&gt;
   &lt;maxTimerDrivenThreadCount&gt;10&lt;/maxTimerDrivenThreadCount&gt;

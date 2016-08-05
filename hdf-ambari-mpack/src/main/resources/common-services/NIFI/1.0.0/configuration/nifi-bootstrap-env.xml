@@ -6,6 +6,7 @@
             
   <property>
     <name>content</name>
+    <display-name>Template for bootstrap.conf</display-name>    
     <value>
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more

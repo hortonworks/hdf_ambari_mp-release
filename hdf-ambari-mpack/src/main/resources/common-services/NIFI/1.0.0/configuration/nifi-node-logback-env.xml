@@ -6,6 +6,7 @@
   
   <property>
     <name>content</name>
+    <display-name>Template for logback.xml</display-name>                    
     <value>
 &lt;!--
   Licensed to the Apache Software Foundation (ASF) under one or more
