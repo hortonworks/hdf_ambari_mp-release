@@ -1,4 +1,4 @@
-import linux_utils, nifi_ca_util, os, time
+import nifi_ca_util, os, time
 
 from resource_management.core.exceptions import ComponentIsNotRunning
 from resource_management.core.resources.system import Directory, Execute
@@ -13,9 +13,6 @@ class CertificateAuthority(Script):
     import status_params
 
     self.install_packages(env)
-
-    #Create user and group if they don't exist
-    linux_utils.create_linux_user(params.nifi_user, params.nifi_group)
 
     #Be sure ca script is in cache
     nifi_ca_util.get_toolkit_script('tls-toolkit.sh')
@@ -35,7 +32,12 @@ class CertificateAuthority(Script):
 
     ca_json = os.path.join(params.nifi_config_dir, 'nifi-certificate-authority.json')
     ca_dict = nifi_ca_util.load_overlay_dump(ca_json, params.nifi_ca_config)
-    linux_utils.chown(params.nifi_config_dir, params.nifi_user, params.nifi_group, True)
+    Directory([params.nifi_config_dir],
+        owner=params.nifi_user,
+        group=params.nifi_group,
+        create_parents=True,
+        recursive_ownership=True
+    )
     
   def status(self, env):
     import status_params
@@ -48,7 +50,12 @@ class CertificateAuthority(Script):
     self.configure(env)
     ca_server_script = nifi_ca_util.get_toolkit_script('tls-toolkit.sh')
     run_ca_script = os.path.join(os.path.dirname(__file__), 'run_ca.sh')
-    linux_utils.chown(params.nifi_config_dir, params.nifi_user, params.nifi_group, True)
+    Directory([params.nifi_config_dir],
+        owner=params.nifi_user,
+        group=params.nifi_group,
+        create_parents=True,
+        recursive_ownership=True
+    )
     os.chmod(ca_server_script, 0755)
     os.chmod(run_ca_script, 0755)
     Execute((run_ca_script, params.jdk64_home, ca_server_script, params.nifi_config_dir + '/nifi-certificate-authority.json', params.nifi_ca_log_file_stdout, params.nifi_ca_log_file_stderr, status_params.nifi_ca_pid_file), user=params.nifi_user)

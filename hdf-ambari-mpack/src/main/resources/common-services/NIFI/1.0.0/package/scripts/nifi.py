@@ -1,4 +1,4 @@
-import sys, nifi_ca_util, os, pwd, linux_utils, grp, signal, time, glob, socket, json
+import sys, nifi_ca_util, os, pwd, grp, signal, time, glob, socket, json
 from resource_management import *
 from subprocess import call
 from setup_ranger_nifi import setup_ranger_nifi
@@ -14,10 +14,12 @@ class Master(Script):
 
     self.install_packages(env)
 
-    #Create user and group if they don't exist
-    linux_utils.create_linux_user(params.nifi_user, params.nifi_group)
-
-    linux_utils.chown(params.nifi_node_dir, params.nifi_user, params.nifi_group, True)
+    Directory([params.nifi_node_dir],
+            owner=params.nifi_user,
+            group=params.nifi_group,
+            create_parents=True,
+            recursive_ownership=True
+    )
 
     #update the configs specified by user
     self.configure(env, True)
@@ -59,7 +61,10 @@ class Master(Script):
     if params.nifi_ca_host:
       ca_client_json = os.path.realpath(os.path.join(params.nifi_config_dir, 'nifi-certificate-authority-client.json'))
       def execute_client():
-        linux_utils.chown(ca_client_json, params.nifi_user, params.nifi_group)
+        File(ca_client_json,
+             owner = params.nifi_user, 
+             group = params.nifi_group,
+             mode = 0600)
         if is_starting:
           Execute('JAVA_HOME='+params.jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=params.nifi_user)
 
