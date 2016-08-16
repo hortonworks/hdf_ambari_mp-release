@@ -16,14 +16,19 @@ import ambari_simplejson as json # simplejson is much faster comparing to Python
     
 # server configurations
 config = Script.get_config()
+stack_root = Script.get_stack_root()
 stack_version_buildnum = default("/commandParams/version", None)
 
-nifi_install_dir = '/usr/hdf/current/nifi'
-
+#nifi_install_dir = '/usr/hdf/current/nifi'
+nifi_install_dir = os.path.join(stack_root, "current", "nifi")
+if stack_version_buildnum is not None:
+  nifi_install_dir = os.path.join(stack_root, stack_version_buildnum, "nifi")
+        
 # params from nifi-ambari-config
 nifi_initial_mem = config['configurations']['nifi-ambari-config']['nifi.initial_mem']
 nifi_max_mem = config['configurations']['nifi-ambari-config']['nifi.max_mem']
 nifi_ambari_reporting_frequency = config['configurations']['nifi-ambari-config']['nifi.ambari_reporting_frequency']
+nifi_ambari_reporting_enabled = config['configurations']['nifi-ambari-config']['nifi.ambari_reporting_enabled']
 
 # note: nifi.node.port and nifi.node.ssl.port must be defined in same xml file for quicklinks to work
 nifi_node_port = config['configurations']['nifi-ambari-config']['nifi.node.port']
@@ -41,6 +46,7 @@ nifi_provenance_repo_dir_default=config['configurations']['nifi-ambari-config'][
 nifi_config_dir = config['configurations']['nifi-ambari-config']['nifi.config.dir']
 nifi_flow_config_dir = config['configurations']['nifi-ambari-config']['nifi.flow.config.dir']
 nifi_sensitive_props_key = config['configurations']['nifi-ambari-config']['nifi.sensitive.props.key']
+
 
 nifi_flow_config_dir = nifi_flow_config_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
 nifi_state_dir = nifi_state_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
@@ -82,14 +88,15 @@ nifi_ssl_config_content = config['configurations']['nifi-ambari-ssl-config']['co
 #property that is set to hostname regardless of whether SSL enabled
 nifi_node_host = socket.getfqdn()
 
+nifi_truststore = nifi_truststore.replace('{nifi_node_ssl_host}',nifi_node_host)
+nifi_keystore = nifi_keystore.replace('{nifi_node_ssl_host}',nifi_node_host)
+
 #populate properties whose values depend on whether SSL enabled
 if nifi_ssl_enabled:
-  nifi_node_ssl_host = socket.getfqdn()
+  nifi_node_ssl_host = nifi_node_host
   nifi_node_port = ""
-  nifi_truststore = nifi_truststore.replace('{nifi_node_ssl_host}',nifi_node_ssl_host)
-  nifi_keystore = nifi_keystore.replace('{nifi_node_ssl_host}',nifi_node_ssl_host)
 else:
-  nifi_node_nonssl_host = socket.getfqdn()
+  nifi_node_nonssl_host = nifi_node_host
   nifi_node_ssl_port = ""
 
   

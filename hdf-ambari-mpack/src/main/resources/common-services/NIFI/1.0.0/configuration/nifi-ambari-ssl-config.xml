@@ -115,7 +115,9 @@
     <description>
     The identity of an initial admin user that will be granted access to the UI and
             given the ability to create additional users, groups, and policies. Must be specified when Ranger plugin for
-            Nifi will not be used for authorization. The value of this property could be
+            Nifi will not be used for authorization. 
+            Before changing value of this field, note that it will only take effect if authorizations.xml does not contain any existing policies.
+            The value of this property could be
             a DN when using certificates or LDAP, or a Kerberos principal. This property will only be used when there
             are no other users, groups, and policies defined. If this property is specified then a Legacy Authorized
             Users File can not be specified.
@@ -129,6 +131,7 @@
     Node Identity [unique key] - The identity of a NiFi cluster node. When clustered, a property for each node
             should be defined, so that every node knows about every other node. If not clustered these properties can be ignored.
             Also must be specified when Ranger Nifi plugin will not be used for authorization.
+            Before changing value of this field, note that it will only take effect if authorizations.xml does not contain any existing policies.
             The name of each property must be unique, for example for a three node cluster:
             &quot;Node Identity A&quot;, &quot;Node Identity B&quot;, &quot;Node Identity C&quot; or &quot;Node Identity 1&quot;, &quot;Node Identity 2&quot;, &quot;Node Identity 3&quot;
             NOTE: Any identity mapping rules specified in nifi.properties will also be applied to the node identities,

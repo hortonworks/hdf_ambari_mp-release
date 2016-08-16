@@ -14,6 +14,17 @@
                   <category>MASTER</category>
                   <cardinality>1+</cardinality>
                   <timelineAppid>NIFI</timelineAppid>
+
+                  <dependencies>
+                    <dependency>
+                      <name>ZOOKEEPER/ZOOKEEPER_CLIENT</name>
+                      <scope>host</scope>
+                      <auto-deploy>
+                        <enabled>true</enabled>
+                      </auto-deploy>
+                    </dependency>
+                  </dependencies>
+                            
                   <logs>
                     <log>
                       <logId>nifi-app</logId>
@@ -54,7 +65,11 @@
                  </packages>
               </osSpecific>
             </osSpecifics>
-      
+
+      	    <requiredServices>
+      	       <service>ZOOKEEPER</service>
+      	    </requiredServices>
+            
       	    <configuration-dependencies>
                 <config-type>nifi-ambari-config</config-type>
                 <config-type>nifi-ambari-ssl-config</config-type>                
