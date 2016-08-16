@@ -1,19 +1,24 @@
 import json, nifi_constants, os
+from resource_management.core import sudo
+from resource_management.core.resources.system import File
 
 script_dir = os.path.dirname(__file__)
 files_dir = os.path.realpath(os.path.join(os.path.dirname(script_dir), 'files'))
 
 def load_config(config_json):
-  with open(config_json, 'r') as f:
-    return json.load(f)
+  return json.loads(sudo.read_file(config_json))
 
 def dump_config(config_json, config_dict):
-  #See http://stackoverflow.com/questions/5624359/write-file-with-specific-permissions-in-python#answer-5624691
-  with os.fdopen(os.open(config_json, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0600), 'w') as f:
-    json.dump(config_dict, f, sort_keys=True, indent=4)
+  import params
+  File(config_json,
+    owner=params.nifi_user,
+    group=params.nifi_group,
+    mode=0600,
+    content=json.dumps(config_dict, sort_keys=True, indent=4)
+  ) 
 
 def load_and_overlay_config(config_json, overlay_dict):
-  if os.path.isfile(config_json):
+  if sudo.path_isfile(config_json):
     config_dict = load_config(config_json)
   else:
     config_dict = {}
@@ -40,7 +45,7 @@ def get_toolkit_script(scriptName, scriptDir = files_dir):
   if nifiToolkitDir is None:
     raise Exception("Couldn't find nifi toolkit directory in " + scriptDir)
   result = nifiToolkitDir + '/bin/' + scriptName
-  if not os.path.isfile(result):
+  if not sudo.path_isfile(result):
     raise Exception("Couldn't find file " + result)
   return result
 

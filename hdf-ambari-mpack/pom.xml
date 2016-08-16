@@ -11,47 +11,6 @@
     <minAmbariVersion>2.4.0.0</minAmbariVersion>
     <maxAmbariVersion></maxAmbariVersion>
   </properties>
-  <profiles>
-    <profile>
-      <id>test</id>
-      <properties>
-        <executable.python>python</executable.python>
-        <pathsep>:</pathsep>
-        <custom.tests>false</custom.tests>
-        <ambari.path>${basedir}/../../ambari</ambari.path>
-        <path.python.1>${ambari.path}/ambari-common/src/main/python</path.python.1>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.2.1</version>
-            <executions>
-              <execution>
-                <configuration>
-                  <executable>${executable.python}</executable>
-                  <workingDirectory>src/test/python</workingDirectory>
-                  <arguments>
-                    <argument>unitTests.py</argument>
-                    <argument>${custom.tests}</argument>
-                  </arguments>
-                  <environmentVariables>
-                      <PYTHONPATH>${path.python.1}${pathsep}$PYTHONPATH</PYTHONPATH>
-                  </environmentVariables>
-                </configuration>
-                <id>python-test</id>
-                <phase>test</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
   <build>
     <plugins>
       <plugin>
