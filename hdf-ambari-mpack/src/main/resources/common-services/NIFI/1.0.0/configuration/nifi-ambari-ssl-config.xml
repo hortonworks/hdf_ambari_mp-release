@@ -15,14 +15,42 @@
     <on-ambari-upgrade add="true"/>
   </property>
   <property>
-    <name>nifi.security.keystore</name>
+    <name>nifi.toolkit.tls.token</name>
     <value/>
+    <property-type>PASSWORD</property-type>
+    <display-name>NiFi CA Token</display-name>
+    <description>
+       This is a token that will be used by the NiFi Certificate Authority to verify the identity of NiFi nodes before issuing them certificates and by the NiFi nodes
+       to verify the identity of the NiFi Certificate Authority.
+
+       If relying on NiFi Certificate Authority, set this to a long, random value.
+    </description>
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
+      <type>password</type>
     </value-attributes>
     <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.toolkit.tls.helper.days</name>
+    <value>1095</value>
+    <on-ambari-upgrade add="true"/>
+    <display-name>NiFi CA Certificate Duration</display-name>
+    <description>The number of days that a certificate from the NiFi Certificate Authority should be valid for.</description>
+  </property>
+  <property>
+    <name>nifi.toolkit.tls.port</name>
+    <value>10443</value>
+    <on-ambari-upgrade add="true"/>
+    <display-name>NiFi Certificate Authority port</display-name>
+    <description>Port for NiFi Certificate Authority to listen on.</description>
+  </property>
+  <property require-input="true">
+    <name>nifi.security.keystore</name>
+    <value>{{nifi_config_dir}}/keystore.jks</value>
+    <on-ambari-upgrade add="true"/>
     <display-name>Keystore path</display-name>
-    <description>The full path and name of the keystore. It is blank by default but required if nifi.node.ssl.isenabled=true. To reference paths that include hostnames you can use format such as: /etc/security/nifi-certs/{nifi_node_ssl_host}/{nifi_node_ssl_host}.jks</description>
+    <description>The full path and name of the keystore. To reference paths that include hostnames you can use format such as: /etc/security/nifi-certs/{nifi_node_ssl_host}/{nifi_node_ssl_host}.jks</description>
   </property>
   <property>
     <name>nifi.security.keystoreType</name>
@@ -58,15 +86,12 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>        
   </property>
-  <property>
+  <property require-input="true">
     <name>nifi.security.truststore</name>
-    <value/>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
+    <value>{{nifi_config_dir}}/truststore.jks</value>
     <on-ambari-upgrade add="true"/>
     <display-name>Truststore path</display-name>
-    <description>The full path and name of the truststore. It is blank by default but required if nifi.node.ssl.isenabled=true. To reference paths that include hostnames you can use format such as: /etc/security/nifi-certs/{nifi_node_ssl_host}/truststore.jks</description>
+    <description>The full path and name of the truststore. To reference paths that include hostnames you can use format such as: /etc/security/nifi-certs/{nifi_node_ssl_host}/truststore.jks</description>
   </property>
   <property>
     <name>nifi.security.truststoreType</name>

@@ -52,8 +52,6 @@ nifi_flow_config_dir = nifi_flow_config_dir.replace('{nifi_internal_dir}',nifi_i
 nifi_state_dir = nifi_state_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
 nifi_config_dir = nifi_config_dir.replace('{nifi_install_dir}',nifi_install_dir)
 
-
-
 master_configs = config['clusterHostInfo']
 
 # detect if running in single (sandbox) box
@@ -70,6 +68,12 @@ nifi_is_node='true'
 nifi_node_dir=nifi_install_dir
 bin_dir = os.path.join(*[nifi_node_dir,'bin'])
 lib_dir = os.path.join(*[nifi_node_dir,'lib'])
+
+nifi_ca_host = None
+if 'nifi_ca_hosts' in master_configs:
+  nifi_ca_hosts = master_configs['nifi_ca_hosts']
+  if len(nifi_ca_hosts) > 0:
+    nifi_ca_host = nifi_ca_hosts[0]
 
 # params from nifi-ambari-ssl-config
 
@@ -92,6 +96,9 @@ nifi_truststore = nifi_truststore.replace('{nifi_node_ssl_host}',nifi_node_host)
 nifi_keystore = nifi_keystore.replace('{nifi_node_ssl_host}',nifi_node_host)
 
 #populate properties whose values depend on whether SSL enabled
+nifi_keystore = nifi_keystore.replace('{{nifi_config_dir}}',nifi_config_dir)
+nifi_truststore = nifi_truststore.replace('{{nifi_config_dir}}',nifi_config_dir)
+
 if nifi_ssl_enabled:
   nifi_node_ssl_host = nifi_node_host
   nifi_node_port = ""
@@ -99,7 +106,35 @@ else:
   nifi_node_nonssl_host = nifi_node_host
   nifi_node_ssl_port = ""
 
-  
+nifi_ca_parent_config = config['configurations']['nifi-ambari-ssl-config']
+nifi_use_ca = nifi_ca_parent_config['nifi.toolkit.tls.token']
+nifi_ca_log_file_stdout = config['configurations']['nifi-env']['nifi_node_log_dir'] + '/nifi-ca.stdout'
+nifi_ca_log_file_stderr = config['configurations']['nifi-env']['nifi_node_log_dir'] + '/nifi-ca.stderr'
+
+nifi_ca_config = { 
+  "days" : int(nifi_ca_parent_config['nifi.toolkit.tls.helper.days']),
+  "keyStore" : nifi_config_dir + '/nifi-certificate-authority-keystore.jks',
+  "token" : nifi_ca_parent_config['nifi.toolkit.tls.token'],
+  "dn" : 'CN=' + nifi_ca_host + ',OU=NIFI',
+  "caHostname" : nifi_ca_host,
+  "port" : int(nifi_ca_parent_config['nifi.toolkit.tls.port'])
+}
+
+nifi_ca_client_config = { 
+  "days" : int(nifi_ca_parent_config['nifi.toolkit.tls.helper.days']),
+  "keyStore" : nifi_keystore,
+  "keyStoreType" : nifi_keystoreType,
+  "keyStorePassword" : nifi_keystorePasswd,
+  "keyPassword" : nifi_keyPasswd,
+  "token" : nifi_ca_parent_config['nifi.toolkit.tls.token'],
+  "dn" : 'CN=' + nifi_node_host + ',OU=NIFI',
+  "port" : int(nifi_ca_parent_config['nifi.toolkit.tls.port']),
+  "caHostname" : nifi_ca_host,
+  "trustStore" : nifi_truststore,
+  "trustStoreType" : nifi_truststoreType,
+  "trustStorePassword": nifi_truststorePasswd
+}
+ 
 # params from nifi-env
 nifi_user = config['configurations']['nifi-env']['nifi_user']
 nifi_group = config['configurations']['nifi-env']['nifi_group']

@@ -51,6 +51,10 @@
       <directory>src/main/resources/stacks</directory>
       <outputDirectory>stacks</outputDirectory>
     </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/nifi-toolkit</directory>
+      <outputDirectory>common-services/NIFI/1.0.0/package/files</outputDirectory>
+    </fileSet>
   </fileSets>
   <!-- Single files. Syntax:
 	  <files>

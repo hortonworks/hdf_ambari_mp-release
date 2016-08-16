@@ -1,0 +1,5 @@
+NIFI_SECURITY_KEY_PASSWD = 'nifi.security.keyPasswd'
+NIFI_SECURITY_KEYSTORE_PASSWD = 'nifi.security.keystorePasswd'
+NIFI_SECURITY_KEYSTORE_TYPE = 'nifi.security.keystoreType'
+NIFI_SECURITY_TRUSTSTORE_PASSWD = 'nifi.security.truststorePasswd'
+NIFI_SECURITY_TRUSTSTORE_TYPE = 'nifi.security.truststoreType'
