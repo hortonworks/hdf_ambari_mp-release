@@ -382,7 +382,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         rangerAuthMethod = authMap.get(rangerUserSyncClass)
         putRangerAdminSiteProperty('ranger.authentication.method', rangerAuthMethod)
 
-    # Recommend Logsearch solr properties
+    # Recommend Ambari Infra Solr properties
     is_solr_cloud_enabled = False
     if 'ranger-env' in services['configurations'] and 'is_solrCloud_enabled' in services['configurations']["ranger-env"]["properties"]:
       is_solr_cloud_enabled = services['configurations']["ranger-env"]["properties"]["is_solrCloud_enabled"]  == "true"
@@ -393,17 +393,17 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
 
     ranger_audit_zk_port = ''
 
-    #TODO to change check for LOGSEARCH after implemenation of AMBARI-17822
-    if 'LOGSEARCH' in servicesList and zookeeper_host_port and is_solr_cloud_enabled and not is_external_solr_cloud_enabled:
+
+    if 'AMBARI_INFRA' in servicesList and zookeeper_host_port and is_solr_cloud_enabled and not is_external_solr_cloud_enabled:
       zookeeper_host_port = zookeeper_host_port.split(',')
       zookeeper_host_port.sort()
       zookeeper_host_port = ",".join(zookeeper_host_port)
-      logsearch_solr_znode = '/ambari-solr'
+      infra_solr_znode = '/infra-solr'
 
-      if 'logsearch-solr-env' in services['configurations'] and \
-        ('logsearch_solr_znode' in services['configurations']['logsearch-solr-env']['properties']):
-        logsearch_solr_znode = services['configurations']['logsearch-solr-env']['properties']['logsearch_solr_znode']
-        ranger_audit_zk_port = '{0}{1}'.format(zookeeper_host_port, logsearch_solr_znode)
+      if 'infra-solr-env' in services['configurations'] and \
+        ('infra_solr_znode' in services['configurations']['infra-solr-env']['properties']):
+        infra_solr_znode = services['configurations']['infra-solr-env']['properties']['infra_solr_znode']
+        ranger_audit_zk_port = '{0}{1}'.format(zookeeper_host_port, infra_solr_znode)
       putRangerAdminSiteProperty('ranger.audit.solr.zookeepers', ranger_audit_zk_port)
     elif zookeeper_host_port and is_solr_cloud_enabled and is_external_solr_cloud_enabled:
       ranger_audit_zk_port = '{0}/{1}'.format(zookeeper_host_port, 'ranger_audits')
@@ -954,18 +954,19 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
       "RANGER": {"ranger-env": self.validateRangerConfigurationsEnv,
                  "admin-properties": self.validateRangerAdminConfigurations,
                  "ranger-tagsync-site": self.validateRangerTagsyncConfigurations},
-      "NIFI": {"ranger-nifi-plugin-properties": self.validateNiFiRangerPluginConfigurations}
+      "NIFI": {"ranger-nifi-plugin-properties": self.validateNiFiRangerPluginConfigurations,
+               "nifi-ambari-ssl-config": self.validateNiFiSslProperties }
     }
 
   def recommendLogsearchConfigurations(self, configurations, clusterData, services, hosts):
     putLogsearchProperty = self.putProperty(configurations, "logsearch-properties", services)
-    logsearchSolrHosts = self.getComponentHostNames(services, "LOGSEARCH", "LOGSEARCH_SOLR")
+    infraSolrHosts = self.getComponentHostNames(services, "AMBARI_INFRA", "INFRA_SOLR")
 
-    if logsearchSolrHosts is not None and len(logsearchSolrHosts) > 0 \
+    if infraSolrHosts is not None and len(infraSolrHosts) > 0 \
       and "logsearch-properties" in services["configurations"]:
-      recommendedMinShards = len(logsearchSolrHosts)
-      recommendedShards = 2 * len(logsearchSolrHosts)
-      recommendedMaxShards = 3 * len(logsearchSolrHosts)
+      recommendedMinShards = len(infraSolrHosts)
+      recommendedShards = 2 * len(infraSolrHosts)
+      recommendedMaxShards = 3 * len(infraSolrHosts)
       # recommend number of shard
       putLogsearchAttribute = self.putPropertyAttribute(configurations, "logsearch-properties")
       putLogsearchAttribute('logsearch.collection.service.logs.numshards', 'minimum', recommendedMinShards)
@@ -976,7 +977,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
       putLogsearchAttribute('logsearch.collection.audit.logs.numshards', 'maximum', recommendedMaxShards)
       putLogsearchProperty("logsearch.collection.audit.logs.numshards", recommendedShards)
       # recommend replication factor
-      replicationReccomendFloat = math.log(len(logsearchSolrHosts), 5)
+      replicationReccomendFloat = math.log(len(infraSolrHosts), 5)
       recommendedReplicationFactor = int(1 + math.floor(replicationReccomendFloat))
       putLogsearchProperty("logsearch.collection.service.logs.replication.factor", recommendedReplicationFactor)
       putLogsearchProperty("logsearch.collection.audit.logs.replication.factor", recommendedReplicationFactor)
@@ -1391,6 +1392,45 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
                                     "{0} needs to be set to {1}".format(prop_name,prop_val))})
 
     return self.toConfigurationValidationProblems(validationItems, "kafka-broker")
+
+  def __find_ca(self, services):
+    for service in services['services']:
+      if 'components' in service:
+        for component in service['components']:
+          stackServiceComponent = component['StackServiceComponents']
+          if 'NIFI_CA' == stackServiceComponent['component_name'] and stackServiceComponent['hostnames']:
+            return True
+    return False
+    
+  def validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method):
+    if siteName == 'nifi-ambari-ssl-config':
+      return method(self.getSiteProperties(configurations, siteName), None, configurations, services, hosts)
+    else:
+      return DefaultStackAdvisor.validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method)
+
+  def validateNiFiSslProperties(self, properties, recommendedDefaults, configurations, services, hosts):
+    validationItems = []
+    ssl_enabled = properties['nifi.node.ssl.isenabled'] and str(properties['nifi.node.ssl.isenabled']).lower() != 'false'
+    if (self.__find_ca(services)):
+      if not properties['nifi.toolkit.tls.token']:
+        validationItems.append({"config-name": 'nifi.toolkit.tls.token', 'item': self.getErrorItem('If NiFi Certificate Authority is used, nifi.toolkit.tls.token must be set')})
+      if not ssl_enabled:
+        validationItems.append({"config-name": 'nifi.node.ssl.isenabled', 'item': self.getWarnItem('For NiFi Certificate Authority to be useful, ssl should be enabled')})
+    else:
+      if properties['nifi.toolkit.tls.token']:
+        validationItems.append({"config-name": 'nifi.toolkit.tls.token', 'item': self.getWarnItem("If NiFi Certificate Authority is not used, nifi.toolkit.tls.token doesn't do anything.")})
+      if ssl_enabled:
+        if not properties['nifi.security.keystorePasswd']:
+          validationItems.append({"config-name": 'nifi.security.keystorePasswd', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.keystorePasswd')})
+        if not properties['nifi.security.keyPasswd']:
+          validationItems.append({"config-name": 'nifi.security.keyPasswd', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.keyPasswd')})
+        if not properties['nifi.security.truststorePasswd']:
+          validationItems.append({"config-name": 'nifi.security.truststorePasswd', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.truststorePasswd')})
+        if not properties['nifi.security.keystoreType']:
+          validationItems.append({"config-name": 'nifi.security.keystoreType', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.keystoreType')})
+        if not properties['nifi.security.truststoreType']:
+          validationItems.append({"config-name": 'nifi.security.truststoreType', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.truststoreType')})
+    return self.toConfigurationValidationProblems(validationItems, "nifi-ambari-ssl-config")
 
   def validateNiFiRangerPluginConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
     validationItems = []

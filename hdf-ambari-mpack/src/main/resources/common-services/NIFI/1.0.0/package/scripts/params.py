@@ -16,14 +16,19 @@ import ambari_simplejson as json # simplejson is much faster comparing to Python
     
 # server configurations
 config = Script.get_config()
+stack_root = Script.get_stack_root()
 stack_version_buildnum = default("/commandParams/version", None)
 
-nifi_install_dir = '/usr/hdf/current/nifi'
-
+#nifi_install_dir = '/usr/hdf/current/nifi'
+nifi_install_dir = os.path.join(stack_root, "current", "nifi")
+if stack_version_buildnum is not None:
+  nifi_install_dir = os.path.join(stack_root, stack_version_buildnum, "nifi")
+        
 # params from nifi-ambari-config
 nifi_initial_mem = config['configurations']['nifi-ambari-config']['nifi.initial_mem']
 nifi_max_mem = config['configurations']['nifi-ambari-config']['nifi.max_mem']
 nifi_ambari_reporting_frequency = config['configurations']['nifi-ambari-config']['nifi.ambari_reporting_frequency']
+nifi_ambari_reporting_enabled = config['configurations']['nifi-ambari-config']['nifi.ambari_reporting_enabled']
 
 # note: nifi.node.port and nifi.node.ssl.port must be defined in same xml file for quicklinks to work
 nifi_node_port = config['configurations']['nifi-ambari-config']['nifi.node.port']
@@ -42,11 +47,10 @@ nifi_config_dir = config['configurations']['nifi-ambari-config']['nifi.config.di
 nifi_flow_config_dir = config['configurations']['nifi-ambari-config']['nifi.flow.config.dir']
 nifi_sensitive_props_key = config['configurations']['nifi-ambari-config']['nifi.sensitive.props.key']
 
+
 nifi_flow_config_dir = nifi_flow_config_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
 nifi_state_dir = nifi_state_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
 nifi_config_dir = nifi_config_dir.replace('{nifi_install_dir}',nifi_install_dir)
-
-
 
 master_configs = config['clusterHostInfo']
 
@@ -63,6 +67,13 @@ nifi_is_node='true'
 
 nifi_node_dir=nifi_install_dir
 bin_dir = os.path.join(*[nifi_node_dir,'bin'])
+lib_dir = os.path.join(*[nifi_node_dir,'lib'])
+
+nifi_ca_host = None
+if 'nifi_ca_hosts' in master_configs:
+  nifi_ca_hosts = master_configs['nifi_ca_hosts']
+  if len(nifi_ca_hosts) > 0:
+    nifi_ca_host = nifi_ca_hosts[0]
 
 # params from nifi-ambari-ssl-config
 
@@ -75,21 +86,55 @@ nifi_truststore = config['configurations']['nifi-ambari-ssl-config']['nifi.secur
 nifi_truststoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststoreType']
 nifi_truststorePasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststorePasswd']
 nifi_needClientAuth = config['configurations']['nifi-ambari-ssl-config']['nifi.security.needClientAuth']
+nifi_initial_admin_id = config['configurations']['nifi-ambari-ssl-config']['nifi.tinitial.admin.identity']
+nifi_ssl_config_content = config['configurations']['nifi-ambari-ssl-config']['content']
 
 #property that is set to hostname regardless of whether SSL enabled
 nifi_node_host = socket.getfqdn()
 
+nifi_truststore = nifi_truststore.replace('{nifi_node_ssl_host}',nifi_node_host)
+nifi_keystore = nifi_keystore.replace('{nifi_node_ssl_host}',nifi_node_host)
+
 #populate properties whose values depend on whether SSL enabled
+nifi_keystore = nifi_keystore.replace('{{nifi_config_dir}}',nifi_config_dir)
+nifi_truststore = nifi_truststore.replace('{{nifi_config_dir}}',nifi_config_dir)
+
 if nifi_ssl_enabled:
-  nifi_node_ssl_host = socket.getfqdn()
+  nifi_node_ssl_host = nifi_node_host
   nifi_node_port = ""
-  nifi_truststore = nifi_truststore.replace('{nifi_node_ssl_host}',nifi_node_ssl_host)
-  nifi_keystore = nifi_keystore.replace('{nifi_node_ssl_host}',nifi_node_ssl_host)
 else:
-  nifi_node_nonssl_host = socket.getfqdn()
+  nifi_node_nonssl_host = nifi_node_host
   nifi_node_ssl_port = ""
 
-  
+nifi_ca_parent_config = config['configurations']['nifi-ambari-ssl-config']
+nifi_use_ca = nifi_ca_parent_config['nifi.toolkit.tls.token']
+nifi_ca_log_file_stdout = config['configurations']['nifi-env']['nifi_node_log_dir'] + '/nifi-ca.stdout'
+nifi_ca_log_file_stderr = config['configurations']['nifi-env']['nifi_node_log_dir'] + '/nifi-ca.stderr'
+
+nifi_ca_config = { 
+  "days" : int(nifi_ca_parent_config['nifi.toolkit.tls.helper.days']),
+  "keyStore" : nifi_config_dir + '/nifi-certificate-authority-keystore.jks',
+  "token" : nifi_ca_parent_config['nifi.toolkit.tls.token'],
+  "dn" : 'CN=' + nifi_ca_host + ',OU=NIFI',
+  "caHostname" : nifi_ca_host,
+  "port" : int(nifi_ca_parent_config['nifi.toolkit.tls.port'])
+}
+
+nifi_ca_client_config = { 
+  "days" : int(nifi_ca_parent_config['nifi.toolkit.tls.helper.days']),
+  "keyStore" : nifi_keystore,
+  "keyStoreType" : nifi_keystoreType,
+  "keyStorePassword" : nifi_keystorePasswd,
+  "keyPassword" : nifi_keyPasswd,
+  "token" : nifi_ca_parent_config['nifi.toolkit.tls.token'],
+  "dn" : 'CN=' + nifi_node_host + ',OU=NIFI',
+  "port" : int(nifi_ca_parent_config['nifi.toolkit.tls.port']),
+  "caHostname" : nifi_ca_host,
+  "trustStore" : nifi_truststore,
+  "trustStoreType" : nifi_truststoreType,
+  "trustStorePassword": nifi_truststorePasswd
+}
+ 
 # params from nifi-env
 nifi_user = config['configurations']['nifi-env']['nifi_user']
 nifi_group = config['configurations']['nifi-env']['nifi_group']

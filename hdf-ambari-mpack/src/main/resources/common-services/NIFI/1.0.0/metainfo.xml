@@ -9,11 +9,49 @@
             <version>1.0.0</version>
             <components>
                 <component>
+                  <name>NIFI_CA</name>
+                  <displayName>NiFi Certificate Authority</displayName>
+                  <category>SLAVE</category>
+                  <cardinality>0-1</cardinality>
+                  <timelineAppid>NIFI</timelineAppid>
+                  <logs>
+                    <log>
+                      <logId>nifi-app</logId>
+                      <primary>true</primary>
+                    </log>
+                    <log>
+                      <logId>nifi_bootstrap</logId>
+                    </log>
+                    <log> 
+                      <logId>nifi_setup</logId>
+                    </log>
+                    <log> 
+                      <logId>nifi_user</logId>
+                    </log>
+                  </logs>
+                  <commandScript>
+                    <script>scripts/nifi_ca.py</script>
+                    <scriptType>PYTHON</scriptType>
+                    <timeout>10000</timeout>
+                  </commandScript>
+                </component>                       
+                <component>
                   <name>NIFI_MASTER</name>
                   <displayName>NiFi</displayName>
                   <category>MASTER</category>
                   <cardinality>1+</cardinality>
                   <timelineAppid>NIFI</timelineAppid>
+
+                  <dependencies>
+                    <dependency>
+                      <name>ZOOKEEPER/ZOOKEEPER_CLIENT</name>
+                      <scope>host</scope>
+                      <auto-deploy>
+                        <enabled>true</enabled>
+                      </auto-deploy>
+                    </dependency>
+                  </dependencies>
+                            
                   <logs>
                     <log>
                       <logId>nifi-app</logId>
@@ -54,7 +92,11 @@
                  </packages>
               </osSpecific>
             </osSpecifics>
-      
+
+      	    <requiredServices>
+      	       <service>ZOOKEEPER</service>
+      	    </requiredServices>
+            
       	    <configuration-dependencies>
                 <config-type>nifi-ambari-config</config-type>
                 <config-type>nifi-ambari-ssl-config</config-type>                

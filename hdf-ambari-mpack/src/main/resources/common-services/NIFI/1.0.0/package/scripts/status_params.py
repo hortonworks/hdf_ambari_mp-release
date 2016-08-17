@@ -7,3 +7,4 @@ config = Script.get_config()
 nifi_pid_dir=config['configurations']['nifi-env']['nifi_pid_dir']
 #nifi_master_pid_file=nifi_pid_dir + '/nifi-master.pid'
 nifi_node_pid_file=nifi_pid_dir + '/nifi.pid'
+nifi_ca_pid_file=nifi_pid_dir + '/nifi-ca.pid'

@@ -15,14 +15,42 @@
     <on-ambari-upgrade add="true"/>
   </property>
   <property>
-    <name>nifi.security.keystore</name>
+    <name>nifi.toolkit.tls.token</name>
     <value/>
+    <property-type>PASSWORD</property-type>
+    <display-name>NiFi CA Token</display-name>
+    <description>
+       This is a token that will be used by the NiFi Certificate Authority to verify the identity of NiFi nodes before issuing them certificates and by the NiFi nodes
+       to verify the identity of the NiFi Certificate Authority.
+
+       If relying on NiFi Certificate Authority, set this to a long, random value.
+    </description>
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
+      <type>password</type>
     </value-attributes>
     <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>nifi.toolkit.tls.helper.days</name>
+    <value>1095</value>
+    <on-ambari-upgrade add="true"/>
+    <display-name>NiFi CA Certificate Duration</display-name>
+    <description>The number of days that a certificate from the NiFi Certificate Authority should be valid for.</description>
+  </property>
+  <property>
+    <name>nifi.toolkit.tls.port</name>
+    <value>10443</value>
+    <on-ambari-upgrade add="true"/>
+    <display-name>NiFi Certificate Authority port</display-name>
+    <description>Port for NiFi Certificate Authority to listen on.</description>
+  </property>
+  <property require-input="true">
+    <name>nifi.security.keystore</name>
+    <value>{{nifi_config_dir}}/keystore.jks</value>
+    <on-ambari-upgrade add="true"/>
     <display-name>Keystore path</display-name>
-    <description>The full path and name of the keystore. It is blank by default but required if nifi.node.ssl.isenabled=true. To reference paths that include hostnames you can use format such as: /etc/security/nifi-certs/{nifi_node_ssl_host}/{nifi_node_ssl_host}.jks</description>
+    <description>The full path and name of the keystore. To reference paths that include hostnames you can use format such as: /etc/security/nifi-certs/{nifi_node_ssl_host}/{nifi_node_ssl_host}.jks</description>
   </property>
   <property>
     <name>nifi.security.keystoreType</name>
@@ -58,15 +86,12 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>        
   </property>
-  <property>
+  <property require-input="true">
     <name>nifi.security.truststore</name>
-    <value/>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
+    <value>{{nifi_config_dir}}/truststore.jks</value>
     <on-ambari-upgrade add="true"/>
     <display-name>Truststore path</display-name>
-    <description>The full path and name of the truststore. It is blank by default but required if nifi.node.ssl.isenabled=true. To reference paths that include hostnames you can use format such as: /etc/security/nifi-certs/{nifi_node_ssl_host}/truststore.jks</description>
+    <description>The full path and name of the truststore. To reference paths that include hostnames you can use format such as: /etc/security/nifi-certs/{nifi_node_ssl_host}/truststore.jks</description>
   </property>
   <property>
     <name>nifi.security.truststoreType</name>
@@ -103,7 +128,55 @@
     <display-name>Clients need to authenticate?</display-name>      
     <description>Specifies whether or not connecting clients must authenticate themselves. Specifically this property is used by the NiFi cluster protocol. If the Truststore properties are not set, this must be false. Otherwise, a value of true indicates that nodes in the cluster will be authenticated and must have certificates that are trusted by the Truststores.</description>
   </property>
+  
+  <property>
+    <name>nifi.tinitial.admin.identity</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+    <display-name>Initial Admin Identity</display-name>
+    <description>
+    The identity of an initial admin user that will be granted access to the UI and
+            given the ability to create additional users, groups, and policies. Must be specified when Ranger plugin for
+            Nifi will not be used for authorization. 
+            Before changing value of this field, note that it will only take effect if authorizations.xml does not contain any existing policies.
+            The value of this property could be
+            a DN when using certificates or LDAP, or a Kerberos principal. This property will only be used when there
+            are no other users, groups, and policies defined. If this property is specified then a Legacy Authorized
+            Users File can not be specified.
+    </description>
+  </property>
+  
+  <property>
+    <name>content</name>
+    <display-name>Node Identities</display-name>
+    <description>
+    Node Identity [unique key] - The identity of a NiFi cluster node. When clustered, a property for each node
+            should be defined, so that every node knows about every other node. If not clustered these properties can be ignored.
+            Also must be specified when Ranger Nifi plugin will not be used for authorization.
+            Before changing value of this field, note that it will only take effect if authorizations.xml does not contain any existing policies.
+            The name of each property must be unique, for example for a three node cluster:
+            &quot;Node Identity A&quot;, &quot;Node Identity B&quot;, &quot;Node Identity C&quot; or &quot;Node Identity 1&quot;, &quot;Node Identity 2&quot;, &quot;Node Identity 3&quot;
+            NOTE: Any identity mapping rules specified in nifi.properties will also be applied to the node identities,
+            so the values should be the unmapped identities (i.e. full DN from a certificate).
+    </description>
+    <value>
+&lt;!-- Provide the identity (typically a DN) of each node when clustered (see tool tip for detailed description of Node Identity). Must be specified when Ranger Nifi plugin will not be used for authorization. --&gt;
 
-
+&lt;!--
+&lt;property name="Node Identity 1"&gt;&lt;/property&gt;
+&lt;property name="Node Identity 2"&gt;&lt;/property&gt;
+&lt;property name="Node Identity 3"&gt;&lt;/property&gt;
+&lt;property name="Node Identity 4"&gt;&lt;/property&gt;
+--&gt;
+    </value>
+    <value-attributes>
+      <type>content</type>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  
 
 </configuration>
