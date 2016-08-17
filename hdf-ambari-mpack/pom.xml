@@ -10,6 +10,7 @@
   <properties>
     <minAmbariVersion>2.4.0.0</minAmbariVersion>
     <maxAmbariVersion></maxAmbariVersion>
+    <nifiversion>1.0.0-SNAPSHOT</nifiversion>
   </properties>
   <build>
     <plugins>
@@ -114,7 +115,7 @@
     <dependency>
       <groupId>org.apache.nifi</groupId>
       <artifactId>nifi-toolkit-assembly</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>${nifiversion}</version>
       <classifier>bin</classifier>
       <type>zip</type>
     </dependency>
