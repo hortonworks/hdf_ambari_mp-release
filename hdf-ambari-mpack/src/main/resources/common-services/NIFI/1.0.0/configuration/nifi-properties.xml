@@ -771,7 +771,7 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>
     <on-ambari-upgrade add="true"/>
-    <description>The location of the krb5 file, if used. It is blank by default. Note that this property is not used to authenticate NiFi users. Rather, it is made available for extension points, such as Hadoop-based Processors, to use. At this time, only a single krb5 file is allowed to be specified per NiFi instance, so this property is configured here rather than in individual Processors</description>
+    <description>The location of the krb5 file, if used. It is blank by default. At this time, only a single krb5 file is allowed to be specified per NiFi instance, so this property is configured here to support SPNEGO and service principles rather than in individual Processors.  If necessary the krb5 file can support multiple realms.</description>
   </property>
 
   <property>
@@ -785,7 +785,7 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
   </property>
 
   <property>
-    <name>nifi.kerberos.keytab.location</name>
+    <name>nifi.kerberos.service.keytab.location</name>
     <value/>
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
@@ -795,7 +795,27 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
   </property>
 
   <property>
-    <name>nifi.kerberos.authentication.expiration</name>
+    <name>nifi.kerberos.spnego.principal</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+    <description>The name of the Spnego service principal, if used. It is blank by default. Note that this property is used to authenticate NiFi users. Example: HTTP/nifi.example.com or HTTP/nifi.example.com@EXAMPLE.COM</description>
+  </property>
+
+  <property>
+    <name>nifi.kerberos.spnego.keytab.location</name>
+    <value/>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+    <description>The file path of the NiFi Spnego Kerberos keytab, if used. It is blank by default. Note that this property is used to authenticate NiFi users</description>
+  </property>
+
+  <property>
+    <name>nifi.kerberos.spnego.authentication.expiration</name>
     <value>12 hours</value>
     <on-ambari-upgrade add="true"/>
     <description>The expiration duration of a successful Kerberos user authentication, if used. It is 12 hours by default. Example: 12 hours</description>

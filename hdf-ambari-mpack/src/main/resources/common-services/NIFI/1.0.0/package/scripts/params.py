@@ -161,7 +161,7 @@ nifi_properties = config['configurations']['nifi-properties'].copy()
 
 #kerberos params
 nifi_kerberos_krb5_file = config['configurations']['nifi-properties']['nifi.kerberos.krb5.file']
-nifi_kerberos_authentication_expiration = config['configurations']['nifi-properties']['nifi.kerberos.authentication.expiration']
+nifi_kerberos_authentication_expiration = config['configurations']['nifi-properties']['nifi.kerberos.spnego.authentication.expiration']
 nifi_kerberos_realm = default("/configurations/kerberos-env/realm", None)
 
 # params from nifi-flow
@@ -234,6 +234,7 @@ kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executab
 if security_enabled:
   _hostname_lowercase = nifi_host_name.lower()
   nifi_properties['nifi.kerberos.service.principal'] = nifi_properties['nifi.kerberos.service.principal'].replace('_HOST',_hostname_lowercase)
+  nifi_properties['nifi.kerberos.spnego.principal'] = nifi_properties['nifi.kerberos.spnego.principal'].replace('_HOST',_hostname_lowercase)
 
 # ranger host
 # E.g., 2.3
@@ -365,7 +366,7 @@ if has_ranger_admin:
     nifi_ranger_plugin_config['policy.download.auth.users'] = nifi_user
     nifi_ranger_plugin_config['tag.download.auth.users'] = nifi_user
     ranger_nifi_principal = config['configurations']['nifi-properties']['nifi.kerberos.service.principal'].replace('_HOST',_hostname_lowercase)
-    ranger_nifi_keytab = config['configurations']['nifi-properties']['nifi.kerberos.keytab.location']
+    ranger_nifi_keytab = config['configurations']['nifi-properties']['nifi.kerberos.service.keytab.location']
 
   if stack_supports_ranger_kerberos:
     nifi_ranger_plugin_config['ambari.service.check.user'] = policy_user
