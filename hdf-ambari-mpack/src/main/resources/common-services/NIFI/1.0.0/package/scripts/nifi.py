@@ -58,18 +58,18 @@ class Master(Script):
     ca_client_script = nifi_ca_util.get_toolkit_script('tls-toolkit.sh')
     os.chmod(ca_client_script, 0755)
 
-    if params.nifi_ca_host:
+    if params.nifi_ca_host and params.nifi_ssl_enabled:
       ca_client_json = os.path.realpath(os.path.join(params.nifi_config_dir, 'nifi-certificate-authority-client.json'))
-      def execute_client():
-        File(ca_client_json,
-             owner = params.nifi_user, 
-             group = params.nifi_group,
-             mode = 0600)
-        if is_starting:
-          Execute('JAVA_HOME='+params.jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=params.nifi_user)
-
-      ca_client_dict = nifi_ca_util.load_overlay_dump_and_execute(ca_client_json, params.nifi_ca_client_config, execute_client)
-      nifi_ca_util.update_nifi_properties(ca_client_dict, params.nifi_properties)
+      File(ca_client_json,
+           owner = params.nifi_user,
+           group = params.nifi_group,
+           mode = 0600)
+      ca_client_dict = nifi_ca_util.load(ca_client_json)
+      nifi_ca_util.overlay(ca_client_dict, params.nifi_ca_client_config)
+      nifi_ca_util.dump(ca_client_json, ca_client_dict)
+      if is_starting:
+        Execute('JAVA_HOME='+params.jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=params.nifi_user)
+      nifi_ca_util.update_nifi_properties(nifi_ca_util.load(ca_client_json), params.nifi_properties)
 
     #write out nifi.properties
     PropertiesFile(params.nifi_config_dir + '/nifi.properties',

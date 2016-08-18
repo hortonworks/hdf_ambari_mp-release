@@ -2,7 +2,7 @@ import nifi_ca_util, os, time
 
 from resource_management.core.exceptions import ComponentIsNotRunning
 from resource_management.core.resources.system import Directory, Execute
-from resource_management.core.sudo import kill, read_file
+from resource_management.core.sudo import kill, read_file, path_isfile
 from resource_management.libraries.functions.check_process_status import check_process_status
 from resource_management.libraries.script.script import Script
 from signal import SIGTERM, SIGKILL
@@ -31,7 +31,11 @@ class CertificateAuthority(Script):
     )
 
     ca_json = os.path.join(params.nifi_config_dir, 'nifi-certificate-authority.json')
-    ca_dict = nifi_ca_util.load_overlay_dump(ca_json, params.nifi_ca_config)
+
+    ca_dict = nifi_ca_util.load(ca_json)
+    nifi_ca_util.overlay(ca_dict, params.nifi_ca_config)
+    nifi_ca_util.dump(ca_json, ca_dict)
+
     Directory([params.nifi_config_dir],
         owner=params.nifi_user,
         group=params.nifi_group,
@@ -63,21 +67,21 @@ class CertificateAuthority(Script):
       raise Exception('Expected pid file to exist')
 
   def stop(self, env):
-    import params
     import status_params
 
-    pid = int(read_file(status_params.nifi_ca_pid_file))
-    try:
-      self.status(env)
-      for i in range(25):
-        kill(pid, SIGTERM)
-        time.sleep(1)
+    if path_isfile(status_params.nifi_ca_pid_file):
+      try:
         self.status(env)
-      kill(pid, SIGKILL)
-      time.sleep(5)
-      self.status(env)
-    except ComponentIsNotRunning:
-      os.remove(status_params.nifi_ca_pid_file)
+        pid = int(read_file(status_params.nifi_ca_pid_file))
+        for i in range(25):
+          kill(pid, SIGTERM)
+          time.sleep(1)
+          self.status(env)
+        kill(pid, SIGKILL)
+        time.sleep(5)
+        self.status(env)
+      except ComponentIsNotRunning:
+        os.remove(status_params.nifi_ca_pid_file)
 
 if __name__ == "__main__":
   CertificateAuthority().execute()

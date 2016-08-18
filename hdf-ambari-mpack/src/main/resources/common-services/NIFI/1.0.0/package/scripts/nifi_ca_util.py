@@ -5,10 +5,14 @@ from resource_management.core.resources.system import File
 script_dir = os.path.dirname(__file__)
 files_dir = os.path.realpath(os.path.join(os.path.dirname(script_dir), 'files'))
 
-def load_config(config_json):
-  return json.loads(sudo.read_file(config_json))
+def load(config_json):
+  if sudo.path_isfile(config_json):
+    contents = sudo.read_file(config_json)
+    if len(contents) > 0:
+      return json.loads(contents)
+  return {}
 
-def dump_config(config_json, config_dict):
+def dump(config_json, config_dict):
   import params
   File(config_json,
     owner=params.nifi_user,
@@ -17,24 +21,10 @@ def dump_config(config_json, config_dict):
     content=json.dumps(config_dict, sort_keys=True, indent=4)
   ) 
 
-def load_and_overlay_config(config_json, overlay_dict):
-  if sudo.path_isfile(config_json):
-    config_dict = load_config(config_json)
-  else:
-    config_dict = {}
+def overlay(config_dict, overlay_dict):
   for k, v in overlay_dict.iteritems():
     if v or k not in config_dict:
       config_dict[k] = v
-  return config_dict
-
-def load_overlay_dump(config_json, overlay_dict):
-  return load_overlay_dump_and_execute(config_json, overlay_dict, lambda: None)
-
-def load_overlay_dump_and_execute(config_json, overlay_dict, execute):
-  config_dict = load_and_overlay_config(config_json, overlay_dict)
-  dump_config(config_json, config_dict)
-  execute()
-  return load_config(config_json)
 
 def get_toolkit_script(scriptName, scriptDir = files_dir):
   nifiToolkitDir = None
