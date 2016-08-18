@@ -66,13 +66,14 @@ class CertificateAuthority(Script):
     import params
     import status_params
 
+    pid = int(read_file(status_params.nifi_ca_pid_file))
     try:
       self.status(env)
       for i in range(25):
-        kill(int(read_file(status_params.nifi_ca_pid_file)), SIGTERM)
+        kill(pid, SIGTERM)
         time.sleep(1)
         self.status(env)
-      kill(int(read_file(status_params.nifi_ca_pid_file)), SIGKILL)
+      kill(pid, SIGKILL)
       time.sleep(5)
       self.status(env)
     except ComponentIsNotRunning:
