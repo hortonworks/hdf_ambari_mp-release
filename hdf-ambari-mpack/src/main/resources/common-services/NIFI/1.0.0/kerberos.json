@@ -7,6 +7,15 @@
           "name": "NIFI_MASTER",
           "identities": [
             {
+              "name": "/spnego",
+              "principal": {
+                "configuration": "nifi-properties/nifi.kerberos.spnego.principal"
+              },
+              "keytab": {
+                "configuration": "nifi-properties/nifi.kerberos.spnego.keytab.location"
+              }
+            },
+            {
               "name": "nifi_principal",
               "principal": {
                 "value": "${nifi-env/nifi_user}/_HOST@${realm}",
@@ -25,7 +34,7 @@
                   "name": "${cluster-env/user_group}",
                   "access": ""
                 },
-                "configuration": "nifi-properties/nifi.kerberos.keytab.location"
+                "configuration": "nifi-properties/nifi.kerberos.service.keytab.location"
               }
             },
             {
