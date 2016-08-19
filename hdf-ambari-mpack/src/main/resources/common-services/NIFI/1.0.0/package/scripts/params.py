@@ -115,10 +115,12 @@ nifi_ca_config = {
   "days" : int(nifi_ca_parent_config['nifi.toolkit.tls.helper.days']),
   "keyStore" : nifi_config_dir + '/nifi-certificate-authority-keystore.jks',
   "token" : nifi_ca_parent_config['nifi.toolkit.tls.token'],
-  "dn" : 'CN=' + nifi_ca_host + ',OU=NIFI',
   "caHostname" : nifi_ca_host,
   "port" : int(nifi_ca_parent_config['nifi.toolkit.tls.port'])
 }
+
+if nifi_ca_host:
+  nifi_ca_config['dn'] = 'CN=' + nifi_ca_host + ',OU=NIFI'
 
 nifi_ca_client_config = { 
   "days" : int(nifi_ca_parent_config['nifi.toolkit.tls.helper.days']),
