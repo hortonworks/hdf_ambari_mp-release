@@ -2,7 +2,7 @@ import nifi_ca_util, os, time
 
 from resource_management.core.exceptions import ComponentIsNotRunning
 from resource_management.core.resources.system import Directory, Execute
-from resource_management.core.sudo import kill, read_file, path_isfile
+from resource_management.core.sudo import kill, read_file, path_isfile, unlink
 from resource_management.libraries.functions.check_process_status import check_process_status
 from resource_management.libraries.script.script import Script
 from signal import SIGTERM, SIGKILL
@@ -81,7 +81,7 @@ class CertificateAuthority(Script):
         time.sleep(5)
         self.status(env)
       except ComponentIsNotRunning:
-        os.remove(status_params.nifi_ca_pid_file)
+        unlink(status_params.nifi_ca_pid_file)
 
 if __name__ == "__main__":
   CertificateAuthority().execute()
