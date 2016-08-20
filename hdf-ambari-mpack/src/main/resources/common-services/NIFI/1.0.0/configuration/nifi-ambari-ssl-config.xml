@@ -14,7 +14,7 @@
     </value-attributes>    
     <on-ambari-upgrade add="true"/>
   </property>
-  <property>
+  <property require-input="true">
     <name>nifi.toolkit.tls.token</name>
     <value/>
     <property-type>PASSWORD</property-type>
@@ -45,7 +45,7 @@
     <display-name>NiFi Certificate Authority port</display-name>
     <description>Port for NiFi Certificate Authority to listen on.</description>
   </property>
-  <property require-input="true">
+  <property>
     <name>nifi.security.keystore</name>
     <value>{{nifi_config_dir}}/keystore.jks</value>
     <on-ambari-upgrade add="true"/>
@@ -86,7 +86,7 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>        
   </property>
-  <property require-input="true">
+  <property>
     <name>nifi.security.truststore</name>
     <value>{{nifi_config_dir}}/truststore.jks</value>
     <on-ambari-upgrade add="true"/>
