@@ -168,6 +168,7 @@ tez_user = config['configurations']['tez-env']["tez_user"]
 oozie_user = config['configurations']['oozie-env']["oozie_user"]
 falcon_user = config['configurations']['falcon-env']["falcon_user"]
 ranger_user = config['configurations']['ranger-env']["ranger_user"]
+nifi_user = config['configurations']['nifi-env']["nifi_user"]
 
 user_group = config['configurations']['cluster-env']['user_group']
 
@@ -177,6 +178,7 @@ hbase_master_hosts = default("/clusterHostInfo/hbase_master_hosts", [])
 oozie_servers = default("/clusterHostInfo/oozie_server", [])
 falcon_server_hosts = default("/clusterHostInfo/falcon_server_hosts", [])
 ranger_admin_hosts = default("/clusterHostInfo/ranger_admin_hosts", [])
+nifi_master_hosts = default("/clusterHostInfo/nifi_master_hosts", [])
 
 has_namenode = not len(namenode_host) == 0
 has_ganglia_server = not len(ganglia_server_hosts) == 0
@@ -185,6 +187,7 @@ has_hbase_masters = not len(hbase_master_hosts) == 0
 has_oozie_server = not len(oozie_servers) == 0
 has_falcon_server_hosts = not len(falcon_server_hosts) == 0
 has_ranger_admin = not len(ranger_admin_hosts) == 0
+has_nifi_master = not len(nifi_master_hosts) == 0
 
 if has_namenode or dfs_type == 'HCFS':
   hadoop_conf_dir = conf_select.get_hadoop_conf_dir(force_latest_on_upgrade=True)
@@ -193,6 +196,7 @@ hbase_tmp_dir = "/tmp/hbase-hbase"
 
 proxyuser_group = default("/configurations/hadoop-env/proxyuser_group","users")
 ranger_group = config['configurations']['ranger-env']['ranger_group']
+nifi_group = config['configurations']['nifi-env']["nifi_group"]
 dfs_cluster_administrators_group = config['configurations']['hdfs-site']["dfs.cluster.administrators"]
 
 ignore_groupsusers_create = default("/configurations/cluster-env/ignore_groupsusers_create", False)
@@ -218,6 +222,8 @@ if has_falcon_server_hosts:
   user_to_groups_dict[falcon_user] = [proxyuser_group]
 if has_ranger_admin:
   user_to_groups_dict[ranger_user] = [ranger_group]
+if has_nifi_master:
+  user_to_groups_dict[nifi_user] = [nifi_group]
 
 user_to_gid_dict = collections.defaultdict(lambda:user_group)
 
