@@ -162,7 +162,6 @@ nifi_master_properties_content = config['configurations']['nifi-master-propertie
 nifi_properties = config['configurations']['nifi-properties'].copy()
 
 #kerberos params
-nifi_kerberos_krb5_file = config['configurations']['nifi-properties']['nifi.kerberos.krb5.file']
 nifi_kerberos_authentication_expiration = config['configurations']['nifi-properties']['nifi.kerberos.spnego.authentication.expiration']
 nifi_kerberos_realm = default("/configurations/kerberos-env/realm", None)
 
