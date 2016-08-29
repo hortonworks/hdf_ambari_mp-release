@@ -110,6 +110,7 @@ nifi_ca_parent_config = config['configurations']['nifi-ambari-ssl-config']
 nifi_use_ca = nifi_ca_parent_config['nifi.toolkit.tls.token']
 nifi_toolkit_dn_prefix = nifi_ca_parent_config['nifi.toolkit.dn.prefix']
 nifi_toolkit_dn_suffix = nifi_ca_parent_config['nifi.toolkit.dn.suffix']
+nifi_toolkit_tls_regenerate = nifi_ca_parent_config['nifi.toolkit.tls.regenerate']
 nifi_ca_log_file_stdout = config['configurations']['nifi-env']['nifi_node_log_dir'] + '/nifi-ca.stdout'
 nifi_ca_log_file_stderr = config['configurations']['nifi-env']['nifi_node_log_dir'] + '/nifi-ca.stderr'
 

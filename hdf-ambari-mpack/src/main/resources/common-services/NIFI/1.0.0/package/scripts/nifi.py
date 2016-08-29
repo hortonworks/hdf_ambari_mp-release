@@ -1,4 +1,5 @@
 import sys, nifi_ca_util, os, pwd, grp, signal, time, glob, socket, json
+from resource_management.core import sudo
 from resource_management import *
 from subprocess import call
 from setup_ranger_nifi import setup_ranger_nifi
@@ -65,6 +66,12 @@ class Master(Script):
            group = params.nifi_group,
            mode = 0600)
       ca_client_dict = nifi_ca_util.load(ca_client_json)
+      if is_starting:
+        if params.nifi_toolkit_tls_regenerate:
+          nifi_ca_util.move_keystore_truststore(ca_client_dict)
+          ca_client_dict = {}
+        else:
+          nifi_ca_util.move_keystore_truststore_if_necessary(ca_client_dict, params.nifi_ca_client_config)
       nifi_ca_util.overlay(ca_client_dict, params.nifi_ca_client_config)
       nifi_ca_util.dump(ca_client_json, ca_client_dict)
       if is_starting:
@@ -112,7 +119,7 @@ class Master(Script):
 
     Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh stop >> ' + params.nifi_node_log_file, user=params.nifi_user)
     if os.path.isfile(status_params.nifi_node_pid_file):
-      Execute ('rm ' + status_params.nifi_node_pid_file)
+      sudo.unlink(status_params.nifi_node_pid_file)
 
   def start(self, env):
     import params

@@ -17,7 +17,7 @@ class CertificateAuthority(Script):
     #Be sure ca script is in cache
     nifi_ca_util.get_toolkit_script('tls-toolkit.sh')
 
-  def configure(self, env, isInstall=False):
+  def configure(self, env):
     import params
     import status_params
     env.set_params(params)
@@ -31,7 +31,6 @@ class CertificateAuthority(Script):
     )
 
     ca_json = os.path.join(params.nifi_config_dir, 'nifi-certificate-authority.json')
-
     ca_dict = nifi_ca_util.load(ca_json)
     nifi_ca_util.overlay(ca_dict, params.nifi_ca_config)
     nifi_ca_util.dump(ca_json, ca_dict)
@@ -42,6 +41,12 @@ class CertificateAuthority(Script):
         create_parents=True,
         recursive_ownership=True
     )
+
+  def invalidate_ca_server(self, env):
+    import params
+    ca_json = os.path.join(params.nifi_config_dir, 'nifi-certificate-authority.json')
+    nifi_ca_util.move_store(nifi_ca_util.load(ca_json), 'keyStore')
+    unlink(ca_json)
     
   def status(self, env):
     import status_params

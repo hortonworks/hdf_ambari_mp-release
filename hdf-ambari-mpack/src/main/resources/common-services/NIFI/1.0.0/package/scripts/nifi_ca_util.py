@@ -45,3 +45,46 @@ def update_nifi_properties(client_dict, nifi_properties):
   nifi_properties[nifi_constants.NIFI_SECURITY_KEY_PASSWD] = client_dict['keyPassword']
   nifi_properties[nifi_constants.NIFI_SECURITY_TRUSTSTORE_TYPE] = client_dict['trustStoreType']
   nifi_properties[nifi_constants.NIFI_SECURITY_TRUSTSTORE_PASSWD] = client_dict['trustStorePassword']
+
+def store_exists(client_dict, key):
+  if key not in client_dict:
+    return False
+  return sudo.path_isfile(client_dict[key])
+
+def different(one, two, key):
+  if key not in one:
+    return False
+  if len(one[key]) == 0:
+    return False
+  if key not in two:
+    return False
+  if len(two[key]) == 0:
+    return False
+  return one[key] != two[key]
+
+def move_keystore_truststore_if_necessary(orig_client_dict, new_client_dict):
+  if not (store_exists(new_client_dict, 'keyStore') or store_exists(new_client_dict, 'trustStore')):
+    return
+  if different(orig_client_dict, new_client_dict, 'keyStoreType'):
+    move_keystore_truststore(new_client_dict)
+  elif different(orig_client_dict, new_client_dict, 'keyStorePassword'):
+    move_keystore_truststore(new_client_dict)
+  elif different(orig_client_dict, new_client_dict, 'keyPassword'):
+    move_keystore_truststore(new_client_dict)
+  elif different(orig_client_dict, new_client_dict, 'trustStoreType'):
+    move_keystore_truststore(new_client_dict)
+  elif different(orig_client_dict, new_client_dict, 'trustStorePassword'):
+    move_keystore_truststore(new_client_dict)
+
+def move_keystore_truststore(client_dict):
+  move_store(client_dict, 'keyStore')
+  move_store(client_dict, 'trustStore')
+
+def move_store(client_dict, key):
+  if store_exists(client_dict, key):
+    num = 0
+    name = client_dict[key]
+    while sudo.path_isfile(name + '.bak.' + str(num)):
+      num += 1
+    sudo.copy(name, name + '.bak.' + str(num))
+    sudo.unlink(name)
