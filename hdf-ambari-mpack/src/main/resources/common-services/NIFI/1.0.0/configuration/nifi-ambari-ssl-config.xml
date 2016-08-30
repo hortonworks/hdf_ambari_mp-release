@@ -46,6 +46,20 @@
     <description>Port for NiFi Certificate Authority to listen on.</description>
   </property>
   <property>
+    <name>nifi.toolkit.dn.prefix</name>
+    <value>CN=</value>
+    <on-ambari-upgrade add="true"/>
+    <display-name>NiFi CA DN prefix</display-name>
+    <description>Portion of the distinguished name to put before the hostname in TLS certificates (Note, NiFi will sort the DN attributes according to the order they appear in https://www.ietf.org/rfc/rfc2253.txt)</description>
+  </property>
+  <property>
+    <name>nifi.toolkit.dn.suffix</name>
+    <value>, OU=NIFI</value>
+    <on-ambari-upgrade add="true"/>
+    <display-name>NiFi CA DN suffix</display-name>
+    <description>Portion of the distinguished name to put after the hostname in TLS certificates (Note, NiFi will sort the DN attributes according to the order they appear in https://www.ietf.org/rfc/rfc2253.txt)</description>
+  </property>
+  <property>
     <name>nifi.security.keystore</name>
     <value>{{nifi_config_dir}}/keystore.jks</value>
     <on-ambari-upgrade add="true"/>

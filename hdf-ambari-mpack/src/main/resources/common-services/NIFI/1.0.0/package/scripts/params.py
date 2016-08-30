@@ -108,6 +108,8 @@ else:
 
 nifi_ca_parent_config = config['configurations']['nifi-ambari-ssl-config']
 nifi_use_ca = nifi_ca_parent_config['nifi.toolkit.tls.token']
+nifi_toolkit_dn_prefix = nifi_ca_parent_config['nifi.toolkit.dn.prefix']
+nifi_toolkit_dn_suffix = nifi_ca_parent_config['nifi.toolkit.dn.suffix']
 nifi_ca_log_file_stdout = config['configurations']['nifi-env']['nifi_node_log_dir'] + '/nifi-ca.stdout'
 nifi_ca_log_file_stderr = config['configurations']['nifi-env']['nifi_node_log_dir'] + '/nifi-ca.stderr'
 
@@ -120,7 +122,7 @@ nifi_ca_config = {
 }
 
 if nifi_ca_host:
-  nifi_ca_config['dn'] = 'CN=' + nifi_ca_host + ',OU=NIFI'
+  nifi_ca_config['dn'] = nifi_toolkit_dn_prefix + nifi_ca_host + nifi_toolkit_dn_suffix
 
 nifi_ca_client_config = { 
   "days" : int(nifi_ca_parent_config['nifi.toolkit.tls.helper.days']),
@@ -129,7 +131,7 @@ nifi_ca_client_config = {
   "keyStorePassword" : nifi_keystorePasswd,
   "keyPassword" : nifi_keyPasswd,
   "token" : nifi_ca_parent_config['nifi.toolkit.tls.token'],
-  "dn" : 'CN=' + nifi_node_host + ',OU=NIFI',
+  "dn" : nifi_toolkit_dn_prefix + nifi_node_host + nifi_toolkit_dn_suffix,
   "port" : int(nifi_ca_parent_config['nifi.toolkit.tls.port']),
   "caHostname" : nifi_ca_host,
   "trustStore" : nifi_truststore,
