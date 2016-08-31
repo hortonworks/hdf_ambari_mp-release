@@ -98,6 +98,7 @@
           <descriptors>
             <descriptor>src/main/assemblies/hdf-ambari-mpack.xml</descriptor>
           </descriptors>
+          <finalName>${project.artifactId}</finalName>
         </configuration>
         <executions>
           <execution>
