@@ -16,17 +16,8 @@
                   <timelineAppid>NIFI</timelineAppid>
                   <logs>
                     <log>
-                      <logId>nifi-app</logId>
+                      <logId>nifi_ca</logId>
                       <primary>true</primary>
-                    </log>
-                    <log>
-                      <logId>nifi_bootstrap</logId>
-                    </log>
-                    <log> 
-                      <logId>nifi_setup</logId>
-                    </log>
-                    <log> 
-                      <logId>nifi_user</logId>
                     </log>
                   </logs>
                   <commandScript>
@@ -54,7 +45,7 @@
                             
                   <logs>
                     <log>
-                      <logId>nifi-app</logId>
+                      <logId>nifi_app</logId>
                       <primary>true</primary>
                     </log>
                     <log>
