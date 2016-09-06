@@ -14,6 +14,16 @@
     </value-attributes>    
     <on-ambari-upgrade add="true"/>
   </property>
+  <property>
+    <name>nifi.toolkit.tls.regenerate</name>
+    <value>false</value>
+    <display-name>NiFi CA Force Regenerate?</display-name>
+    <description>Will force regeneration of Tls Certificates and Configuration</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
   <property require-input="true">
     <name>nifi.toolkit.tls.token</name>
     <value/>
