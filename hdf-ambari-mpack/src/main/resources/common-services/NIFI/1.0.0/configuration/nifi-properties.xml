@@ -746,14 +746,6 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
     This allows the Nodes in the cluster to avoid having to wait a long time before starting processing if we reach at least this number of nodes in the cluster</description>
   </property>  
 
-  <!--# How long a request should be allowed to hold a 'lock' on a component. #-->
-  <property>
-    <name>nifi.cluster.request.replication.claim.timeout</name>
-    <value>15 secs</value>
-    <on-ambari-upgrade add="true"/>
-    <description>Specifies how long to wait before considering a lock expired and automatically unlocking.</description>
-  </property>
-
   <!--# zookeeper properties, used for cluster management # -->
   <property>
     <name>nifi.zookeeper.connect.string</name>
