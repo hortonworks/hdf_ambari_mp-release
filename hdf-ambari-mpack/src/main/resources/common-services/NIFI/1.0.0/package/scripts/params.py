@@ -55,7 +55,7 @@ nifi_config_dir = nifi_config_dir.replace('{nifi_install_dir}',nifi_install_dir)
 master_configs = config['clusterHostInfo']
 
 # detect if running in single (sandbox) box
-#nifi_num_nodes = len(master_configs['nifi_master_hosts'])
+nifi_num_nodes = len(master_configs['nifi_master_hosts'])
 #if nifi_num_nodes > 1:
 #  nifi_is_node='true'
 #else:
@@ -86,7 +86,7 @@ nifi_truststore = config['configurations']['nifi-ambari-ssl-config']['nifi.secur
 nifi_truststoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststoreType']
 nifi_truststorePasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststorePasswd']
 nifi_needClientAuth = config['configurations']['nifi-ambari-ssl-config']['nifi.security.needClientAuth']
-nifi_initial_admin_id = config['configurations']['nifi-ambari-ssl-config']['nifi.tinitial.admin.identity']
+nifi_initial_admin_id = config['configurations']['nifi-ambari-ssl-config']['nifi.initial.admin.identity']
 nifi_ssl_config_content = config['configurations']['nifi-ambari-ssl-config']['content']
 
 #property that is set to hostname regardless of whether SSL enabled

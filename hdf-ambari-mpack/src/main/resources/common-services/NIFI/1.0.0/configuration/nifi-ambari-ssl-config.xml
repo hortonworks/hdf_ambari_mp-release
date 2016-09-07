@@ -8,7 +8,11 @@
     <name>nifi.node.ssl.isenabled</name>
     <value>false</value>
     <display-name>Enable SSL?</display-name>
-    <description>whether SSL is enabled (false by default)</description>
+    <description>
+       Check flag to enable SSL. A few additional properties are also required (depending on your setup).
+       Assuming NIFI's Certificate Authority (CA) was installed: If Ranger auth will be used, only 'Nifi CA Token' is required - otherwise 'Nifi CA Token', 'Initial Admin Identity', 'Node identities' are all required.
+       Assuming CA is not installed: If Ranger auth will be used, only Truststore/Keystore paths/type/passwords should be set - otherwise Truststore/Keystore paths/type/passwords as well as 'Initial Admin Identity','Node identities' are required.
+    </description>
     <value-attributes>
       <type>boolean</type>
     </value-attributes>    
@@ -154,7 +158,7 @@
   </property>
   
   <property>
-    <name>nifi.tinitial.admin.identity</name>
+    <name>nifi.initial.admin.identity</name>
     <value/>
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
