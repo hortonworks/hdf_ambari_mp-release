@@ -29,6 +29,7 @@ from resource_management.libraries.script.script import Script
 from ambari_commons.inet_utils import openurl
 from ambari_commons.exceptions import TimeoutError
 from resource_management.core.exceptions import Fail
+from resource_management.libraries.functions.decorator import retry
 
 class NifiServiceCheck(Script):
   def service_check(self, env):
@@ -44,6 +45,7 @@ class NifiServiceCheck(Script):
       NifiServiceCheck.check_nifi_portal(url)
 
   @staticmethod
+  @retry(times=15, sleep_time=5, max_sleep_time=20, backoff_factor=2, err_class=Fail)
   def check_nifi_portal(url):
     try:
       request = urllib2.Request(url)
