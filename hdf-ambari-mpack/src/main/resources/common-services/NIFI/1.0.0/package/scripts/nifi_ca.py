@@ -5,6 +5,7 @@ from resource_management.core.resources.system import Directory, Execute
 from resource_management.core.sudo import kill, read_file, path_isfile, unlink
 from resource_management.libraries.functions.check_process_status import check_process_status
 from resource_management.libraries.script.script import Script
+from resource_management.core.resources import File
 from signal import SIGTERM, SIGKILL
 
 class CertificateAuthority(Script):
@@ -65,8 +66,9 @@ class CertificateAuthority(Script):
         create_parents=True,
         recursive_ownership=True
     )
-    os.chmod(ca_server_script, 0755)
-    os.chmod(run_ca_script, 0755)
+
+    File(ca_server_script, mode=0755)
+    File(run_ca_script, mode=0755) 
     Execute((run_ca_script, params.jdk64_home, ca_server_script, params.nifi_config_dir + '/nifi-certificate-authority.json', params.nifi_ca_log_file_stdout, params.nifi_ca_log_file_stderr, status_params.nifi_ca_pid_file), user=params.nifi_user)
     if not os.path.isfile(status_params.nifi_ca_pid_file):
       raise Exception('Expected pid file to exist')

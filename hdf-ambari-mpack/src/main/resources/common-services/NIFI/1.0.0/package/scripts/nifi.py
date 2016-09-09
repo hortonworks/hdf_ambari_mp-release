@@ -57,7 +57,8 @@ class Master(Script):
 
     
     ca_client_script = nifi_ca_util.get_toolkit_script('tls-toolkit.sh')
-    os.chmod(ca_client_script, 0755)
+    File(ca_client_script, mode=0755)
+
 
     if params.nifi_ca_host and params.nifi_ssl_enabled:
       ca_client_json = os.path.realpath(os.path.join(params.nifi_config_dir, 'nifi-certificate-authority-client.json'))

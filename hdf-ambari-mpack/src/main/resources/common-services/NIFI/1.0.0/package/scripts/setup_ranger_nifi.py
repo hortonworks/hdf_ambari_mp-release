@@ -18,6 +18,7 @@ limitations under the License.
 
 """
 from resource_management.core.logger import Logger
+from resource_management.core.resources import File
 
 def setup_ranger_nifi(upgrade_type=None):
     import params, os
@@ -58,9 +59,10 @@ def setup_ranger_nifi(upgrade_type=None):
                             component_user_principal=params.ranger_nifi_principal if params.security_enabled else None,
                             component_user_keytab=params.ranger_nifi_keytab if params.security_enabled else None)
                             
-        os.chmod(params.nifi_config_dir+'/ranger-nifi-audit.xml', 0400)
-        os.chmod(params.nifi_config_dir+'/ranger-nifi-security.xml', 0400)
-        os.chmod(params.nifi_config_dir+'/ranger-policymgr-ssl.xml', 0400)
+        #change permissions of ranger xml that were written to 0400
+        File(os.path.join(params.nifi_config_dir, 'ranger-nifi-audit.xml'), owner=params.nifi_user, group=params.nifi_group, mode=0400)
+        File(os.path.join(params.nifi_config_dir, 'ranger-nifi-security.xml'), owner=params.nifi_user, group=params.nifi_group, mode=0400)
+        File(os.path.join(params.nifi_config_dir, 'ranger-policymgr-ssl.xml'), owner=params.nifi_user, group=params.nifi_group, mode=0400)        
 
     else:
         Logger.info('Ranger admin not installed')
