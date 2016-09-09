@@ -61,6 +61,9 @@ class NifiServiceCheck(Script):
           Logger.info("Nifi portal {0} is up. Response code {1}".format(url, e.code))
         else:
           raise Fail("Error connecting to {0}. Http status code - {1}. \n {2}".format(url, e.code, e.read()))
+      elif e.reason and "violation of protocol" in str(e.reason):
+        Logger.info("Ignore certificate validation error - {0}".format(e.reason))
+        pass
       else:
         raise Fail("Error connecting to {0}. Reason - {1}.".format(url, e.reason))
     except httplib.BadStatusLine:
