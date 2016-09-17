@@ -25,6 +25,16 @@ from resource_management.core.resources.system import File
 script_dir = os.path.dirname(__file__)
 files_dir = os.path.realpath(os.path.join(os.path.dirname(script_dir), 'files'))
 
+class ConfigJson(object):
+  def __init__(self, config_dict):
+    self.config_dict = config_dict
+
+  def __repr__(self):
+    return '{...}'
+
+  def __call__(self):
+    return json.dumps(self.config_dict, sort_keys=True, indent=4)
+
 def load(config_json):
   if sudo.path_isfile(config_json):
     contents = sudo.read_file(config_json)
@@ -38,8 +48,8 @@ def dump(config_json, config_dict):
     owner=params.nifi_user,
     group=params.nifi_group,
     mode=0600,
-    content=json.dumps(config_dict, sort_keys=True, indent=4)
-  ) 
+    content=ConfigJson(config_dict)
+  )
 
 def overlay(config_dict, overlay_dict):
   for k, v in overlay_dict.iteritems():
