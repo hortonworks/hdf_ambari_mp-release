@@ -21,19 +21,10 @@ limitations under the License.
 import json, nifi_constants, os
 from resource_management.core import sudo
 from resource_management.core.resources.system import File
+from resource_management.core.utils import PasswordString
 
 script_dir = os.path.dirname(__file__)
 files_dir = os.path.realpath(os.path.join(os.path.dirname(script_dir), 'files'))
-
-class ConfigJson(object):
-  def __init__(self, config_dict):
-    self.config_dict = config_dict
-
-  def __repr__(self):
-    return '{...}'
-
-  def __call__(self):
-    return json.dumps(self.config_dict, sort_keys=True, indent=4)
 
 def load(config_json):
   if sudo.path_isfile(config_json):
@@ -48,7 +39,7 @@ def dump(config_json, config_dict):
     owner=params.nifi_user,
     group=params.nifi_group,
     mode=0600,
-    content=ConfigJson(config_dict)
+    content=PasswordString(json.dumps(config_dict, sort_keys=True, indent=4))
   )
 
 def overlay(config_dict, overlay_dict):
