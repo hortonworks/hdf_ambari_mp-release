@@ -18,7 +18,7 @@ limitations under the License.
 
 """
 
-import nifi_ca_util, os, time
+import nifi_toolkit_util, os, time
 
 from resource_management.core.exceptions import ComponentIsNotRunning
 from resource_management.core.resources.system import Directory, Execute
@@ -36,7 +36,7 @@ class CertificateAuthority(Script):
     self.install_packages(env)
 
     #Be sure ca script is in cache
-    nifi_ca_util.get_toolkit_script('tls-toolkit.sh')
+    nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh')
 
   def configure(self, env):
     import params
@@ -52,9 +52,9 @@ class CertificateAuthority(Script):
     )
 
     ca_json = os.path.join(params.nifi_config_dir, 'nifi-certificate-authority.json')
-    ca_dict = nifi_ca_util.load(ca_json)
-    nifi_ca_util.overlay(ca_dict, params.nifi_ca_config)
-    nifi_ca_util.dump(ca_json, ca_dict)
+    ca_dict = nifi_toolkit_util.load(ca_json)
+    nifi_toolkit_util.overlay(ca_dict, params.nifi_ca_config)
+    nifi_toolkit_util.dump(ca_json, ca_dict)
 
     Directory([params.nifi_config_dir],
         owner=params.nifi_user,
@@ -66,7 +66,7 @@ class CertificateAuthority(Script):
   def invalidate_ca_server(self, env):
     import params
     ca_json = os.path.join(params.nifi_config_dir, 'nifi-certificate-authority.json')
-    nifi_ca_util.move_store(nifi_ca_util.load(ca_json), 'keyStore')
+    nifi_toolkit_util.move_store(nifi_toolkit_util.load(ca_json), 'keyStore')
     unlink(ca_json)
     
   def status(self, env):
@@ -78,7 +78,7 @@ class CertificateAuthority(Script):
     import status_params
 
     self.configure(env)
-    ca_server_script = nifi_ca_util.get_toolkit_script('tls-toolkit.sh')
+    ca_server_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh')
     run_ca_script = os.path.join(os.path.dirname(__file__), 'run_ca.sh')
     Directory([params.nifi_config_dir],
         owner=params.nifi_user,

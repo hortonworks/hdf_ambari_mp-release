@@ -65,7 +65,8 @@ nifi_provenance_repo_dir_default=config['configurations']['nifi-ambari-config'][
 nifi_config_dir = config['configurations']['nifi-ambari-config']['nifi.config.dir']
 nifi_flow_config_dir = config['configurations']['nifi-ambari-config']['nifi.flow.config.dir']
 nifi_sensitive_props_key = config['configurations']['nifi-ambari-config']['nifi.sensitive.props.key']
-
+nifi_security_encrypt_configuration = config['configurations']['nifi-ambari-config']['nifi.security.encrypt.configuration']
+nifi_security_encrypt_configuration_password = config['configurations']['nifi-ambari-config']['nifi.security.encrypt.configuration.password']
 
 nifi_flow_config_dir = nifi_flow_config_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
 nifi_state_dir = nifi_state_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
@@ -159,6 +160,8 @@ nifi_ca_client_config = {
   "trustStoreType" : nifi_truststoreType,
   "trustStorePassword": nifi_truststorePasswd
 }
+
+nifi_ambari_ssl_config_version = config['configurationTags']['nifi-ambari-ssl-config']['tag']
  
 # params from nifi-env
 nifi_user = config['configurations']['nifi-env']['nifi_user']

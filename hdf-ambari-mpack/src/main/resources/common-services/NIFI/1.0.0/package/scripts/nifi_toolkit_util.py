@@ -75,27 +75,23 @@ def store_exists(client_dict, key):
 def different(one, two, key):
   if key not in one:
     return False
-  if len(one[key]) == 0:
-    return False
   if key not in two:
-    return False
-  if len(two[key]) == 0:
     return False
   return one[key] != two[key]
 
-def move_keystore_truststore_if_necessary(orig_client_dict, new_client_dict):
+def changed_keystore_truststore(orig_client_dict, new_client_dict):
   if not (store_exists(new_client_dict, 'keyStore') or store_exists(new_client_dict, 'trustStore')):
-    return
-  if different(orig_client_dict, new_client_dict, 'keyStoreType'):
-    move_keystore_truststore(new_client_dict)
+    return False
+  elif different(orig_client_dict, new_client_dict, 'keyStoreType'):
+    return True
   elif different(orig_client_dict, new_client_dict, 'keyStorePassword'):
-    move_keystore_truststore(new_client_dict)
+    return True
   elif different(orig_client_dict, new_client_dict, 'keyPassword'):
-    move_keystore_truststore(new_client_dict)
+    return True
   elif different(orig_client_dict, new_client_dict, 'trustStoreType'):
-    move_keystore_truststore(new_client_dict)
+    return True
   elif different(orig_client_dict, new_client_dict, 'trustStorePassword'):
-    move_keystore_truststore(new_client_dict)
+    return True
 
 def move_keystore_truststore(client_dict):
   move_store(client_dict, 'keyStore')
@@ -109,3 +105,74 @@ def move_store(client_dict, key):
       num += 1
     sudo.copy(name, name + '.bak.' + str(num))
     sudo.unlink(name)
+
+def save_ssl_config_version(version_file,version_num):
+  import params
+  if sudo.path_isfile(version_file):
+    sudo.unlink(version_file)
+
+  File(version_file,
+       owner=params.nifi_user,
+       group=params.nifi_group,
+       mode=0600,
+       content=version_num)
+
+def get_ssl_config_version(version_file):
+  if sudo.path_isfile(version_file):
+    contents = sudo.read_file(version_file)
+    if len(contents) > 0:
+      return contents
+    else:
+      return None
+
+def get_config_by_version(config_path,config_name,version):
+  import fnmatch
+  if version is not None:
+    for file in os.listdir(config_path):
+      if fnmatch.fnmatch(file, 'command-*.json'):
+        contents = sudo.read_file(config_path+'/'+file)
+        version_config = json.loads(contents)
+        if config_name in version_config['configurationTags'] and version_config['configurationTags'][config_name]['tag'] == version:
+           return version_config
+
+  return {}
+
+
+def get_nifi_ca_client_dict(config):
+  import params
+  if len(config) == 0:
+    return {}
+  else:
+    nifi_keystore = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystore']
+    nifi_keystoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystoreType']
+    nifi_keystorePasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystorePasswd']
+    nifi_keyPasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keyPasswd']
+    nifi_truststore = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststore']
+    nifi_truststoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststoreType']
+    nifi_truststorePasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststorePasswd']
+    nifi_truststore = nifi_truststore.replace('{nifi_node_ssl_host}',params.nifi_node_host)
+    nifi_truststore = nifi_truststore.replace('{{nifi_config_dir}}',params.nifi_config_dir)
+    nifi_keystore = nifi_keystore.replace('{nifi_node_ssl_host}',params.nifi_node_host)
+    nifi_keystore = nifi_keystore.replace('{{nifi_config_dir}}',params.nifi_config_dir)
+
+    nifi_toolkit_dn_prefix = config['configurations']['nifi-ambari-ssl-config']['nifi.toolkit.dn.prefix']
+    nifi_toolkit_dn_suffix = config['configurations']['nifi-ambari-ssl-config']['nifi.toolkit.dn.suffix']
+
+    nifi_ca_client_config = {
+      "days" : int(config['configurations']['nifi-ambari-ssl-config']['nifi.toolkit.tls.helper.days']),
+      "keyStore" : nifi_keystore,
+      "keyStoreType" : nifi_keystoreType,
+      "keyStorePassword" : nifi_keystorePasswd,
+      "keyPassword" : nifi_keyPasswd,
+      "token" : config['configurations']['nifi-ambari-ssl-config']['nifi.toolkit.tls.token'],
+      "dn" : nifi_toolkit_dn_prefix + params.nifi_node_host + nifi_toolkit_dn_suffix,
+      "port" : int(config['configurations']['nifi-ambari-ssl-config']['nifi.toolkit.tls.port']),
+      "caHostname" : params.nifi_ca_host,
+      "trustStore" : nifi_truststore,
+      "trustStoreType" : nifi_truststoreType,
+      "trustStorePassword": nifi_truststorePasswd
+    }
+
+    return nifi_ca_client_config
+
+

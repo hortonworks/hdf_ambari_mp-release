@@ -18,7 +18,7 @@ limitations under the License.
 
 """
 
-import sys, nifi_ca_util, os, pwd, grp, signal, time, glob, socket, json
+import sys, nifi_toolkit_util, os, pwd, grp, signal, time, glob, socket, json
 from resource_management.core import sudo
 from resource_management import *
 from subprocess import call
@@ -76,35 +76,45 @@ class Master(Script):
     )
 
 
-    ca_client_script = nifi_ca_util.get_toolkit_script('tls-toolkit.sh')
+    ca_client_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh')
     File(ca_client_script, mode=0755)
 
 
     if params.nifi_ca_host and params.nifi_ssl_enabled:
-      ca_client_json = os.path.realpath(os.path.join(params.nifi_config_dir, 'nifi-certificate-authority-client.json'))
-      ca_client_dict = nifi_ca_util.load(ca_client_json)
+
+      last_config_version = nifi_toolkit_util.get_ssl_config_version(format("{params.nifi_config_dir}/config_version"))
+      last_config = nifi_toolkit_util.get_config_by_version('/var/lib/ambari-agent/data','nifi-ambari-ssl-config',last_config_version)
+      ca_client_dict = nifi_toolkit_util.get_nifi_ca_client_dict(last_config)
+      changed_keystore_trustore = nifi_toolkit_util.changed_keystore_truststore(ca_client_dict,params.nifi_ca_client_config)
+
       if is_starting:
         if params.nifi_toolkit_tls_regenerate:
-          nifi_ca_util.move_keystore_truststore(ca_client_dict)
+          nifi_toolkit_util.move_keystore_truststore(ca_client_dict)
           ca_client_dict = {}
-        else:
-          nifi_ca_util.move_keystore_truststore_if_necessary(ca_client_dict, params.nifi_ca_client_config)
-      nifi_ca_util.overlay(ca_client_dict, params.nifi_ca_client_config)
-      nifi_ca_util.dump(ca_client_json, ca_client_dict)
-      if is_starting:
+        elif changed_keystore_trustore:
+          nifi_toolkit_util.move_keystore_truststore(ca_client_dict)
+
+      ca_client_empty = len(ca_client_dict) == 0
+
+      if is_starting and (changed_keystore_trustore or ca_client_empty):
+        ca_client_json = os.path.realpath(os.path.join(params.nifi_config_dir, 'nifi-certificate-authority-client.json'))
+        nifi_toolkit_util.overlay(ca_client_dict, params.nifi_ca_client_config)
+        nifi_toolkit_util.dump(ca_client_json, ca_client_dict)
         Execute('JAVA_HOME='+params.jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=params.nifi_user)
-      nifi_ca_util.update_nifi_properties(nifi_ca_util.load(ca_client_json), params.nifi_properties)
+        nifi_toolkit_util.update_nifi_properties(nifi_toolkit_util.load(ca_client_json), params.nifi_properties)
+        sudo.unlink(ca_client_json)
+        nifi_toolkit_util.save_ssl_config_version(format("{params.nifi_config_dir}/config_version"), params.nifi_ambari_ssl_config_version)
 
     #write out nifi.properties
     PropertiesFile(params.nifi_config_dir + '/nifi.properties',
                    properties = params.nifi_properties,
-                   mode = 0400,
+                   mode = 0600,
                    owner = params.nifi_user,
                    group = params.nifi_group)
 
     #write out boostrap.conf
     bootstrap_content=InlineTemplate(params.nifi_boostrap_content)
-    File(format("{params.nifi_config_dir}/bootstrap.conf"), content=bootstrap_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
+    File(format("{params.nifi_config_dir}/bootstrap.conf"), content=bootstrap_content, owner=params.nifi_user, group=params.nifi_group, mode=0600)
 
     #write out logback.xml
     logback_content=InlineTemplate(params.nifi_node_logback_content)
@@ -128,7 +138,21 @@ class Master(Script):
     
     #write out bootstrap-notification-services.xml
     boostrap_notification_content=InlineTemplate(params.nifi_boostrap_notification_content)
-    File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group, mode=0400) 
+    File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
+
+    #if encrypt configuration was selected and password was provided then encrypt values
+    if params.nifi_security_encrypt_configuration and params.nifi_security_encrypt_configuration_password:
+      Logger.info("Encrypting NiFi sensitive configuration properties")
+      encrypt_config_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh')
+      File(encrypt_config_script, mode=0755)
+      if is_starting:
+        encrypt_config_script_params = ' -v -b '+ params.nifi_config_dir +'/bootstrap.conf'
+        encrypt_config_script_params = encrypt_config_script_params + ' -n ' + params.nifi_config_dir + '/nifi.properties'
+        encrypt_config_script_params = encrypt_config_script_params + ' -p ' + params.nifi_security_encrypt_configuration_password
+        Execute('JAVA_HOME='+params.jdk64_home+' '+encrypt_config_script+encrypt_config_script_params, user=params.nifi_user)
+
+    elif params.nifi_security_encrypt_configuration and not params.nifi_security_encrypt_configuration_password:
+      Logger.info("Encrypted configuration has been enabled however no password provided for the master key.  Settings will not be encrypted.")
 
   def stop(self, env):
     import params
