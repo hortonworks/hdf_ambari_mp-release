@@ -33,11 +33,11 @@ def load(config_json):
       return json.loads(contents)
   return {}
 
-def dump(config_json, config_dict):
-  import params
+def dump(config_json, config_dict, nifi_user, nifi_group):
+
   File(config_json,
-    owner=params.nifi_user,
-    group=params.nifi_group,
+    owner=nifi_user,
+    group=nifi_group,
     mode=0600,
     content=PasswordString(json.dumps(config_dict, sort_keys=True, indent=4))
   )
@@ -106,14 +106,13 @@ def move_store(client_dict, key):
     sudo.copy(name, name + '.bak.' + str(num))
     sudo.unlink(name)
 
-def save_ssl_config_version(version_file,version_num):
-  import params
+def save_ssl_config_version(version_file,version_num, nifi_user, nifi_group):
   if sudo.path_isfile(version_file):
     sudo.unlink(version_file)
 
   File(version_file,
-       owner=params.nifi_user,
-       group=params.nifi_group,
+       owner=nifi_user,
+       group=nifi_group,
        mode=0600,
        content=version_num)
 
@@ -150,8 +149,8 @@ def convert_properties_to_dict(prop_file):
 
   return dict
 
-def populate_ssl_properties(old_prop,new_prop):
-  import params
+def populate_ssl_properties(old_prop,new_prop,params):
+
   if len(old_prop) > 0:
 
     newKeyPasswd = new_prop['nifi.security.keyPasswd'].replace('{{nifi_keystore}}',params.nifi_keystore)
@@ -172,8 +171,8 @@ def populate_ssl_properties(old_prop,new_prop):
 
   return new_prop
 
-def get_nifi_ca_client_dict(config):
-  import params
+def get_nifi_ca_client_dict(config,params):
+
   if len(config) == 0:
     return {}
   else:

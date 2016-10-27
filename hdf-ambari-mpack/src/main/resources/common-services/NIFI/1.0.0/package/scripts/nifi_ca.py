@@ -54,7 +54,7 @@ class CertificateAuthority(Script):
     ca_json = os.path.join(params.nifi_config_dir, 'nifi-certificate-authority.json')
     ca_dict = nifi_toolkit_util.load(ca_json)
     nifi_toolkit_util.overlay(ca_dict, params.nifi_ca_config)
-    nifi_toolkit_util.dump(ca_json, ca_dict)
+    nifi_toolkit_util.dump(ca_json, ca_dict, params.nifi_user, params.nifi_group)
 
     Directory([params.nifi_config_dir],
         owner=params.nifi_user,

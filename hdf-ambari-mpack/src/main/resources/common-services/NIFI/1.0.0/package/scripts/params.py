@@ -20,12 +20,13 @@ limitations under the License.
 
 from resource_management import *
 from resource_management.libraries.script.script import Script
-import sys, os, glob, socket, re
+import sys, os, glob, socket, re, nifi_toolkit_util
 from resource_management.libraries.functions import format
 from resource_management.libraries.functions.default import default
 from resource_management.libraries.functions.version import format_stack_version
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.stack_features import check_stack_feature
+from resource_management.libraries.functions.stack_features import get_stack_feature_version
 from resource_management.libraries.resources.hdfs_resource import HdfsResource
 from resource_management.libraries.functions import stack_select
 from resource_management.libraries.functions import conf_select
@@ -37,6 +38,8 @@ import ambari_simplejson as json # simplejson is much faster comparing to Python
 config = Script.get_config()
 stack_root = Script.get_stack_root()
 stack_version_buildnum = default("/commandParams/version", None)
+service_version = config['availableServices']['NIFI']
+version_for_stack_feature_checks = get_stack_feature_version(config)
 
 #nifi_install_dir = '/usr/hdf/current/nifi'
 nifi_install_dir = os.path.join(stack_root, "current", "nifi")

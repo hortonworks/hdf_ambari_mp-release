@@ -18,8 +18,8 @@
 -->
 <configuration>
 
-  
-  
+
+
   <!-- Note: these two properties must be in same xml file for quicklinks to correctly work -->
   <property>
     <name>nifi.node.port</name>
@@ -185,19 +185,4 @@
     <on-ambari-upgrade add="true"/>
   </property>
 
-  <property>
-    <name>nifi.security.encrypt.configuration.password</name>
-    <value/>
-    <property-type>PASSWORD</property-type>
-    <display-name>Encrypt Configuration Master Key Password</display-name>
-    <description>
-      This password is used to generate the master key for encryption of sensitive properties in nifi properties file when written to disk. Password needs to at least be 12 characters.
-    </description>
-    <value-attributes>
-      <overridable>false</overridable>
-      <type>password</type>
-    </value-attributes>
-    <on-ambari-upgrade add="true"/>
-  </property>
-  
 </configuration>

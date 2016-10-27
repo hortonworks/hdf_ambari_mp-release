@@ -83,7 +83,7 @@ class Master(Script):
 
       last_config_version = nifi_toolkit_util.get_ssl_config_version(format("{params.nifi_config_dir}/config_version"))
       last_config = nifi_toolkit_util.get_config_by_version('/var/lib/ambari-agent/data','nifi-ambari-ssl-config',last_config_version)
-      ca_client_dict = nifi_toolkit_util.get_nifi_ca_client_dict(last_config)
+      ca_client_dict = nifi_toolkit_util.get_nifi_ca_client_dict(last_config, params)
       changed_keystore_truststore = nifi_toolkit_util.changed_keystore_truststore(ca_client_dict,params.nifi_ca_client_config)
 
       if is_starting:
@@ -97,14 +97,14 @@ class Master(Script):
         if (changed_keystore_truststore or len(ca_client_dict) == 0):
           ca_client_json = os.path.realpath(os.path.join(params.nifi_config_dir, 'nifi-certificate-authority-client.json'))
           nifi_toolkit_util.overlay(ca_client_dict, params.nifi_ca_client_config)
-          nifi_toolkit_util.dump(ca_client_json, ca_client_dict)
+          nifi_toolkit_util.dump(ca_client_json, ca_client_dict, params.nifi_user, params.nifi_group)
           Execute('JAVA_HOME='+params.jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=params.nifi_user)
           nifi_toolkit_util.update_nifi_properties(nifi_toolkit_util.load(ca_client_json), params.nifi_properties)
           sudo.unlink(ca_client_json)
-          nifi_toolkit_util.save_ssl_config_version(format("{params.nifi_config_dir}/config_version"), params.nifi_ambari_ssl_config_version)
+          nifi_toolkit_util.save_ssl_config_version(format("{params.nifi_config_dir}/config_version"), params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
 
         old_nifi_properties = nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties')
-        params.nifi_properties = nifi_toolkit_util.populate_ssl_properties(old_nifi_properties,params.nifi_properties)
+        params.nifi_properties = nifi_toolkit_util.populate_ssl_properties(old_nifi_properties,params.nifi_properties,params)
 
     #write out nifi.properties
     PropertiesFile(params.nifi_config_dir + '/nifi.properties', properties = params.nifi_properties, mode = 0600, owner = params.nifi_user, group = params.nifi_group)
@@ -137,14 +137,16 @@ class Master(Script):
     boostrap_notification_content=InlineTemplate(params.nifi_boostrap_notification_content)
     File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
-    Logger.info("Encrypting NiFi sensitive configuration properties")
-    encrypt_config_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh')
-    File(encrypt_config_script, mode=0755)
-    if is_starting:
-      encrypt_config_script_params = ' -v -b '+ params.nifi_config_dir +'/bootstrap.conf'
-      encrypt_config_script_params = encrypt_config_script_params + ' -n ' + params.nifi_config_dir + '/nifi.properties'
-      encrypt_config_script_params = encrypt_config_script_params + ' -p ' + params.nifi_security_encrypt_configuration_password
-      Execute('JAVA_HOME='+params.jdk64_home+' '+encrypt_config_script+encrypt_config_script_params, user=params.nifi_user)
+    if check_stack_feature('nifi_encrypt_config', params.version_for_stack_feature_checks):
+
+      Logger.info("Encrypting NiFi sensitive configuration properties")
+      encrypt_config_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh')
+      File(encrypt_config_script, mode=0755)
+      if is_starting:
+        encrypt_config_script_params = ' -v -b '+ params.nifi_config_dir +'/bootstrap.conf'
+        encrypt_config_script_params = encrypt_config_script_params + ' -n ' + params.nifi_config_dir + '/nifi.properties'
+        encrypt_config_script_params = encrypt_config_script_params + ' -p ' + params.nifi_security_encrypt_configuration_password
+        Execute('JAVA_HOME='+params.jdk64_home+' '+encrypt_config_script+encrypt_config_script_params, user=params.nifi_user)
 
 
   def stop(self, env):
