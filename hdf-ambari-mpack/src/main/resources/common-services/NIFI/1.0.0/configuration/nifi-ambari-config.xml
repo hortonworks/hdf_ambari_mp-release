@@ -186,19 +186,6 @@
   </property>
 
   <property>
-    <name>nifi.security.encrypt.configuration</name>
-    <value>true</value>
-    <display-name>Encrypt Sensitive Configuration Values?</display-name>
-    <description>
-    Enabling this feature will encrypt any sensitive properties indicated in the nifi properties file when written to disk (as the nifi.properties file).
-    </description>
-    <value-attributes>
-      <type>boolean</type>
-    </value-attributes>
-    <on-ambari-upgrade add="true"/>
-  </property>
-
-  <property>
     <name>nifi.security.encrypt.configuration.password</name>
     <value/>
     <property-type>PASSWORD</property-type>
