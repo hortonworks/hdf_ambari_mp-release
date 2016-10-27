@@ -140,31 +140,37 @@ def get_config_by_version(config_path,config_name,version):
 def convert_properties_to_dict(prop_file):
   if sudo.path_isfile(prop_file):
     dict = {}
-    lines = prop_file.readlines()
+    lines = sudo.read_file(prop_file).split('\n')
     for line in lines:
-      key, value = line.rstrip().split('=')
-      dict[key] = value
+      props = line.rstrip().split('=')
+      if len(props) == 2:
+        dict[props[0]] = props[1]
+      elif len(props) == 1:
+        dict[props[0]] = ''
 
   return dict
 
 def populate_ssl_properties(old_prop,new_prop):
-
+  import params
   if len(old_prop) > 0:
 
-    if len(new_prop['nifi.security.keyPasswd']) == 0 and len(old_prop['nifi.security.keyPasswd']) > 0:
+    newKeyPasswd = new_prop['nifi.security.keyPasswd'].replace('{{nifi_keystore}}',params.nifi_keystore)
+    newKeystorePasswd = new_prop['nifi.security.keystorePasswd'].replace('{{nifi_keystorePasswd}}',params.nifi_keystorePasswd)
+    newTruststorePasswd = new_prop['nifi.security.truststorePasswd'].replace('{{nifi_truststorePasswd}}',params.nifi_truststorePasswd)
+
+    if len(newKeyPasswd) == 0 and len(old_prop['nifi.security.keyPasswd']) > 0:
       new_prop['nifi.security.keyPasswd'] = old_prop['nifi.security.keyPasswd']
       new_prop['nifi.security.keyPasswd.protected'] = old_prop['nifi.security.keyPasswd.protected']
 
-    if len(new_prop['nifi.security.keystorePasswd']) == 0 and len(old_prop['nifi.security.keystorePasswd']) > 0:
+    if len(newKeystorePasswd) == 0 and len(old_prop['nifi.security.keystorePasswd']) > 0:
       new_prop['nifi.security.keystorePasswd'] = old_prop['nifi.security.keystorePasswd']
       new_prop['nifi.security.keystorePasswd.protected'] = old_prop['nifi.security.keystorePasswd.protected']
 
-    if len(new_prop['nifi.security.truststorePasswd']) == 0 and len(old_prop['nifi.security.truststorePasswd']) > 0 :
+    if len(newTruststorePasswd) == 0 and len(old_prop['nifi.security.truststorePasswd']) > 0 :
       new_prop['nifi.security.truststorePasswd'] = old_prop['nifi.security.truststorePasswd']
       new_prop['nifi.security.truststorePasswd.protected'] = old_prop['nifi.security.truststorePasswd.protected']
 
   return new_prop
-
 
 def get_nifi_ca_client_dict(config):
   import params
