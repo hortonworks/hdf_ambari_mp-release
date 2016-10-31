@@ -164,7 +164,7 @@ nifi_ca_client_config = {
 }
 
 nifi_ambari_ssl_config_version = config['configurationTags']['nifi-ambari-ssl-config']['tag']
- 
+
 # params from nifi-env
 nifi_user = config['configurations']['nifi-env']['nifi_user']
 nifi_group = config['configurations']['nifi-env']['nifi_group']

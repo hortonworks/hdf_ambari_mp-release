@@ -16,11 +16,11 @@
    limitations under the License.
 -->
 <metainfo>
-    <schemaVersion>2.0</schemaVersion>
-    <services>
-        <service>
-            <name>NIFI</name>
-            <version>1.1.0</version>
-        </service>
-    </services>
+  <schemaVersion>2.0</schemaVersion>
+  <services>
+    <service>
+      <name>KERBEROS</name>
+      <extends>common-services/KERBEROS/1.10.3-10</extends>
+    </service>
+  </services>
 </metainfo>
