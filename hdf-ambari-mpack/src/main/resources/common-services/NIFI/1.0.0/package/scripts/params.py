@@ -20,7 +20,7 @@ limitations under the License.
 
 from resource_management import *
 from resource_management.libraries.script.script import Script
-import sys, os, glob, socket, re, nifi_toolkit_util
+import sys, os, glob, socket, re
 from resource_management.libraries.functions import format
 from resource_management.libraries.functions.default import default
 from resource_management.libraries.functions.version import format_stack_version
@@ -259,6 +259,7 @@ smokeuser = config['configurations']['cluster-env']['smokeuser']
 smokeuser_principal = config['configurations']['cluster-env']['smokeuser_principal_name']
 smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executable_search_paths', None))
+stack_support_encrypt_config = check_stack_feature('nifi_encrypt_config', params.version_for_stack_feature_checks)
 
 if security_enabled:
   _hostname_lowercase = nifi_host_name.lower()
