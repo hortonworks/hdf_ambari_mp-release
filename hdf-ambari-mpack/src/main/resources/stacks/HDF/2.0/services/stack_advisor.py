@@ -1436,9 +1436,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
   def validateNiFiAmbariConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
     validationItems = []
 
-    if 'nifi.security.encrypt.configuration.password' in properties and len(properties['nifi.security.encrypt.configuration.password']) < 12:
-      validationItems.append({"config-name": 'nifi.security.encrypt.configuration.password', 'item': self.getErrorItem('The password for encrypting configuration settings must be 12 or more characters.')})
-
     if len(properties['nifi.sensitive.props.key']) < 10:
       validationItems.append({"config-name": 'nifi.sensitive.props.key', 'item': self.getWarnItem('Sensitive property encryption password should be 10 or more characters')})
 

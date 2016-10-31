@@ -138,7 +138,6 @@ class Master(Script):
     File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
     if check_stack_feature('nifi_encrypt_config', params.version_for_stack_feature_checks):
-
       Logger.info("Encrypting NiFi sensitive configuration properties")
       encrypt_config_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh')
       File(encrypt_config_script, mode=0755)
