@@ -37,6 +37,7 @@ import ambari_simplejson as json # simplejson is much faster comparing to Python
 config = Script.get_config()
 stack_root = Script.get_stack_root()
 stack_version_buildnum = default("/commandParams/version", None)
+service_version = config['availableServices']['NIFI']
 
 #nifi_install_dir = '/usr/hdf/current/nifi'
 nifi_install_dir = os.path.join(stack_root, "current", "nifi")
