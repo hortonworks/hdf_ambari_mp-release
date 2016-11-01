@@ -78,7 +78,6 @@ class Master(Script):
     ca_client_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh')
     File(ca_client_script, mode=0755)
 
-
     if params.nifi_ca_host and params.nifi_ssl_enabled:
 
       last_config_version = nifi_toolkit_util.get_ssl_config_version(format("{params.nifi_config_dir}/config_version"))
@@ -98,8 +97,17 @@ class Master(Script):
           ca_client_json = os.path.realpath(os.path.join(params.nifi_config_dir, 'nifi-certificate-authority-client.json'))
           nifi_toolkit_util.overlay(ca_client_dict, params.nifi_ca_client_config)
           nifi_toolkit_util.dump(ca_client_json, ca_client_dict, params.nifi_user, params.nifi_group)
-          Execute('JAVA_HOME='+params.jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=params.nifi_user)
-          nifi_toolkit_util.update_nifi_properties(nifi_toolkit_util.load(ca_client_json), params.nifi_properties)
+
+          if params.stack_support_toolkit_update:
+            cert_command = 'JAVA_HOME='+params.jdk64_home+' '+ca_client_script+' client -f /dev/stdout --configJsonIn '+ ca_client_json
+            code, json_out = shell.call(cert_command,sudo=True)
+            print json_out
+            updated_properties = json.loads(json_out)
+          else:
+            Execute('JAVA_HOME='+params.jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=params.nifi_user)
+            updated_properties = nifi_toolkit_util.load(ca_client_json)
+
+          nifi_toolkit_util.update_nifi_properties(updated_properties, params.nifi_properties)
           sudo.unlink(ca_client_json)
           nifi_toolkit_util.save_ssl_config_version(format("{params.nifi_config_dir}/config_version"), params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
 

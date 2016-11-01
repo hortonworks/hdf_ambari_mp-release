@@ -260,6 +260,8 @@ smokeuser_principal = config['configurations']['cluster-env']['smokeuser_princip
 smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executable_search_paths', None))
 stack_support_encrypt_config = check_stack_feature('nifi_encrypt_config', params.version_for_stack_feature_checks)
+stack_support_toolkit_update = check_stack_feature('toolkit_config_update', params.version_for_stack_feature_checks)
+
 
 if security_enabled:
   _hostname_lowercase = nifi_host_name.lower()
