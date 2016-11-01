@@ -75,44 +75,8 @@ class Master(Script):
          content=Template("nifi.conf.j2")
     )
 
-    ca_client_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh')
-    File(ca_client_script, mode=0755)
-
     if params.nifi_ca_host and params.nifi_ssl_enabled:
-
-      last_config_version = nifi_toolkit_util.get_ssl_config_version(format("{params.nifi_config_dir}/config_version"))
-      last_config = nifi_toolkit_util.get_config_by_version('/var/lib/ambari-agent/data','nifi-ambari-ssl-config',last_config_version)
-      ca_client_dict = nifi_toolkit_util.get_nifi_ca_client_dict(last_config, params)
-      changed_keystore_truststore = nifi_toolkit_util.changed_keystore_truststore(ca_client_dict,params.nifi_ca_client_config)
-
-      if is_starting:
-
-        if params.nifi_toolkit_tls_regenerate:
-          nifi_toolkit_util.move_keystore_truststore(ca_client_dict)
-          ca_client_dict = {}
-        elif changed_keystore_truststore:
-          nifi_toolkit_util.move_keystore_truststore(ca_client_dict)
-
-        if (changed_keystore_truststore or len(ca_client_dict) == 0):
-          ca_client_json = os.path.realpath(os.path.join(params.nifi_config_dir, 'nifi-certificate-authority-client.json'))
-          nifi_toolkit_util.overlay(ca_client_dict, params.nifi_ca_client_config)
-          nifi_toolkit_util.dump(ca_client_json, ca_client_dict, params.nifi_user, params.nifi_group)
-
-          if params.stack_support_toolkit_update:
-            cert_command = 'JAVA_HOME='+params.jdk64_home+' '+ca_client_script+' client -f /dev/stdout --configJsonIn '+ ca_client_json
-            code, json_out = shell.call(cert_command,sudo=True)
-            print json_out
-            updated_properties = json.loads(json_out)
-          else:
-            Execute('JAVA_HOME='+params.jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=params.nifi_user)
-            updated_properties = nifi_toolkit_util.load(ca_client_json)
-
-          nifi_toolkit_util.update_nifi_properties(updated_properties, params.nifi_properties)
-          sudo.unlink(ca_client_json)
-          nifi_toolkit_util.save_ssl_config_version(format("{params.nifi_config_dir}/config_version"), params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
-
-        old_nifi_properties = nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties')
-        params.nifi_properties = nifi_toolkit_util.populate_ssl_properties(old_nifi_properties,params.nifi_properties,params)
+      params.nifi_properties = self.setup_keystore_truststore(is_starting)
 
     #write out nifi.properties
     PropertiesFile(params.nifi_config_dir + '/nifi.properties', properties = params.nifi_properties, mode = 0600, owner = params.nifi_user, group = params.nifi_group)
@@ -146,14 +110,7 @@ class Master(Script):
     File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
     if params.stack_support_encrypt_config:
-      Logger.info("Encrypting NiFi sensitive configuration properties")
-      encrypt_config_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh')
-      File(encrypt_config_script, mode=0755)
-      if is_starting:
-        encrypt_config_script_params = ' -v -b '+ params.nifi_config_dir +'/bootstrap.conf'
-        encrypt_config_script_params = encrypt_config_script_params + ' -n ' + params.nifi_config_dir + '/nifi.properties'
-        encrypt_config_script_params = encrypt_config_script_params + ' -p ' + params.nifi_security_encrypt_configuration_password
-        Execute('JAVA_HOME='+params.jdk64_home+' '+encrypt_config_script+encrypt_config_script_params, user=params.nifi_user)
+      self.encrypt_sensitive_properties(params.nifi_config_dir,params.jdk64_home,params.nifi_user,params.nifi_security_encrypt_configuration_password,is_starting)
 
 
   def stop(self, env):
@@ -190,6 +147,62 @@ class Master(Script):
     import status_params
     check_process_status(status_params.nifi_node_pid_file)
 
+  def setup_keystore_truststore(self, is_starting):
+    import params
+
+    if is_starting:
+      #check against last version to determine if key/trust has changed
+      last_config_version = nifi_toolkit_util.get_ssl_config_version(format("{params.nifi_config_dir}/config_version"))
+      last_config = nifi_toolkit_util.get_config_by_version('/var/lib/ambari-agent/data','nifi-ambari-ssl-config',last_config_version)
+      ca_client_dict = nifi_toolkit_util.get_nifi_ca_client_dict(last_config, params)
+      changed_keystore_truststore = nifi_toolkit_util.changed_keystore_truststore(ca_client_dict,params.nifi_ca_client_config)
+
+      if params.nifi_toolkit_tls_regenerate:
+        nifi_toolkit_util.move_keystore_truststore(ca_client_dict)
+        ca_client_dict = {}
+      elif changed_keystore_truststore:
+        nifi_toolkit_util.move_keystore_truststore(ca_client_dict)
+
+      if changed_keystore_truststore or len(ca_client_dict) == 0:
+        nifi_toolkit_util.overlay(ca_client_dict, params.nifi_ca_client_config)
+        updated_properties = self.run_toolkit_client(ca_client_dict,params.nifi_config_dir, params.jdk64_home, params.nifi_user,params.nifi_group, params.stack_support_toolkit_update)
+        nifi_toolkit_util.update_nifi_properties(updated_properties, params.nifi_properties)
+        nifi_toolkit_util.save_ssl_config_version(format("{params.nifi_config_dir}/config_version"), params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
+
+      old_nifi_properties = nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties')
+      return nifi_toolkit_util.populate_ssl_properties(old_nifi_properties,params.nifi_properties,params)
+
+    else:
+      return params.nifi_properties
+
+  def run_toolkit_client(self,ca_client_dict, nifi_config_dir, jdk64_home, nifi_user,nifi_group, no_client_file=False):
+    Logger.info("Generating NiFi Keystore and Truststore")
+    ca_client_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh')
+    File(ca_client_script, mode=0755)
+    if no_client_file:
+      cert_command = 'ambari-sudo.sh echo \'' + json.dumps(ca_client_dict) + '\' | JAVA_HOME='+jdk64_home + ' ' + ca_client_script + ' client -f /dev/stdout --configJsonIn /dev/stdin'
+      code, out = shell.call(cert_command,quiet=True,logoutput=False)
+      json_out = out[out.index('{'):len(out)]
+      updated_properties = json.loads(json_out)
+      shell.call(['chown',nifi_user+':'+nifi_group,updated_properties['keyStore']],sudo=True)
+      shell.call(['chown',nifi_user+':'+nifi_group,updated_properties['trustStore']],sudo=True)
+    else:
+      ca_client_json = os.path.realpath(os.path.join(nifi_config_dir, 'nifi-certificate-authority-client.json'))
+      nifi_toolkit_util.dump(ca_client_json, ca_client_dict, nifi_user, nifi_group)
+      Execute('JAVA_HOME='+jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=nifi_user)
+      updated_properties = nifi_toolkit_util.load(ca_client_json)
+
+    return updated_properties
+
+  def encrypt_sensitive_properties(self,nifi_config_dir,jdk64_home,nifi_user,nifi_security_encrypt_configuration_password, is_starting):
+    Logger.info("Encrypting NiFi sensitive configuration properties")
+    encrypt_config_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh')
+    File(encrypt_config_script, mode=0755)
+    if is_starting:
+      encrypt_config_script_params = ' -v -b '+ nifi_config_dir +'/bootstrap.conf'
+      encrypt_config_script_params = encrypt_config_script_params + ' -n ' + nifi_config_dir + '/nifi.properties'
+      encrypt_config_script_params = encrypt_config_script_params + ' -p ' + nifi_security_encrypt_configuration_password
+      Execute('JAVA_HOME='+jdk64_home+' '+encrypt_config_script+encrypt_config_script_params, user=nifi_user, quiet=True)
 
   def check_is_fresh_install(self, env):
     """

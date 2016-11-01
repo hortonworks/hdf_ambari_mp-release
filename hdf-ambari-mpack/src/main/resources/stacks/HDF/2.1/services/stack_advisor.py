@@ -20,7 +20,7 @@ class HDF21StackAdvisor(HDF20StackAdvisor):
 
   def validateNiFiAmbariConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
 
-    parentValidationProblems = super(HDF20StackAdvisor, self).validateNiFiAmbariConfigurations(self, properties, recommendedDefaults, configurations, services, hosts)
+    parentValidationProblems = super(HDF21StackAdvisor, self).validateNiFiAmbariConfigurations(properties, recommendedDefaults, configurations, services, hosts)
 
     validationItems = []
 
