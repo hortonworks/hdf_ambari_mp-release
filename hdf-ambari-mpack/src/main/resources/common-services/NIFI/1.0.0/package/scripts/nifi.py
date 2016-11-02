@@ -202,7 +202,7 @@ class Master(Script):
       encrypt_config_script_params = ' -v -b '+ nifi_config_dir +'/bootstrap.conf'
       encrypt_config_script_params = encrypt_config_script_params + ' -n ' + nifi_config_dir + '/nifi.properties'
       encrypt_config_script_params = encrypt_config_script_params + ' -p ' + nifi_security_encrypt_configuration_password
-      Execute('JAVA_HOME='+jdk64_home+' '+encrypt_config_script+encrypt_config_script_params, user=nifi_user, quiet=True)
+      Execute('JAVA_HOME='+jdk64_home+' '+encrypt_config_script+encrypt_config_script_params, user=nifi_user)
 
   def check_is_fresh_install(self, env):
     """
