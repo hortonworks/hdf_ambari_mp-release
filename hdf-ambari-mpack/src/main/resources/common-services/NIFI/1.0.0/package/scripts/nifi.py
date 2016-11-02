@@ -79,7 +79,7 @@ class Master(Script):
 
     if params.nifi_ca_host and params.nifi_ssl_enabled:
       params.nifi_properties = self.setup_keystore_truststore(is_starting, params, ssl_config_version_file)
-    else:
+    elif params.nifi_ca_host and not params.nifi_ssl_enabled:
       params.nifi_properties = self.cleanup_toolkit_client_files(params, ssl_config_version_file)
 
     #write out nifi.properties
@@ -154,7 +154,7 @@ class Master(Script):
   def setup_keystore_truststore(self, is_starting, params, config_version_file):
     if is_starting:
       #check against last version to determine if key/trust has changed
-      last_config_version = nifi_toolkit_util.get_ssl_config_version(config_version_file)
+      last_config_version = nifi_toolkit_util.get_config_version(config_version_file,'ssl')
       last_config = nifi_toolkit_util.get_config_by_version('/var/lib/ambari-agent/data','nifi-ambari-ssl-config',last_config_version)
       ca_client_dict = nifi_toolkit_util.get_nifi_ca_client_dict(last_config, params)
       changed_keystore_truststore = nifi_toolkit_util.changed_keystore_truststore(ca_client_dict,params.nifi_ca_client_config)
@@ -169,7 +169,7 @@ class Master(Script):
         nifi_toolkit_util.overlay(ca_client_dict, params.nifi_ca_client_config)
         updated_properties = self.run_toolkit_client(ca_client_dict,params.nifi_config_dir, params.jdk64_home, params.nifi_user,params.nifi_group, params.stack_support_toolkit_update)
         nifi_toolkit_util.update_nifi_properties(updated_properties, params.nifi_properties)
-        nifi_toolkit_util.save_ssl_config_version(config_version_file, params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
+        nifi_toolkit_util.save_config_version(config_version_file,'ssl', params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
 
       old_nifi_properties = nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties')
       return nifi_toolkit_util.populate_ssl_properties(old_nifi_properties,params.nifi_properties,params)
@@ -197,13 +197,12 @@ class Master(Script):
     return updated_properties
 
   def cleanup_toolkit_client_files(self, params,config_version_file):
-    Logger.info("Search and remove any old NiFi Keystore and Truststores")
-    ca_client_dict = nifi_toolkit_util.get_nifi_ca_client_dict(params.config, params)
-    nifi_toolkit_util.move_keystore_truststore(ca_client_dict)
-    params.nifi_properties['nifi.security.keystore'] = ''
-    params.nifi_properties['nifi.security.truststore'] = ''
-
     if sudo.path_isfile(config_version_file):
+      Logger.info("Search and remove any generated keystore and truststores")
+      ca_client_dict = nifi_toolkit_util.get_nifi_ca_client_dict(params.config, params)
+      nifi_toolkit_util.move_keystore_truststore(ca_client_dict)
+      params.nifi_properties['nifi.security.keystore'] = ''
+      params.nifi_properties['nifi.security.truststore'] = ''
       sudo.unlink(config_version_file)
 
     return params.nifi_properties

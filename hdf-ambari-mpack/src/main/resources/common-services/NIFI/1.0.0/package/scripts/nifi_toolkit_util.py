@@ -106,21 +106,28 @@ def move_store(client_dict, key):
     sudo.copy(name, name + '.bak.' + str(num))
     sudo.unlink(name)
 
-def save_ssl_config_version(version_file,version_num, nifi_user, nifi_group):
+def save_config_version(version_file,version_type,version_num,nifi_user,nifi_group):
+  version = {}
   if sudo.path_isfile(version_file):
+    contents = sudo.read_file(version_file)
+    version = json.loads(contents)
+    version[version_type] = version_num
     sudo.unlink(version_file)
+  else:
+    version[version_type] = version_num
 
   File(version_file,
        owner=nifi_user,
        group=nifi_group,
        mode=0600,
-       content=version_num)
+       content=json.dumps(version))
 
-def get_ssl_config_version(version_file):
+def get_config_version(version_file,version_type):
   if sudo.path_isfile(version_file):
     contents = sudo.read_file(version_file)
-    if len(contents) > 0:
-      return contents
+    version = json.loads(contents)
+    if version_type in version:
+      return version[version_type]
     else:
       return None
 
