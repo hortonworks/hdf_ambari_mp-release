@@ -197,13 +197,13 @@ class Master(Script):
     return updated_properties
 
   def cleanup_toolkit_client_files(self, params,config_version_file):
-    if sudo.path_isfile(config_version_file):
-      Logger.info("Search and remove any generated keystore and truststores")
+    if nifi_toolkit_util.get_config_version(config_version_file,'ssl'):
+      Logger.info("Search and remove any generated keystores and truststores")
       ca_client_dict = nifi_toolkit_util.get_nifi_ca_client_dict(params.config, params)
       nifi_toolkit_util.move_keystore_truststore(ca_client_dict)
       params.nifi_properties['nifi.security.keystore'] = ''
       params.nifi_properties['nifi.security.truststore'] = ''
-      sudo.unlink(config_version_file)
+      nifi_toolkit_util.remove_config_version(config_version_file,'ssl',params.nifi_user, params.nifi_group)
 
     return params.nifi_properties
 

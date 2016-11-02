@@ -131,6 +131,19 @@ def get_config_version(version_file,version_type):
     else:
       return None
 
+def remove_config_version(version_file,version_type, nifi_user, nifi_group):
+  if sudo.path_isfile(version_file):
+    contents = sudo.read_file(version_file)
+    version = json.loads(contents)
+    version.pop(version_type, None)
+    sudo.unlink(version_file)
+
+    File(version_file,
+         owner=nifi_user,
+         group=nifi_group,
+         mode=0600,
+         content=json.dumps(version))
+
 def get_config_by_version(config_path,config_name,version):
   import fnmatch
   if version is not None:
