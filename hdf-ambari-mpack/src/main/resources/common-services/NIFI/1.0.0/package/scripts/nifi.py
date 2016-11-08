@@ -75,12 +75,12 @@ class Master(Script):
          content=Template("nifi.conf.j2")
     )
 
-    ssl_config_version_file = format("{params.nifi_config_dir}/config_version")
+    config_version_file = format("{params.nifi_config_dir}/config_version")
 
     if params.nifi_ca_host and params.nifi_ssl_enabled:
-      params.nifi_properties = self.setup_keystore_truststore(is_starting, params, ssl_config_version_file)
+      params.nifi_properties = self.setup_keystore_truststore(is_starting, params, config_version_file)
     elif params.nifi_ca_host and not params.nifi_ssl_enabled:
-      params.nifi_properties = self.cleanup_toolkit_client_files(params, ssl_config_version_file)
+      params.nifi_properties = self.cleanup_toolkit_client_files(params, config_version_file)
 
     #write out nifi.properties
     PropertiesFile(params.nifi_config_dir + '/nifi.properties', properties = params.nifi_properties, mode = 0600, owner = params.nifi_user, group = params.nifi_group)
@@ -114,7 +114,9 @@ class Master(Script):
     File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
     if params.stack_support_encrypt_config:
-      self.encrypt_sensitive_properties(params.nifi_config_dir,params.jdk64_home,params.nifi_user,params.nifi_security_encrypt_configuration_password,is_starting)
+      self.encrypt_sensitive_properties(config_version_file,params.nifi_ambari_config_version,
+                                        params.nifi_config_dir,params.jdk64_home,params.nifi_user,
+                                        params.nifi_group,params.nifi_security_encrypt_configuration_password, is_starting)
 
 
   def stop(self, env):
@@ -207,15 +209,27 @@ class Master(Script):
 
     return params.nifi_properties
 
-  def encrypt_sensitive_properties(self,nifi_config_dir,jdk64_home,nifi_user,nifi_security_encrypt_configuration_password, is_starting):
+  def encrypt_sensitive_properties(self,config_version_file,current_version,nifi_config_dir,jdk64_home,nifi_user,nifi_group,master_key_password,is_starting):
     Logger.info("Encrypting NiFi sensitive configuration properties")
     encrypt_config_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh')
     File(encrypt_config_script, mode=0755)
     if is_starting:
       encrypt_config_script_params = ' -v -b '+ nifi_config_dir +'/bootstrap.conf'
       encrypt_config_script_params = encrypt_config_script_params + ' -n ' + nifi_config_dir + '/nifi.properties'
-      encrypt_config_script_params = encrypt_config_script_params + ' -p ' + nifi_security_encrypt_configuration_password
+      last_master_key_password = None
+      last_config_version = nifi_toolkit_util.get_config_version(config_version_file,'encrypt')
+
+      if last_config_version:
+        last_config = nifi_toolkit_util.get_config_by_version('/var/lib/ambari-agent/data','nifi-ambari-config',last_config_version)
+        last_master_key_password = last_config['configurations']['nifi-ambari-config']['nifi.security.encrypt.configuration.password']
+
+      if last_master_key_password and last_master_key_password != master_key_password:
+        encrypt_config_script_params = encrypt_config_script_params + ' -m -w ' + last_master_key_password
+
+      encrypt_config_script_params = encrypt_config_script_params + ' -p ' + master_key_password
+
       Execute('JAVA_HOME='+jdk64_home+' '+encrypt_config_script+encrypt_config_script_params, user=nifi_user)
+      nifi_toolkit_util.save_config_version(config_version_file,'encrypt', current_version, nifi_user, nifi_group)
 
   def check_is_fresh_install(self, env):
     """

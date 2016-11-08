@@ -179,15 +179,18 @@ def populate_ssl_properties(old_prop,new_prop,params):
 
     if len(newKeyPasswd) == 0 and len(old_prop['nifi.security.keyPasswd']) > 0:
       new_prop['nifi.security.keyPasswd'] = old_prop['nifi.security.keyPasswd']
-      new_prop['nifi.security.keyPasswd.protected'] = old_prop['nifi.security.keyPasswd.protected']
+      if 'nifi.security.keyPasswd.protected' in old_prop:
+        new_prop['nifi.security.keyPasswd.protected'] = old_prop['nifi.security.keyPasswd.protected']
 
     if len(newKeystorePasswd) == 0 and len(old_prop['nifi.security.keystorePasswd']) > 0:
       new_prop['nifi.security.keystorePasswd'] = old_prop['nifi.security.keystorePasswd']
-      new_prop['nifi.security.keystorePasswd.protected'] = old_prop['nifi.security.keystorePasswd.protected']
+      if 'nifi.security.keystorePasswd.protected' in old_prop:
+        new_prop['nifi.security.keystorePasswd.protected'] = old_prop['nifi.security.keystorePasswd.protected']
 
     if len(newTruststorePasswd) == 0 and len(old_prop['nifi.security.truststorePasswd']) > 0 :
       new_prop['nifi.security.truststorePasswd'] = old_prop['nifi.security.truststorePasswd']
-      new_prop['nifi.security.truststorePasswd.protected'] = old_prop['nifi.security.truststorePasswd.protected']
+      if 'nifi.security.truststorePasswd.protected' in old_prop:
+        new_prop['nifi.security.truststorePasswd.protected'] = old_prop['nifi.security.truststorePasswd.protected']
 
   return new_prop
 
