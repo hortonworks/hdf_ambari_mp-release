@@ -184,7 +184,7 @@ class Master(Script):
     ca_client_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh')
     File(ca_client_script, mode=0755)
     if no_client_file:
-      cert_command = 'ambari-sudo.sh echo \'' + json.dumps(ca_client_dict) + '\' | JAVA_HOME='+jdk64_home + ' ' + ca_client_script + ' client -f /dev/stdout --configJsonIn /dev/stdin'
+      cert_command = 'echo \'' + json.dumps(ca_client_dict) + '\' | JAVA_HOME='+jdk64_home + ' ambari-sudo.sh ' + ca_client_script + ' client -f /dev/stdout --configJsonIn /dev/stdin'
       code, out = shell.call(cert_command,quiet=True,logoutput=False)
       json_out = out[out.index('{'):len(out)]
       updated_properties = json.loads(json_out)
