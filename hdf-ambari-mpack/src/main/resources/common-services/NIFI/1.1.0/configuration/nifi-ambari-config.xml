@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <!--
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -15,13 +16,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<metainfo>
-    <schemaVersion>2.0</schemaVersion>
-    <services>
-        <service>
-            <name>NIFI</name>
-            <version>1.1.0</version>
-            <extends>common-services/NIFI/1.1.0</extends>
-        </service>
-    </services>
-</metainfo>
+<configuration>
+
+    <property>
+        <name>nifi.security.encrypt.configuration.password</name>
+        <value/>
+        <property-type>PASSWORD</property-type>
+        <display-name>Encrypt Configuration Master Key Password</display-name>
+        <description>
+            This password is used to generate the master key for encryption of sensitive properties in nifi properties file when written to disk. Password needs to at least be 12 characters.
+        </description>
+        <value-attributes>
+            <overridable>false</overridable>
+            <type>password</type>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+    </property>
+
+</configuration>

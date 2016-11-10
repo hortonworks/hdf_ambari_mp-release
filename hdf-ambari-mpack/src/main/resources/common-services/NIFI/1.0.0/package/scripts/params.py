@@ -26,6 +26,7 @@ from resource_management.libraries.functions.default import default
 from resource_management.libraries.functions.version import format_stack_version
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.stack_features import check_stack_feature
+from resource_management.libraries.functions.stack_features import get_stack_feature_version
 from resource_management.libraries.resources.hdfs_resource import HdfsResource
 from resource_management.libraries.functions import stack_select
 from resource_management.libraries.functions import conf_select
@@ -38,6 +39,7 @@ config = Script.get_config()
 stack_root = Script.get_stack_root()
 stack_version_buildnum = default("/commandParams/version", None)
 service_version = config['availableServices']['NIFI']
+version_for_stack_feature_checks = get_stack_feature_version(config)
 
 #nifi_install_dir = '/usr/hdf/current/nifi'
 nifi_install_dir = os.path.join(stack_root, "current", "nifi")
@@ -66,7 +68,7 @@ nifi_provenance_repo_dir_default=config['configurations']['nifi-ambari-config'][
 nifi_config_dir = config['configurations']['nifi-ambari-config']['nifi.config.dir']
 nifi_flow_config_dir = config['configurations']['nifi-ambari-config']['nifi.flow.config.dir']
 nifi_sensitive_props_key = config['configurations']['nifi-ambari-config']['nifi.sensitive.props.key']
-
+nifi_security_encrypt_configuration_password = config['configurations']['nifi-ambari-config']['nifi.security.encrypt.configuration.password']
 
 nifi_flow_config_dir = nifi_flow_config_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
 nifi_state_dir = nifi_state_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
@@ -160,7 +162,10 @@ nifi_ca_client_config = {
   "trustStoreType" : nifi_truststoreType,
   "trustStorePassword": nifi_truststorePasswd
 }
- 
+
+nifi_ambari_ssl_config_version = config['configurationTags']['nifi-ambari-ssl-config']['tag']
+nifi_ambari_config_version = config['configurationTags']['nifi-ambari-config']['tag']
+
 # params from nifi-env
 nifi_user = config['configurations']['nifi-env']['nifi_user']
 nifi_group = config['configurations']['nifi-env']['nifi_group']
@@ -255,6 +260,9 @@ smokeuser = config['configurations']['cluster-env']['smokeuser']
 smokeuser_principal = config['configurations']['cluster-env']['smokeuser_principal_name']
 smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executable_search_paths', None))
+stack_support_encrypt_config = check_stack_feature('nifi_encrypt_config', version_for_stack_feature_checks)
+stack_support_toolkit_update = check_stack_feature('toolkit_config_update', version_for_stack_feature_checks)
+
 
 if security_enabled:
   _hostname_lowercase = nifi_host_name.lower()

@@ -18,8 +18,8 @@
 -->
 <configuration>
 
-  
-  
+
+
   <!-- Note: these two properties must be in same xml file for quicklinks to correctly work -->
   <property>
     <name>nifi.node.port</name>
@@ -184,5 +184,5 @@
     </value-attributes>
     <on-ambari-upgrade add="true"/>
   </property>
-  
+
 </configuration>

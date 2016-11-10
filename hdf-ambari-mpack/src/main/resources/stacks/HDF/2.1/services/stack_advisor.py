@@ -17,4 +17,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 class HDF21StackAdvisor(HDF20StackAdvisor):
-  pass
+
+  def validateNiFiAmbariConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+
+    parentValidationProblems = super(HDF21StackAdvisor, self).validateNiFiAmbariConfigurations(properties, recommendedDefaults, configurations, services, hosts)
+
+    validationItems = []
+
+    if 'nifi.security.encrypt.configuration.password' in properties and len(properties['nifi.security.encrypt.configuration.password']) < 12:
+      validationItems.append({"config-name": 'nifi.security.encrypt.configuration.password', 'item': self.getErrorItem('The password for encrypting configuration settings must be 12 or more characters.')})
+
+    validationProblems = self.toConfigurationValidationProblems(validationItems, "nifi-ambari-config")
+    validationProblems.extend(parentValidationProblems)
+
+    return validationProblems

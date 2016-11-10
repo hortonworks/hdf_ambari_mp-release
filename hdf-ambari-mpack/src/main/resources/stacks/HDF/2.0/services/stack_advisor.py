@@ -954,7 +954,8 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
       "RANGER": {"ranger-env": self.validateRangerConfigurationsEnv,
                  "admin-properties": self.validateRangerAdminConfigurations,
                  "ranger-tagsync-site": self.validateRangerTagsyncConfigurations},
-      "NIFI": {"ranger-nifi-plugin-properties": self.validateNiFiRangerPluginConfigurations,
+      "NIFI": {"nifi-ambari-config": self.validateNiFiAmbariConfigurations,
+               "ranger-nifi-plugin-properties": self.validateNiFiRangerPluginConfigurations,
                "nifi-ambari-ssl-config": self.validateNiFiSslProperties }
     }
 
@@ -1403,7 +1404,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     return False
     
   def validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method):
-    if siteName == 'nifi-ambari-ssl-config':
+    if siteName == 'nifi-ambari-ssl-config' or siteName == 'nifi-ambari-config':
       return method(self.getSiteProperties(configurations, siteName), None, configurations, services, hosts)
     else:
       return DefaultStackAdvisor.validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method)
@@ -1431,6 +1432,14 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         if not properties['nifi.security.truststoreType']:
           validationItems.append({"config-name": 'nifi.security.truststoreType', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.truststoreType')})
     return self.toConfigurationValidationProblems(validationItems, "nifi-ambari-ssl-config")
+
+  def validateNiFiAmbariConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+    validationItems = []
+
+    if len(properties['nifi.sensitive.props.key']) < 10:
+      validationItems.append({"config-name": 'nifi.sensitive.props.key', 'item': self.getWarnItem('Sensitive property encryption password should be 10 or more characters')})
+
+    return self.toConfigurationValidationProblems(validationItems, "nifi-ambari-config")
 
   def validateNiFiRangerPluginConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
     validationItems = []
