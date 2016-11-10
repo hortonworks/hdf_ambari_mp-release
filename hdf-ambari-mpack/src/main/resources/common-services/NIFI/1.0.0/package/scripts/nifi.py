@@ -23,6 +23,7 @@ from resource_management.core import sudo
 from resource_management import *
 from subprocess import call
 from setup_ranger_nifi import setup_ranger_nifi
+from resource_management.core.utils import PasswordString
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -212,10 +213,11 @@ class Master(Script):
   def encrypt_sensitive_properties(self,config_version_file,current_version,nifi_config_dir,jdk64_home,nifi_user,nifi_group,master_key_password,is_starting):
     Logger.info("Encrypting NiFi sensitive configuration properties")
     encrypt_config_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh')
+    encrypt_config_script_prefix = ('JAVA_HOME='+jdk64_home,encrypt_config_script)
     File(encrypt_config_script, mode=0755)
     if is_starting:
-      encrypt_config_script_params = ' -v -b '+ nifi_config_dir +'/bootstrap.conf'
-      encrypt_config_script_params = encrypt_config_script_params + ' -n ' + nifi_config_dir + '/nifi.properties'
+      encrypt_config_script_params = ('-v','-b',nifi_config_dir+'/bootstrap.conf')
+      encrypt_config_script_params = encrypt_config_script_params + ('-n',nifi_config_dir+'/nifi.properties')
       last_master_key_password = None
       last_config_version = nifi_toolkit_util.get_config_version(config_version_file,'encrypt')
 
@@ -224,11 +226,11 @@ class Master(Script):
         last_master_key_password = last_config['configurations']['nifi-ambari-config']['nifi.security.encrypt.configuration.password']
 
       if last_master_key_password and last_master_key_password != master_key_password:
-        encrypt_config_script_params = encrypt_config_script_params + ' -m -w ' + last_master_key_password
+        encrypt_config_script_params = encrypt_config_script_params + ('-m','-w',PasswordString(last_master_key_password))
 
-      encrypt_config_script_params = encrypt_config_script_params + ' -p ' + master_key_password
-
-      Execute('JAVA_HOME='+jdk64_home+' '+encrypt_config_script+encrypt_config_script_params, user=nifi_user)
+      encrypt_config_script_params = encrypt_config_script_params + ('-p',PasswordString(master_key_password))
+      encrypt_config_script_prefix = encrypt_config_script_prefix + encrypt_config_script_params
+      Execute(encrypt_config_script_prefix, user=nifi_user)
       nifi_toolkit_util.save_config_version(config_version_file,'encrypt', current_version, nifi_user, nifi_group)
 
   def check_is_fresh_install(self, env):
