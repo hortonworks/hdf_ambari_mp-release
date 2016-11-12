@@ -37,15 +37,20 @@ import ambari_simplejson as json # simplejson is much faster comparing to Python
 # server configurations
 config = Script.get_config()
 stack_root = Script.get_stack_root()
+stack_name = default("/hostLevelParams/stack_name", None)
 stack_version_buildnum = default("/commandParams/version", None)
 service_version = config['availableServices']['NIFI']
 version_for_stack_feature_checks = get_stack_feature_version(config)
 
-#nifi_install_dir = '/usr/hdf/current/nifi'
+# Version being upgraded/downgraded to
+version = default("/commandParams/version", None)
+# Version that is CURRENT.
+current_version = default("/hostLevelParams/current_version", None)
+#upgrade direction
+upgrade_direction = default("/commandParams/upgrade_direction", None)
+
 nifi_install_dir = os.path.join(stack_root, "current", "nifi")
-if stack_version_buildnum is not None:
-  nifi_install_dir = os.path.join(stack_root, stack_version_buildnum, "nifi")
-        
+ 
 # params from nifi-ambari-config
 nifi_initial_mem = config['configurations']['nifi-ambari-config']['nifi.initial_mem']
 nifi_max_mem = config['configurations']['nifi-ambari-config']['nifi.max_mem']
