@@ -24,13 +24,33 @@ from resource_management import *
 from subprocess import call
 from setup_ranger_nifi import setup_ranger_nifi
 from resource_management.core.utils import PasswordString
+from resource_management.libraries.functions import conf_select
+from resource_management.libraries.functions import stack_select
+from resource_management.libraries.functions.stack_features import check_stack_feature
+from resource_management.libraries.functions import StackFeature
+from resource_management.libraries.functions.constants import Direction
 
 reload(sys)
 sys.setdefaultencoding('utf8')
 
 class Master(Script):
-  def install(self, env):
+  def get_component_name(self):
+    return "nifi"
 
+  def pre_upgrade_restart(self, env, upgrade_type=None):
+    Logger.info("Executing Stack Upgrade pre-restart")
+    import params
+    env.set_params(params)
+    
+    if params.version and check_stack_feature(StackFeature.ROLLING_UPGRADE, format_stack_version(params.version)):
+      stack_select.select("nifi", params.version)
+    if params.version and check_stack_feature(StackFeature.CONFIG_VERSIONING, params.version):
+      conf_select.select(params.stack_name, "nifi", params.version)
+
+  def post_upgrade_restart(self, env, upgrade_type=None):
+    pass
+
+  def install(self, env):
     import params
     import status_params
 
@@ -120,15 +140,20 @@ class Master(Script):
                                         params.nifi_group,params.nifi_security_encrypt_configuration_password, is_starting)
 
 
-  def stop(self, env):
+  def stop(self, env, upgrade_type=None):
     import params
     import status_params
+    env.set_params(params)
+    env.set_params(status_params)
+
+    env_content=InlineTemplate(params.nifi_env_content)
+    File(format("{params.bin_dir}/nifi-env.sh"), content=env_content, owner=params.nifi_user, group=params.nifi_group, mode=0755)
 
     Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh stop >> ' + params.nifi_node_log_file, user=params.nifi_user)
     if os.path.isfile(status_params.nifi_node_pid_file):
       sudo.unlink(status_params.nifi_node_pid_file)
 
-  def start(self, env):
+  def start(self, env, upgrade_type=None):
     import params
     import status_params
     self.configure(env, is_starting = True)
@@ -153,6 +178,27 @@ class Master(Script):
   def status(self, env):
     import status_params
     check_process_status(status_params.nifi_node_pid_file)
+
+  def setup_tls_toolkit_upgrade(self,env):
+    import params
+    env.set_params(params)
+
+    upgrade_stack = stack_select._get_upgrade_stack()
+    if upgrade_stack is None:
+      raise Fail('Unable to determine the stack and stack version')
+
+    if params.upgrade_direction == Direction.UPGRADE and params.nifi_ssl_enabled and params.nifi_ca_host:
+      version_file = params.nifi_config_dir + '/config_version'
+      client_json_file = params.nifi_config_dir+ '/nifi-certificate-authority-client.json'
+
+      if not sudo.path_isfile(version_file):
+        Logger.info(format('Create config version file if it does not exist'))
+        version_num = params.config['configurationTags']['nifi-ambari-ssl-config']['tag']
+        nifi_toolkit_util.save_config_version(version_file,'ssl',version_num,params.nifi_user,params.nifi_group)
+
+      if sudo.path_isfile(client_json_file):
+        Logger.info(format('Remove client json file'))
+        sudo.unlink(client_json_file)
 
   def setup_keystore_truststore(self, is_starting, params, config_version_file):
     if is_starting:
