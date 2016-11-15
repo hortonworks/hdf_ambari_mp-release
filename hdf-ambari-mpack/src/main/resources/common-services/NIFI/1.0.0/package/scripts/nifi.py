@@ -124,7 +124,7 @@ class Master(Script):
 
     #write out login-identity-providers.xml
     login_identity_providers_content=InlineTemplate(params.nifi_login_identity_providers_content)
-    File(format("{params.nifi_config_dir}/login-identity-providers.xml"), content=login_identity_providers_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
+    File(format("{params.nifi_config_dir}/login-identity-providers.xml"), content=login_identity_providers_content, owner=params.nifi_user, group=params.nifi_group, mode=0600)
 
     #write out nifi-env in bin as 0755 (see BUG-61769)
     env_content=InlineTemplate(params.nifi_env_content)
@@ -264,6 +264,7 @@ class Master(Script):
     if is_starting:
       encrypt_config_script_params = ('-v','-b',nifi_config_dir+'/bootstrap.conf')
       encrypt_config_script_params = encrypt_config_script_params + ('-n',nifi_config_dir+'/nifi.properties')
+      encrypt_config_script_params = encrypt_config_script_params + ('-l',nifi_config_dir+'/login-identity-providers.xml')
       last_master_key_password = None
       last_config_version = nifi_toolkit_util.get_config_version(config_version_file,'encrypt')
 
