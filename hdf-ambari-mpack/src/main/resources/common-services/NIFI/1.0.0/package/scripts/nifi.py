@@ -277,10 +277,9 @@ class Master(Script):
 
       if last_master_key_password and last_master_key_password != master_key_password:
         encrypt_config_script_params = encrypt_config_script_params + ('-m','-w',PasswordString(last_master_key_password))
-
       encrypt_config_script_params = encrypt_config_script_params + ('-p',PasswordString(master_key_password))
       encrypt_config_script_prefix = encrypt_config_script_prefix + encrypt_config_script_params
-      Execute(encrypt_config_script_prefix, user=nifi_user)
+      Execute(encrypt_config_script_prefix, user=nifi_user,logoutput=False)
       nifi_toolkit_util.save_config_version(config_version_file,'encrypt', current_version, nifi_user, nifi_group)
 
   def check_is_fresh_install(self, env):
