@@ -231,4 +231,20 @@ def get_nifi_ca_client_dict(config,params):
 
     return nifi_ca_client_config
 
+def contains_providers(login_provider_file):
+  from xml.dom.minidom import parseString
+  import xml.dom.minidom
+
+  if sudo.path_isfile(login_provider_file):
+    content = sudo.read_file(login_provider_file)
+    dom = xml.dom.minidom.parseString(content)
+    collection = dom.documentElement
+    if collection.getElementsByTagName("provider"):
+      return True
+    else:
+      return False
+
+  else:
+    return False
+
 
