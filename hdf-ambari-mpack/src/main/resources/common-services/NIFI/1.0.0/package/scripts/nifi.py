@@ -264,7 +264,10 @@ class Master(Script):
     if is_starting:
       encrypt_config_script_params = ('-v','-b',nifi_config_dir+'/bootstrap.conf')
       encrypt_config_script_params = encrypt_config_script_params + ('-n',nifi_config_dir+'/nifi.properties')
-      encrypt_config_script_params = encrypt_config_script_params + ('-l',nifi_config_dir+'/login-identity-providers.xml')
+
+      if nifi_toolkit_util.contains_providers(nifi_config_dir+'/login-identity-providers.xml'):
+        encrypt_config_script_params = encrypt_config_script_params + ('-l',nifi_config_dir+'/login-identity-providers.xml')
+
       last_master_key_password = None
       last_config_version = nifi_toolkit_util.get_config_version(config_version_file,'encrypt')
 
@@ -274,10 +277,9 @@ class Master(Script):
 
       if last_master_key_password and last_master_key_password != master_key_password:
         encrypt_config_script_params = encrypt_config_script_params + ('-m','-w',PasswordString(last_master_key_password))
-
       encrypt_config_script_params = encrypt_config_script_params + ('-p',PasswordString(master_key_password))
       encrypt_config_script_prefix = encrypt_config_script_prefix + encrypt_config_script_params
-      Execute(encrypt_config_script_prefix, user=nifi_user)
+      Execute(encrypt_config_script_prefix, user=nifi_user,logoutput=False)
       nifi_toolkit_util.save_config_version(config_version_file,'encrypt', current_version, nifi_user, nifi_group)
 
   def check_is_fresh_install(self, env):
