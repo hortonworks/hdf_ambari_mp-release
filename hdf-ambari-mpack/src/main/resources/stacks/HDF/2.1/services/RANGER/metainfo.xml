@@ -20,7 +20,7 @@
   <services>
     <service>
       <name>RANGER</name>
-      <version>0.6.0.2.1</version>
+      <version>0.6.2.2.1</version>
     </service>
   </services>
 </metainfo>
