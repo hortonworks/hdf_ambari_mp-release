@@ -206,7 +206,12 @@ class Master(Script):
       last_config_version = nifi_toolkit_util.get_config_version(config_version_file,'ssl')
       last_config = nifi_toolkit_util.get_config_by_version('/var/lib/ambari-agent/data','nifi-ambari-ssl-config',last_config_version)
       ca_client_dict = nifi_toolkit_util.get_nifi_ca_client_dict(last_config, params)
-      changed_keystore_truststore = nifi_toolkit_util.changed_keystore_truststore(ca_client_dict,params.nifi_ca_client_config)
+      using_client_json = len(ca_client_dict) == 0 and sudo.path_isfile(params.nifi_config_dir+ '/nifi-certificate-authority-client.json')
+
+      if using_client_json:
+        ca_client_dict = nifi_toolkit_util.load(params.nifi_config_dir + '/nifi-certificate-authority-client.json')
+
+      changed_keystore_truststore = nifi_toolkit_util.changed_keystore_truststore(ca_client_dict,params.nifi_ca_client_config,using_client_json) if not len(ca_client_dict) == 0 else True
 
       if params.nifi_toolkit_tls_regenerate:
         nifi_toolkit_util.move_keystore_truststore(ca_client_dict)
@@ -214,10 +219,12 @@ class Master(Script):
       elif changed_keystore_truststore:
         nifi_toolkit_util.move_keystore_truststore(ca_client_dict)
 
-      if changed_keystore_truststore or len(ca_client_dict) == 0:
+      if changed_keystore_truststore or params.nifi_toolkit_tls_regenerate:
         nifi_toolkit_util.overlay(ca_client_dict, params.nifi_ca_client_config)
         updated_properties = self.run_toolkit_client(ca_client_dict,params.nifi_config_dir, params.jdk64_home, params.nifi_user,params.nifi_group, params.stack_support_toolkit_update)
         nifi_toolkit_util.update_nifi_properties(updated_properties, params.nifi_properties)
+        nifi_toolkit_util.save_config_version(config_version_file,'ssl', params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
+      elif using_client_json:
         nifi_toolkit_util.save_config_version(config_version_file,'ssl', params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
 
       old_nifi_properties = nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties')

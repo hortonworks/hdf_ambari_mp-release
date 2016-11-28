@@ -44,7 +44,7 @@ def dump(config_json, config_dict, nifi_user, nifi_group):
 
 def overlay(config_dict, overlay_dict):
   for k, v in overlay_dict.iteritems():
-    if v or k not in config_dict:
+    if (k not in config_dict) or not(overlay_dict[k] == config_dict[k]):
       config_dict[k] = v
 
 def get_toolkit_script(scriptName, scriptDir = files_dir):
@@ -72,25 +72,29 @@ def store_exists(client_dict, key):
     return False
   return sudo.path_isfile(client_dict[key])
 
-def different(one, two, key):
+def different(one, two, key, usingJsonConfig=False):
   if key not in one:
+    return False
+  if len(one[key]) == 0 and usingJsonConfig:
     return False
   if key not in two:
     return False
+  if len(two[key]) == 0 and usingJsonConfig:
+    return False
   return one[key] != two[key]
 
-def changed_keystore_truststore(orig_client_dict, new_client_dict):
+def changed_keystore_truststore(orig_client_dict, new_client_dict, usingJsonConfig=False):
   if not (store_exists(new_client_dict, 'keyStore') or store_exists(new_client_dict, 'trustStore')):
     return False
-  elif different(orig_client_dict, new_client_dict, 'keyStoreType'):
+  elif different(orig_client_dict, new_client_dict, 'keyStoreType',usingJsonConfig):
     return True
-  elif different(orig_client_dict, new_client_dict, 'keyStorePassword'):
+  elif different(orig_client_dict, new_client_dict, 'keyStorePassword',usingJsonConfig):
     return True
-  elif different(orig_client_dict, new_client_dict, 'keyPassword'):
+  elif different(orig_client_dict, new_client_dict, 'keyPassword',usingJsonConfig):
     return True
-  elif different(orig_client_dict, new_client_dict, 'trustStoreType'):
+  elif different(orig_client_dict, new_client_dict, 'trustStoreType',usingJsonConfig):
     return True
-  elif different(orig_client_dict, new_client_dict, 'trustStorePassword'):
+  elif different(orig_client_dict, new_client_dict, 'trustStorePassword',usingJsonConfig):
     return True
 
 def move_keystore_truststore(client_dict):
@@ -173,7 +177,7 @@ def populate_ssl_properties(old_prop,new_prop,params):
 
   if len(old_prop) > 0:
 
-    newKeyPasswd = new_prop['nifi.security.keyPasswd'].replace('{{nifi_keystore}}',params.nifi_keystore)
+    newKeyPasswd = new_prop['nifi.security.keyPasswd'].replace('{{nifi_keyPasswd}}',params.nifi_keyPasswd)
     newKeystorePasswd = new_prop['nifi.security.keystorePasswd'].replace('{{nifi_keystorePasswd}}',params.nifi_keystorePasswd)
     newTruststorePasswd = new_prop['nifi.security.truststorePasswd'].replace('{{nifi_truststorePasswd}}',params.nifi_truststorePasswd)
 
@@ -210,6 +214,11 @@ def get_nifi_ca_client_dict(config,params):
     nifi_truststore = nifi_truststore.replace('{{nifi_config_dir}}',params.nifi_config_dir)
     nifi_keystore = nifi_keystore.replace('{nifi_node_ssl_host}',params.nifi_node_host)
     nifi_keystore = nifi_keystore.replace('{{nifi_config_dir}}',params.nifi_config_dir)
+
+
+    #default keystore/truststore type if empty
+    nifi_keystoreType = 'jks' if len(nifi_keystoreType) == 0 else nifi_keystoreType
+    nifi_truststoreType = 'jks' if len(nifi_truststoreType) == 0 else nifi_truststoreType
 
     nifi_toolkit_dn_prefix = config['configurations']['nifi-ambari-ssl-config']['nifi.toolkit.dn.prefix']
     nifi_toolkit_dn_suffix = config['configurations']['nifi-ambari-ssl-config']['nifi.toolkit.dn.suffix']

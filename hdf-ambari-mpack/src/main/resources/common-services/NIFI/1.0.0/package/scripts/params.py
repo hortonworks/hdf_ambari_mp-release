@@ -117,6 +117,11 @@ nifi_needClientAuth = config['configurations']['nifi-ambari-ssl-config']['nifi.s
 nifi_initial_admin_id = config['configurations']['nifi-ambari-ssl-config']['nifi.initial.admin.identity']
 nifi_ssl_config_content = config['configurations']['nifi-ambari-ssl-config']['content']
 
+
+#default keystore/truststore type if empty
+nifi_keystoreType = 'jks' if len(nifi_keystoreType) == 0 else nifi_keystoreType
+nifi_truststoreType = 'jks' if len(nifi_truststoreType) == 0 else nifi_truststoreType
+
 #property that is set to hostname regardless of whether SSL enabled
 nifi_node_host = socket.getfqdn()
 
