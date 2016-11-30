@@ -279,7 +279,9 @@ class Master(Script):
       last_config_version = nifi_toolkit_util.get_config_version(config_version_file,'encrypt')
       encrypt_config_script_params = ('-v','-b',nifi_config_dir+'/bootstrap.conf')
       encrypt_config_script_params = encrypt_config_script_params + ('-n',nifi_config_dir+'/nifi.properties')
-      encrypt_config_script_params = encrypt_config_script_params + ('-f',nifi_flow_config_dir+'/flow.xml.gz','-s',PasswordString(nifi_sensitive_props_key))
+
+      if sudo.path_isfile(nifi_flow_config_dir+'/flow.xml.gz'):
+        encrypt_config_script_params = encrypt_config_script_params + ('-f',nifi_flow_config_dir+'/flow.xml.gz','-s',PasswordString(nifi_sensitive_props_key))
 
       if nifi_toolkit_util.contains_providers(nifi_config_dir+'/login-identity-providers.xml'):
         encrypt_config_script_params = encrypt_config_script_params + ('-l',nifi_config_dir+'/login-identity-providers.xml')
