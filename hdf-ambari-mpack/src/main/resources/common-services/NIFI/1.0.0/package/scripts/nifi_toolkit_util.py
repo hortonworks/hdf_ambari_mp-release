@@ -240,6 +240,14 @@ def get_nifi_ca_client_dict(config,params):
 
     return nifi_ca_client_config
 
+def get_last_sensitive_props_key(config_version_file,nifi_properties):
+  last_encrypt_config_version = get_config_version(config_version_file,'encrypt')
+  if last_encrypt_config_version:
+    last_encrypt_config = get_config_by_version('/var/lib/ambari-agent/data','nifi-ambari-config',last_encrypt_config_version)
+    return last_encrypt_config['configurations']['nifi-ambari-config']['nifi.sensitive.props.key']
+  else:
+    return nifi_properties['nifi.sensitive.props.key']
+
 def contains_providers(login_provider_file):
   from xml.dom.minidom import parseString
   import xml.dom.minidom
