@@ -34,9 +34,9 @@
         </task>
       </execute-stage>
 
-      <execute-stage service="NIFI" component="NIFI_MASTER" title="Stop NIFI Flows">
+      <execute-stage service="NIFI" component="NIFI_MASTER" title="Review NIFI Flows">
         <task xsi:type="manual">
-          <message>Before continuing, please stop any currently running NIFI flows.</message>
+          <message>Please determine if you need to stop any currently running NIFI flows before proceeding with this upgrade.</message>
         </task>
       </execute-stage>
     </group>
