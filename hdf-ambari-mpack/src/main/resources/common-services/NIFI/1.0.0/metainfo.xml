@@ -52,7 +52,7 @@
                       </commandScript>
                     </customCommand>
                   </customCommands>
-                </component>                       
+                </component>
                 <component>
                   <name>NIFI_MASTER</name>
                   <displayName>NiFi</displayName>
@@ -70,7 +70,7 @@
                       </auto-deploy>
                     </dependency>
                   </dependencies>
-                            
+
                   <logs>
                     <log>
                       <logId>nifi_app</logId>
@@ -79,10 +79,10 @@
                     <log>
                       <logId>nifi_bootstrap</logId>
                     </log>
-                    <log> 
+                    <log>
                       <logId>nifi_setup</logId>
                     </log>
-                    <log> 
+                    <log>
                       <logId>nifi_user</logId>
                     </log>
                   </logs>
@@ -91,7 +91,7 @@
                     <scriptType>PYTHON</scriptType>
                     <timeout>10000</timeout>
                   </commandScript>
-                </component>                       
+                </component>
             </components>
             <osSpecifics>
 	          <osSpecific>
@@ -121,14 +121,15 @@
       	    <requiredServices>
       	       <service>ZOOKEEPER</service>
       	    </requiredServices>
-            
+
       	    <configuration-dependencies>
                 <config-type>nifi-ambari-config</config-type>
-                <config-type>nifi-ambari-ssl-config</config-type>                
+                <config-type>nifi-ambari-ssl-config</config-type>
                 <config-type>nifi-authorizers-env</config-type>
                 <config-type>nifi-bootstrap-env</config-type>
                 <config-type>nifi-env</config-type>
                 <config-type>nifi-flow-env</config-type>
+                <config-type>nifi-login-identity-providers-env</config-type>
                 <config-type>nifi-node-logback-env</config-type>
                 <config-type>nifi-properties</config-type>
                 <config-type>nifi-state-management-env</config-type>
@@ -142,10 +143,10 @@
                 <fileName>quicklinks.json</fileName>
                 <default>true</default>
               </quickLinksConfiguration>
-            </quickLinksConfigurations>            
+            </quickLinksConfigurations>
             <restartRequiredAfterChange>true</restartRequiredAfterChange>
             <widgetsFileName>widgets.json</widgetsFileName>
-            <metricsFileName>metrics.json</metricsFileName>        
+            <metricsFileName>metrics.json</metricsFileName>
         </service>
     </services>
 </metainfo>
