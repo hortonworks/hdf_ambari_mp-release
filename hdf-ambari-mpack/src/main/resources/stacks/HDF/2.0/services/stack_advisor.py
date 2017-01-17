@@ -1402,7 +1402,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
           if 'NIFI_CA' == stackServiceComponent['component_name'] and stackServiceComponent['hostnames']:
             return True
     return False
-    
+
   def validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method):
     if siteName == 'nifi-ambari-ssl-config' or siteName == 'nifi-ambari-config':
       return method(self.getSiteProperties(configurations, siteName), None, configurations, services, hosts)
@@ -1412,6 +1412,8 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
   def validateNiFiSslProperties(self, properties, recommendedDefaults, configurations, services, hosts):
     validationItems = []
     ssl_enabled = properties['nifi.node.ssl.isenabled'] and str(properties['nifi.node.ssl.isenabled']).lower() != 'false'
+    if ssl_enabled and not properties['nifi.initial.admin.identity']:
+      validationItems.append({"config-name": 'nifi.initial.admin.identity', 'item': self.getWarnItem('If SSL is enabled, Initial Admin Identity should usually be configured to a DN that an admin will have a certificate for.')})
     if (self.__find_ca(services)):
       if not properties['nifi.toolkit.tls.token']:
         validationItems.append({"config-name": 'nifi.toolkit.tls.token', 'item': self.getErrorItem('If NiFi Certificate Authority is used, nifi.toolkit.tls.token must be set')})
