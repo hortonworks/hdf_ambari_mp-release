@@ -66,14 +66,6 @@ class Master(Script):
     self.configure(env, True)
     Execute('touch ' +  params.nifi_node_log_file, user=params.nifi_user)
 
-    # Write out flow.xml.gz to internal dir only if AMS installed (must be writable by Nifi)
-    # only during first install. It is used to automate setup of Ambari metrics reporting task in Nifi
-    if params.metrics_collector_host and params.nifi_ambari_reporting_enabled and not sudo.path_isfile(params.nifi_flow_config_dir+'/flow.xml.gz'):
-      Execute('echo "First time setup so generating flow.xml.gz" >> ' + params.nifi_node_log_file, user=params.nifi_user)
-      flow_content=InlineTemplate(params.nifi_flow_content)
-      File(format("{params.nifi_flow_config_dir}/flow.xml"), content=flow_content, owner=params.nifi_user, group=params.nifi_group, mode=0600)
-      Execute(format("cd {params.nifi_flow_config_dir}; gzip flow.xml;"), user=params.nifi_user)
-
 
   def configure(self, env, isInstall=False, is_starting = False):
     import params
@@ -150,6 +142,14 @@ class Master(Script):
                                         params.nifi_config_dir,params.jdk64_home,params.nifi_user,
                                         params.nifi_group,params.nifi_security_encrypt_configuration_password,
                                         params.nifi_flow_config_dir, params.nifi_sensitive_props_key, is_starting)
+
+    # Write out flow.xml.gz to internal dir only if AMS installed (must be writable by Nifi)
+    # only during first install. It is used to automate setup of Ambari metrics reporting task in Nifi
+    if params.metrics_collector_host and params.nifi_ambari_reporting_enabled and not sudo.path_isfile(params.nifi_flow_config_dir+'/flow.xml.gz'):
+      Execute('echo "First time setup so generating flow.xml.gz" >> ' + params.nifi_node_log_file, user=params.nifi_user)
+      flow_content=InlineTemplate(params.nifi_flow_content)
+      File(format("{params.nifi_flow_config_dir}/flow.xml"), content=flow_content, owner=params.nifi_user, group=params.nifi_group, mode=0600)
+      Execute(format("cd {params.nifi_flow_config_dir}; gzip flow.xml;"), user=params.nifi_user)
 
 
   def stop(self, env, upgrade_type=None):
