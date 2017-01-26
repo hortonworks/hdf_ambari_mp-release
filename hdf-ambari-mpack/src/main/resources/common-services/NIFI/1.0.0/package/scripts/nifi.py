@@ -29,6 +29,7 @@ from resource_management.libraries.functions import stack_select
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.constants import Direction
+from resource_management.core.exceptions import Fail
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -242,10 +243,13 @@ class Master(Script):
     if no_client_file:
       cert_command = 'echo \'' + json.dumps(ca_client_dict) + '\' | JAVA_HOME='+jdk64_home + ' ambari-sudo.sh ' + ca_client_script + ' client -f /dev/stdout --configJsonIn /dev/stdin'
       code, out = shell.call(cert_command,quiet=True,logoutput=False)
-      json_out = out[out.index('{'):len(out)]
-      updated_properties = json.loads(json_out)
-      shell.call(['chown',nifi_user+':'+nifi_group,updated_properties['keyStore']],sudo=True)
-      shell.call(['chown',nifi_user+':'+nifi_group,updated_properties['trustStore']],sudo=True)
+      if code > 0:
+        raise Fail("Call to tls-toolkit encountered error: {0}".format(out))
+      else:
+        json_out = out[out.index('{'):len(out)]
+        updated_properties = json.loads(json_out)
+        shell.call(['chown',nifi_user+':'+nifi_group,updated_properties['keyStore']],sudo=True)
+        shell.call(['chown',nifi_user+':'+nifi_group,updated_properties['trustStore']],sudo=True)
     else:
       ca_client_json = os.path.realpath(os.path.join(nifi_config_dir, 'nifi-certificate-authority-client.json'))
       nifi_toolkit_util.dump(ca_client_json, ca_client_dict, nifi_user, nifi_group)
