@@ -19,9 +19,9 @@
 <upgrade xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="upgrade-pack.xsd">
   <target>2.1.*.*</target>
   <target-stack>HDF-2.1</target-stack>
+  <downgrade-allowed>false</downgrade-allowed>
   <type>NON_ROLLING</type>
   <prerequisite-checks/>
-  <downgrade-allowed>false</downgrade-allowed>
   <order>
     <group xsi:type="cluster" name="PRE_CLUSTER" title="Prepare Upgrade">
       <direction>UPGRADE</direction>
@@ -126,7 +126,11 @@
       <!-- NIFI -->
       <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
         <task xsi:type="configure" id="hdf_2_1_0_0_add_nifi_properties_configs"/>
+      </execute-stage>
+      <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
         <task xsi:type="configure" id="hdf_2_1_0_0_add_nifi_ambari_config_configs"/>
+      </execute-stage>
+      <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
         <task xsi:type="manual">
           <message>Please pause the upgrade, update password property "nifi.security.encrypt.configuration.password" and then resume the upgrade.</message>
         </task>
@@ -299,6 +303,7 @@
             <function>setup_ranger_java_patches</function>
           </task>
         </pre-upgrade>
+        <pre-downgrade copy-upgrade="true" />
 
         <upgrade>
           <task xsi:type="restart-task"/>
@@ -362,6 +367,7 @@
             <function>setup_tls_toolkit_upgrade</function>
           </task>
         </pre-upgrade>
+        <pre-downgrade copy-upgrade="true" />
         <upgrade>
           <task xsi:type="restart-task"/>
         </upgrade>

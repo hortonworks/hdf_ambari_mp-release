@@ -1,4 +1,4 @@
-<upgrade-config-changes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<upgrade-config-changes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="upgrade-config.xsd">
   <services>
     <service name="NIFI">
       <component name="NIFI_MASTER">

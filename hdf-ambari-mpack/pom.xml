@@ -25,9 +25,10 @@
   <name>HDF Ambari Management Pack</name>
   <url>http://ambari.apache.org/</url>
   <properties>
-    <minAmbariVersion>2.4.0.0</minAmbariVersion>
+    <minAmbariVersion>2.5.0.0</minAmbariVersion>
     <maxAmbariVersion></maxAmbariVersion>
-    <nifiversion>1.0.0-SNAPSHOT</nifiversion>
+    <nifiversion>1.0.0</nifiversion>
+    <buildnumber-maven-plugin-version>1.4</buildnumber-maven-plugin-version>
   </properties>
   <build>
     <plugins>
@@ -125,6 +126,22 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>buildnumber-maven-plugin</artifactId>
+          <version>${buildnumber-maven-plugin-version}</version>
+          <configuration>
+              <urlScm>scm:git:https://github.com/hortonworks/hdf_ambari_mp.git</urlScm>
+          </configuration>
+          <executions>
+              <execution>
+                  <phase>validate</phase>
+                  <goals>
+                      <goal>create</goal>
+                  </goals>
+              </execution>
+          </executions>
       </plugin>
     </plugins>
   </build>

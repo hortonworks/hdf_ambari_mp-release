@@ -2,6 +2,8 @@
   "type" : "full-release",
   "name" : "hdf-ambari-mpack",
   "version": "${project.version}",
+  "hash": "${buildNumber}",
+  "branch": "${scmBranch}",
   "description" : "HDF Ambari Management Pack",
   "prerequisites": {
     "min-ambari-version" : "${minAmbariVersion}",

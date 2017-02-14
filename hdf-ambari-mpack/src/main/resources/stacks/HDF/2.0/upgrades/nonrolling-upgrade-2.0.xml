@@ -19,9 +19,9 @@
 <upgrade xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="upgrade-pack.xsd">
   <target>2.0.*.*</target>
   <target-stack>HDF-2.0</target-stack>
+  <downgrade-allowed>false</downgrade-allowed>
   <type>NON_ROLLING</type>
   <prerequisite-checks/>
-  <downgrade-allowed>false</downgrade-allowed>
   <order>
     <group xsi:type="cluster" name="PRE_CLUSTER" title="Prepare Upgrade">
       <direction>UPGRADE</direction>
@@ -294,6 +294,7 @@
             <function>setup_ranger_java_patches</function>
           </task>
         </pre-upgrade>
+        <pre-downgrade copy-upgrade="true" />
 
         <upgrade>
           <task xsi:type="restart-task"/>
