@@ -286,6 +286,16 @@
       "name": "nifi_encrypt_config",
       "description": "Encrypt sensitive properties written to nifi property file",
       "min_version": "2.1.0.0"
+    },
+    {
+      "name": "ranger_xml_configuration",
+      "description": "Ranger code base support xml configurations",
+      "min_version": "0.3.0.0"
+    },
+    {
+      "name": "kafka_ranger_plugin_support",
+      "description": "Ambari stack changes for Ranger Kafka Plugin (AMBARI-11299)",
+      "min_version": "0.3.0.0"
     }
   ]
 }

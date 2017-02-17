@@ -477,6 +477,33 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
       final_kafka_host = ",".join(kafka_host_port)
       putTagsyncAppProperty('atlas.kafka.bootstrap.servers', final_kafka_host)
 
+    required_services = [
+      {'service_name': 'KAFKA', 'config_type': 'ranger-kafka-security'},
+      {'service_name': 'STORM', 'config_type': 'ranger-storm-security'}
+    ]
+
+    # recommendation for ranger url for ranger-supported plugins
+    self.recommendRangerUrlConfigurations(configurations, services, required_services)
+
+  def recommendRangerUrlConfigurations(self, configurations, services, requiredServices):
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
+
+    policymgr_external_url = ""
+    if 'admin-properties' in services['configurations'] and 'policymgr_external_url' in services['configurations']['admin-properties']['properties']:
+      if 'admin-properties' in configurations and 'policymgr_external_url' in configurations['admin-properties']['properties']:
+        policymgr_external_url = configurations['admin-properties']['properties']['policymgr_external_url']
+      else:
+        policymgr_external_url = services['configurations']['admin-properties']['properties']['policymgr_external_url']
+
+    for index in range(len(requiredServices)):
+      if requiredServices[index]['service_name'] in servicesList:
+        component_config_type = requiredServices[index]['config_type']
+        component_name = requiredServices[index]['service_name']
+        component_config_property = 'ranger.plugin.{0}.policy.rest.url'.format(component_name.lower())
+        putRangerSecurityProperty = self.putProperty(configurations, component_config_type, services)
+        if component_config_type in services["configurations"] and component_config_property in services["configurations"][component_config_type]["properties"]:
+          putRangerSecurityProperty(component_config_property, policymgr_external_url)
+
   def getAmsMemoryRecommendation(self, services, hosts):
     # MB per sink in hbase heapsize
     HEAP_PER_MASTER_COMPONENT = 50
