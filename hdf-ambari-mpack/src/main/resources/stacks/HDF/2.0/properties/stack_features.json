@@ -296,6 +296,26 @@
       "name": "kafka_ranger_plugin_support",
       "description": "Ambari stack changes for Ranger Kafka Plugin (AMBARI-11299)",
       "min_version": "0.3.0.0"
+    },
+    {
+      "name": "ranger_setup_db_on_start",
+      "description": "Allows setup of ranger db and java patches to be called multiple times on each START",
+      "min_version": "3.0.0.0"
+    },
+    {
+      "name": "ranger_solr_config_support",
+      "description": "Showing Ranger solrconfig.xml on UI",
+      "min_version": "3.0.0.0"
+    },
+    {
+      "name": "core_site_for_ranger_plugins",
+      "description": "Adding core-site.xml in when Ranger plugin is enabled for Storm, Kafka, and Knox.",
+      "min_version": "3.0.0.0"
+    },
+    {
+      "name": "secure_ranger_ssl_password",
+      "description": "Securing Ranger Admin and Usersync SSL and Trustore related passwords in jceks",
+      "min_version": "3.0.0.0"
     }
   ]
 }
