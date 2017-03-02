@@ -37,9 +37,8 @@ ls -la target/hdf-ambari-mpack-0.1.0.0-1.tar.gz
 ```
 
 #### Installation Instructions:
-- Install ambari-server using hdf-ambari-mpack/src/main/resources/ambari.repo (tested ambari build)
+- Install ambari-server
 ```
-cp src/main/resources/ambari.repo /etc/yum.repos.d/ambari.repo
 yum clean all
 yum install ambari-server -y
 ambari-server setup -s
