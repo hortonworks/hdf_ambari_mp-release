@@ -109,7 +109,7 @@
   </property>
   <property require-input="true">
     <name>streamline.storage.connector.connectURI</name>
-    <value>jdbc:mysql://localhost:1527/streamline;create=true</value>
+    <value>jdbc:mysql://localhost:3306/streamline</value>
     <display-name>Streamline storage connector url</display-name>
     <description>Streamline storage connector url</description>
     <on-ambari-upgrade add="false"/>
@@ -121,10 +121,6 @@
       <property>
         <type>streamline-common</type>
         <name>streamline.storage.type</name>
-      </property>
-      <property>
-        <type>streamline-common</type>
-        <name>streamline.storage.connector.port</name>
       </property>
     </depends-on>
   </property>

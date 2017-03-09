@@ -18,9 +18,33 @@ limitations under the License.
 
 """
 
+from resource_management.libraries.script.script import Script
 from resource_management.core.logger import Logger
 from resource_management.libraries.functions.format import format
+import urllib2
 
-def setup_streamline():
+class ServiceCheck(Script):
+  def service_check(self, env):
     import params
+    env.set_params(params)
     Logger.info("Streamline check passed")
+    streamline_api = format("http://{params.hostname}:{params.streamline_port}/api/v1/catalog/streams/componentbundles")
+    Logger.info(streamline_api)
+    try:
+        Logger.info(format("Making http requests to {streamline_api}"))
+        response = urllib2.urlopen(streamline_api)
+        api_response = response.read()
+        Logger.info(api_response)
+        if response.getcode() != 200:
+            Logger.error(format("Failed to fetch response for {streamline_api}"))
+            raise
+    except:
+        Logger.error("Failed to make API request to Streamline server")
+        show_logs(params.streamline_log_dir, params.streamline_user)
+        raise
+
+if __name__ == "__main__":
+    ServiceCheck().execute()
+
+
+
