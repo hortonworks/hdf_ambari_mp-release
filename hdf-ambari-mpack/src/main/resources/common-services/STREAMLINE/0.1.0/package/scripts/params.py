@@ -135,4 +135,3 @@ bootstrap_run_cmd = format('source {conf_dir}/streamline-env.sh ; {bootstrap_com
 bootstrap_storage_file = "/var/lib/ambari-agent/data/streamline/bootstrap_storage_done"
 bootstrap_file = "/var/lib/ambari-agent/data/streamline/bootstrap_done"
 streamline_agent_dir = "/var/lib/ambari-agent/data/streamline"
-

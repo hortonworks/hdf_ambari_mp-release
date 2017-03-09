@@ -1,0 +1,79 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Pluggable modules
+
+modules:
+  - name: schema-registry
+    className: com.hortonworks.registries.schemaregistry.webservice.SchemaRegistryModule
+    config:
+      schemaProviders:
+        - providerClass: "com.hortonworks.registries.schemaregistry.avro.AvroSchemaProvider"
+          defaultSerializerClass: "com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer"
+          defaultDeserializerClass: "com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotDeserializer"
+
+      # schema cache properties
+      # inmemory schema versions cache size
+      schemaCacheSize: {{registry_schema_cache_size}}
+      # inmemory schema version cache entry expiry interval after access
+      schemaCacheExpiryInterval: {{registry_schema_cache_expiry_interval}}
+
+# Filesystem based jar storage
+fileStorageConfiguration:
+  className: "com.hortonworks.registries.common.util.LocalFileSystemStorage"
+  properties:
+    directory: {{jar_storage}}
+
+storageProviderConfiguration: 
+  properties: 
+    db.properties: 
+      dataSource.password: "{{registry_storage_connector_password}}"
+      dataSource.url: "{{registry_storage_connector_connectorURI}}"
+      dataSource.user: "{{registry_storage_connector_user}}"
+      dataSourceClassName: com.mysql.jdbc.jdbc2.optional.MysqlDataSource
+    db.type: "{{registry_storage_type}}"
+    queryTimeoutInSecs: {{registry_storage_query_timeout}}
+  providerClass: com.hortonworks.registries.storage.impl.jdbc.JdbcStorageManager
+
+swagger:
+  resourcePackage: com.hortonworks.registries.schemaregistry.webservice
+
+enableCors: true
+
+server:
+  rootPath: '/api/*'
+  applicationConnectors:
+    - type: http
+      port: {{registry_port}}
+  adminConnectors:
+    - type: http
+      port: {{registry_admin_port}}
+
+logging:
+    # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: INFO
+  # Logger-specific levels.
+  loggers:
+    # Sets the level for 'com.example.app' to DEBUG.
+    com.hortonworks.registry: INFO
+  appenders:
+    - type: file
+      threshold: DEBUG
+      logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
+      currentLogFilename: {{registry_log_dir}}/registry.log
+      archivedLogFilenamePattern: {{registry_log_dir}}/registry-%d{yyyy-MM-dd}-%i.log.gz
+      archivedFileCount: 7
+      timeZone: UTC
+      maxFileSize: 50MB
