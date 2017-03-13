@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+"""
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+"""
+
+import os
+from resource_management.libraries.functions import format
+from resource_management.libraries.script.script import Script
+from resource_management.libraries.functions.version import format_stack_version
+from resource_management.libraries.functions import StackFeature
+from resource_management.libraries.functions.stack_features import check_stack_feature
+from resource_management.libraries.functions.stack_features import get_stack_feature_version
+from resource_management.libraries.functions.default import default
+from resource_management.libraries.functions.get_stack_version import get_stack_version
+from resource_management.libraries.functions.is_empty import is_empty
+from resource_management.libraries.resources.hdfs_resource import HdfsResource
+from resource_management.libraries.functions import stack_select
+from resource_management.libraries.functions import conf_select
+from resource_management.libraries.functions import get_kinit_path
+import ambari_simplejson as json # simplejson is much faster comparing to Python 2.6 json module and has the same functions set
+
+# server configurations
+config = Script.get_config()
+tmp_dir = Script.get_tmp_dir()
+stack_root = Script.get_stack_root()
+stack_name = default("/hostLevelParams/stack_name", None)
+retryAble = default("/commandParams/command_retry_enabled", False)
+
+# Version being upgraded/downgraded to
+version = default("/commandParams/version", None)
+
+# Version that is CURRENT.
+current_version = default("/hostLevelParams/current_version", None)
+
+
+stack_version_unformatted = config['hostLevelParams']['stack_version']
+stack_version_formatted = format_stack_version(stack_version_unformatted)
+upgrade_direction = default("/commandParams/upgrade_direction", None)
+
+# get the correct version to use for checking stack features
+version_for_stack_feature_checks = get_stack_feature_version(config)
+
+# When downgrading the 'version' and 'current_version' are both pointing to the downgrade-target version
+# downgrade_from_version provides the source-version the downgrade is happening from
+downgrade_from_version = default("/commandParams/downgrade_from_version", None)
+
+hostname = config['hostname']
+
+# default registry parameters
+registry_home = os.path.join(stack_root, "current", "registry")
+registry_bin = os.path.join(registry_home, "bin", "registry")
+
+registry_managed_log_dir = os.path.join(registry_home, "logs")
+conf_dir = os.path.join(registry_home, "conf")
+
+limits_conf_dir = "/etc/security/limits.d"
+
+registry_user_nofile_limit = default('/configurations/registry-env/registry_user_nofile_limit', 65536)
+registry_user_nproc_limit = default('/configurations/registry-env/registry_user_nproc_limit', 65536)
+
+registry_user = config['configurations']['registry-env']['registry_user']
+registry_log_dir = config['configurations']['registry-env']['registry_log_dir']
+
+# This is hardcoded on the registry bash process lifecycle on which we have no control over
+registry_managed_pid_dir = "/var/run/registry"
+streamine_managed_log_dir = "/var/log/registry"
+
+user_group = config['configurations']['cluster-env']['user_group']
+java64_home = config['hostLevelParams']['java_home']
+registry_env_sh_template = config['configurations']['registry-env']['content']
+
+
+
+# flatten registry configs
+jar_storage = config['configurations']['registry-common']['jar.storage']
+registry_storage_type = config['configurations']['registry-common']['registry.storage.type']
+registry_storage_connector_connectorURI = config['configurations']['registry-common']['registry.storage.connector.connectURI']
+registry_storage_connector_user = config['configurations']['registry-common']['registry.storage.connector.user']
+registry_storage_connector_password = config['configurations']['registry-common']['registry.storage.connector.password']
+registry_storage_query_timeout = config['configurations']['registry-common']['registry.storage.query.timeout']
+
+registry_port = config['configurations']['registry-common']['port']
+registry_admin_port = config['configurations']['registry-common']['adminPort']
+
+registry_schema_cache_size = config['configurations']['registry-common']['registry.schema.cache.size']
+registry_schema_cache_expiry_interval = config['configurations']['registry-common']['registry.schema.cache.expiry.interval']
+
+# mysql jar
+jdk_location = config['hostLevelParams']['jdk_location']
+if 'mysql' == registry_storage_type:
+  jdbc_driver_jar = default("/hostLevelParams/custom_mysql_jdbc_name", None)
+  connector_curl_source = format("{jdk_location}/{jdbc_driver_jar}")
+  connector_download_dir=format("{registry_home}/libs")
+  connector_bootstrap_download_dir=format("{registry_home}/bootstrap/lib")
+  downloaded_custom_connector = format("{tmp_dir}/{jdbc_driver_jar}")
+  
+
+check_db_connection_jar_name = "DBConnectionVerification.jar"
+check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar_name}")
+
+# bootstrap commands
+
+bootstrap_storage_command = os.path.join(registry_home, "bootstrap", "bootstrap-storage.sh")
+bootstrap_storage_run_cmd = format('source {conf_dir}/registry-env.sh ; {bootstrap_storage_command}')
+bootstrap_storage_file = "/var/lib/ambari-agent/data/registry/bootstrap_storage_done"
+registry_agent_dir = "/var/lib/ambari-agent/data/registry"
