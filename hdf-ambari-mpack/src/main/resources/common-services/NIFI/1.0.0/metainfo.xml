@@ -59,6 +59,7 @@
                   <category>MASTER</category>
                   <cardinality>1+</cardinality>
                   <versionAdvertised>true</versionAdvertised>
+                  <unlimitedKeyJCERequired>ALWAYS</unlimitedKeyJCERequired>
                   <timelineAppid>NIFI</timelineAppid>
 
                   <dependencies>
