@@ -87,10 +87,6 @@
                     "subsection-name": "subsection-streamline-row1-col2"
                 },
                 {
-                    "config": "streamline-common/streamline.storage.connector.port",
-                    "subsection-name": "subsection-streamline-row1-col2"
-                },
-                {
                     "config": "streamline-common/streamline.storage.connector.connectURI",
                     "subsection-name": "subsection-streamline-row1-col2"
                 }
@@ -149,12 +145,6 @@
                 "config": "streamline-common/streamline.storage.connector.password",
                 "widget": {
                     "type": "password"
-                }
-            },
-            {
-                "config": "streamline-common/streamline.storage.connector.port",
-                "widget": {
-                    "type": "text-field"
                 }
             },
             {

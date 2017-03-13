@@ -83,6 +83,12 @@
         </osSpecific>
       </osSpecifics>
 
+      <quickLinksConfigurations>
+        <quickLinksConfiguration>
+          <fileName>quicklinks.json</fileName>
+          <default>true</default>
+        </quickLinksConfiguration>
+      </quickLinksConfigurations>
       <restartRequiredAfterChange>true</restartRequiredAfterChange>
     </service>
   </services>
