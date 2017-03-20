@@ -9,9 +9,9 @@
         "links": [
             {
                 "name": "streamline_ui",
-                "label": "Streamline UI",
+                "label": "SAM UI",
                 "requires_user_name": "false",
-                "component_name": "STREAMLINE_SERVER",
+                "component_name": "SAM_SERVER",
                 "url":"%@://%@:%@/",
                 "port":{
                     "http_property": "port",

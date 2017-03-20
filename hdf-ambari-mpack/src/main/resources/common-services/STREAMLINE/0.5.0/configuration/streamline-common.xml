@@ -22,14 +22,14 @@
 <configuration>
   <property>
     <name>port</name>
-    <value>8080</value>
+    <value>7777</value>
     <description>
       The port on which server accepts connections.
     </description>
   </property>
     <property>
     <name>adminPort</name>
-    <value>8081</value>
+    <value>7778</value>
     <description>
       The admin port for the server.
     </description>
@@ -132,7 +132,7 @@
   </property>
   <property required-input="true">
     <name>streamline.dashboard.url</name>
-    <value></value>
+    <value>http://localhost:9090</value>
     <description> Provide URL for superset dashboard </description>
   </property>
   <property required-input="true">

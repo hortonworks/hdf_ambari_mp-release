@@ -36,7 +36,7 @@ from streamline import streamline
 class StreamlineServer(Script):
 
   def get_component_name(self):
-    return "streamline"
+    return "SAM"
 
   def install(self, env):
     self.install_packages(env)
