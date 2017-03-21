@@ -1,0 +1,22 @@
+<upgrade-config-changes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="upgrade-config.xsd">
+  <services>
+    <service name="NIFI">
+      <component name="NIFI_MASTER">
+        <changes>
+          <!-- Add these configs to nifi-properties. -->
+          <definition xsi:type="configure" id="hdf_2_1_0_0_add_nifi_properties_configs">
+            <type>nifi-properties</type>
+            <set key="nifi.sensitive.props.additional.keys" value=""/>
+            <set key="nifi.variable.registry.properties" value=""/>
+          </definition>
+          <!-- Add these configs to nifi-ambari-config. -->
+          <definition xsi:type="configure" id="hdf_2_1_0_0_add_nifi_ambari_config_configs">
+            <type>nifi-ambari-config</type>
+            <set key="nifi.security.encrypt.configuration.password" value=""/>
+          </definition>
+        </changes>
+      </component>
+    </service>  
+  </services>
+</upgrade-config-changes>
+
