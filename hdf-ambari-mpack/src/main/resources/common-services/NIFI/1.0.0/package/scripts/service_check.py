@@ -45,7 +45,7 @@ class NifiServiceCheck(Script):
       NifiServiceCheck.check_nifi_portal(url)
 
   @staticmethod
-  @retry(times=15, sleep_time=5, max_sleep_time=20, backoff_factor=2, err_class=Fail)
+  @retry(times=30, sleep_time=5, max_sleep_time=20, backoff_factor=2, err_class=Fail)
   def check_nifi_portal(url):
     try:
       request = urllib2.Request(url)
