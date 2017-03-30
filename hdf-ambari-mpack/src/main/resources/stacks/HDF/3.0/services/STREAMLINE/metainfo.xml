@@ -20,7 +20,8 @@
   <services>
     <service>
       <name>STREAMLINE</name>
-      <extends>common-services/STREAMLINE/0.1.0</extends>
+      <extends>common-services/STREAMLINE/0.5.0</extends>
+      <version>0.5.0</version>
     </service>
   </services>
 </metainfo>

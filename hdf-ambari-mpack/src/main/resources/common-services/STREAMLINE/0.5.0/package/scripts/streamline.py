@@ -49,6 +49,14 @@ def streamline(env, upgrade_type=None):
               group='root'
     )
 
+    Directory([params.jar_storage],
+            owner=params.streamline_user,
+            group=params.user_group,
+            create_parents = True,
+            cd_access="a",
+            mode=0755,
+    )
+
     File(os.path.join(params.limits_conf_dir, 'streamline.conf'),
          owner='root',
          group='root',

@@ -63,3 +63,9 @@ class HDF30StackAdvisor(HDF21StackAdvisor):
                             "Need to set ranger.usersync.group.searchenabled as true, as ranger.usersync.ldap.deltasync is enabled")})
 
     return self.toConfigurationValidationProblems(validationItems, "ranger-ugsync-site")
+
+  def getCardinalitiesDict(self, hosts):
+    return {
+      'ZOOKEEPER_SERVER': {"min": 3},
+      'METRICS_COLLECTOR': {"min": 1}
+    }
