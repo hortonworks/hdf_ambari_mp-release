@@ -30,7 +30,7 @@ mvn clean package -DminAmbariVersion=${MIN_AMBARI_VERSION} -DmaxAmbariVersion=${
 ```
 cd hdf_ambari_mp/hdf-ambari-mpack
 mvn versions:set -DnewVersion=0.1.0.0-1
-mvn clean package DminAmbariVersion=2.4.0.0 -DmaxAmbariVersion=2.5.0.0  -Dnifiversion=1.2.0.3.0.0.0-137
+mvn clean package -DminAmbariVersion=2.4.0.0 -DmaxAmbariVersion=2.5.0.0  -Dnifiversion=1.2.0.3.0.0.0-137
 
 #this will build the below tarball
 ls -la target/hdf-ambari-mpack-0.1.0.0-1.tar.gz
