@@ -115,6 +115,12 @@ streamline_catalog_root_url = 'http://{0}:{1}/api/v1/catalog'.format(hostname,st
 jdk_location = config['hostLevelParams']['jdk_location']
 if 'mysql' == streamline_storage_type:
   jdbc_driver_jar = default("/hostLevelParams/custom_mysql_jdbc_name", None)
+  if jdbc_driver_jar == None:
+    Logger.error("Failed to find mysql-java-connector jar. Make sure you followed the steps to register mysql driver")
+    Logger.info("Users should register the mysql java driver jar.")
+    Logger.info("yum install mysql-connector-java*")
+    Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar")
+    raise
   connector_curl_source = format("{jdk_location}/{jdbc_driver_jar}")
   connector_download_dir=format("{streamline_home}/libs")
   connector_bootstrap_download_dir=format("{streamline_home}/bootstrap/lib")

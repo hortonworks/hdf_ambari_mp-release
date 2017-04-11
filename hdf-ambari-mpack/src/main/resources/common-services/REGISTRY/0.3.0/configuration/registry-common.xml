@@ -36,7 +36,7 @@
   </property>
   <property>
     <name>jar.storage</name>
-    <value>/tmp</value>
+    <value>/hdf/registry</value>
     <description>
       Directory under which custom processor, UDF jars will be stored.
     </description>

@@ -36,7 +36,7 @@
   </property>
   <property>
     <name>jar.storage</name>
-    <value>/tmp</value>
+    <value>/hdf/streamline</value>
     <description>
       Directory under which custom processor, UDF jars will be stored.
     </description>
@@ -137,7 +137,7 @@
   </property>
   <property required-input="true">
     <name>registry.url</name>
-    <value>http://localhost:9090</value>
+    <value>http://localhost:7788</value>
     <description> Provide URL for Schema Registry </description>
   </property>
 </configuration>
