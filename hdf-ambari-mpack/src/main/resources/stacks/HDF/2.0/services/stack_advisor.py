@@ -83,7 +83,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
   def getServiceConfigurationRecommenderDict(self):
     return {
       "KAFKA": self.recommendKAFKAConfigurations,
-      "NIFI":  self.recommendNIFIConfigurations,
       "STORM": self.recommendStormConfigurations,
       "AMBARI_METRICS": self.recommendAmsConfigurations,
       "RANGER": self.recommendRangerConfigurations,
@@ -235,21 +234,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         connection_string = db_host
 
     return connection_string
-
-  def recommendNIFIConfigurations(self, configurations, clusterData, services, hosts):
-    nifi = getServicesSiteProperties(services, "nifi")
-
-    if "ranger-env" in services["configurations"] and "ranger-nifi-plugin-properties" in services["configurations"] and \
-                    "ranger-nifi-plugin-enabled" in services["configurations"]["ranger-env"]["properties"]:
-      putNiFiRangerPluginProperty = self.putProperty(configurations, "ranger-nifi-plugin-properties", services)
-      rangerEnvNiFiPluginProperty = services["configurations"]["ranger-env"]["properties"]["ranger-nifi-plugin-enabled"]
-      putNiFiRangerPluginProperty("ranger-nifi-plugin-enabled", rangerEnvNiFiPluginProperty)
-
-      if rangerEnvNiFiPluginProperty == 'Yes' and \
-                      "nifi.authentication" in services["configurations"]["ranger-nifi-plugin-properties"]["properties"] and \
-                      "nifi.node.ssl.isenabled" in services["configurations"]["nifi-ambari-ssl-config"]["properties"]:
-        nifiAmbariSSLConfig = 'SSL' if services["configurations"]["nifi-ambari-ssl-config"]["properties"]["nifi.node.ssl.isenabled"] == 'true' else 'NONE'
-        putNiFiRangerPluginProperty("nifi.authentication",nifiAmbariSSLConfig)
 
   def recommendRangerConfigurations(self, configurations, clusterData, services, hosts):
 
@@ -414,9 +398,11 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     # Recommend Ranger supported service's audit properties
     ranger_services = [
       {'service_name': 'KAFKA', 'audit_file': 'ranger-kafka-audit'},
-      {'service_name': 'STORM', 'audit_file': 'ranger-storm-audit'},
-      {'service_name': 'NIFI', 'audit_file': 'ranger-nifi-audit'}
+      {'service_name': 'STORM', 'audit_file': 'ranger-storm-audit'}
     ]
+
+    if 'NIFI' in servicesList:
+      ranger_services.append({'service_name': 'NIFI', 'audit_file': 'ranger-nifi-audit'})
 
     for item in range(len(ranger_services)):
       if ranger_services[item]['service_name'] in servicesList:
@@ -439,9 +425,11 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
 
     ranger_plugins_serviceuser = [
       {'service_name': 'STORM', 'file_name': 'storm-env', 'config_name': 'storm_user', 'target_configname': 'ranger.plugins.storm.serviceuser'},
-      {'service_name': 'KAFKA', 'file_name': 'kafka-env', 'config_name': 'kafka_user', 'target_configname': 'ranger.plugins.kafka.serviceuser'},
-      {'service_name': 'NIFI', 'file_name': 'nifi-env', 'config_name': 'nifi_user', 'target_configname': 'ranger.plugins.nifi.serviceuser'}
+      {'service_name': 'KAFKA', 'file_name': 'kafka-env', 'config_name': 'kafka_user', 'target_configname': 'ranger.plugins.kafka.serviceuser'}
     ]
+
+    if 'NIFI' in servicesList:
+      ranger_plugins_serviceuser.append({'service_name': 'NIFI', 'file_name': 'nifi-env', 'config_name': 'nifi_user', 'target_configname': 'ranger.plugins.nifi.serviceuser'})
 
     for item in range(len(ranger_plugins_serviceuser)):
       if ranger_plugins_serviceuser[item]['service_name'] in servicesList:
@@ -980,10 +968,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
               "ams-site": self.validateAmsSiteConfigurations},
       "RANGER": {"ranger-env": self.validateRangerConfigurationsEnv,
                  "admin-properties": self.validateRangerAdminConfigurations,
-                 "ranger-tagsync-site": self.validateRangerTagsyncConfigurations},
-      "NIFI": {"nifi-ambari-config": self.validateNiFiAmbariConfigurations,
-               "ranger-nifi-plugin-properties": self.validateNiFiRangerPluginConfigurations,
-               "nifi-ambari-ssl-config": self.validateNiFiSslProperties }
+                 "ranger-tagsync-site": self.validateRangerTagsyncConfigurations}
     }
 
   def recommendLogsearchConfigurations(self, configurations, clusterData, services, hosts):
@@ -1421,69 +1406,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
 
     return self.toConfigurationValidationProblems(validationItems, "kafka-broker")
 
-  def __find_ca(self, services):
-    for service in services['services']:
-      if 'components' in service:
-        for component in service['components']:
-          stackServiceComponent = component['StackServiceComponents']
-          if 'NIFI_CA' == stackServiceComponent['component_name'] and stackServiceComponent['hostnames']:
-            return True
-    return False
-
-  def validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method):
-    if siteName == 'nifi-ambari-ssl-config' or siteName == 'nifi-ambari-config':
-      return method(self.getSiteProperties(configurations, siteName), None, configurations, services, hosts)
-    else:
-      return DefaultStackAdvisor.validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method)
-
-  def validateNiFiSslProperties(self, properties, recommendedDefaults, configurations, services, hosts):
-    validationItems = []
-    ssl_enabled = properties['nifi.node.ssl.isenabled'] and str(properties['nifi.node.ssl.isenabled']).lower() != 'false'
-    if ssl_enabled and not properties['nifi.initial.admin.identity']:
-      validationItems.append({"config-name": 'nifi.initial.admin.identity', 'item': self.getWarnItem('If SSL is enabled, Initial Admin Identity should usually be configured to a DN that an admin will have a certificate for.')})
-    if (self.__find_ca(services)):
-      if not properties['nifi.toolkit.tls.token']:
-        validationItems.append({"config-name": 'nifi.toolkit.tls.token', 'item': self.getErrorItem('If NiFi Certificate Authority is used, nifi.toolkit.tls.token must be set')})
-      if not ssl_enabled:
-        validationItems.append({"config-name": 'nifi.node.ssl.isenabled', 'item': self.getWarnItem('For NiFi Certificate Authority to be useful, ssl should be enabled')})
-    else:
-      if properties['nifi.toolkit.tls.token']:
-        validationItems.append({"config-name": 'nifi.toolkit.tls.token', 'item': self.getWarnItem("If NiFi Certificate Authority is not used, nifi.toolkit.tls.token doesn't do anything.")})
-      if ssl_enabled:
-        if not properties['nifi.security.keystorePasswd']:
-          validationItems.append({"config-name": 'nifi.security.keystorePasswd', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.keystorePasswd')})
-        if not properties['nifi.security.keyPasswd']:
-          validationItems.append({"config-name": 'nifi.security.keyPasswd', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.keyPasswd')})
-        if not properties['nifi.security.truststorePasswd']:
-          validationItems.append({"config-name": 'nifi.security.truststorePasswd', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.truststorePasswd')})
-        if not properties['nifi.security.keystoreType']:
-          validationItems.append({"config-name": 'nifi.security.keystoreType', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.keystoreType')})
-        if not properties['nifi.security.truststoreType']:
-          validationItems.append({"config-name": 'nifi.security.truststoreType', 'item': self.getErrorItem('If NiFi Certificate Authority is not used and SSL is enabled, must specify nifi.security.truststoreType')})
-    return self.toConfigurationValidationProblems(validationItems, "nifi-ambari-ssl-config")
-
-  def validateNiFiAmbariConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
-    validationItems = []
-
-    if len(properties['nifi.sensitive.props.key']) < 10:
-      validationItems.append({"config-name": 'nifi.sensitive.props.key', 'item': self.getWarnItem('Sensitive property encryption password should be 10 or more characters')})
-
-    return self.toConfigurationValidationProblems(validationItems, "nifi-ambari-config")
-
-  def validateNiFiRangerPluginConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
-    validationItems = []
-    ranger_plugin_properties = getSiteProperties(configurations, "ranger-nifi-plugin-properties")
-    ranger_plugin_enabled = ranger_plugin_properties['ranger-nifi-plugin-enabled'] if ranger_plugin_properties else 'No'
-
-    if ranger_plugin_enabled.lower() == 'yes':
-      ranger_env = getServicesSiteProperties(services, 'ranger-env')
-      if not ranger_env or not 'ranger-nifi-plugin-enabled' in ranger_env or \
-                      ranger_env['ranger-nifi-plugin-enabled'].lower() != 'yes':
-        validationItems.append({"config-name": 'ranger-nifi-plugin-enabled',
-                                "item": self.getWarnItem(
-                                  "ranger-nifi-plugin-properties/ranger-nifi-plugin-enabled must correspond ranger-env/ranger-nifi-plugin-enabled")})
-
-    return self.toConfigurationValidationProblems(validationItems, "ranger-nifi-plugin-properties")
 
   def validateServiceConfigurations(self, serviceName):
     return self.getServiceConfigurationValidators().get(serviceName, None)
