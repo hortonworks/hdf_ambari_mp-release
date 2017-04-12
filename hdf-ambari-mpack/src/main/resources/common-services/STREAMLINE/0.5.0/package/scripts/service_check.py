@@ -21,27 +21,39 @@ limitations under the License.
 from resource_management.libraries.script.script import Script
 from resource_management.core.logger import Logger
 from resource_management.libraries.functions.format import format
-import urllib2
+import urllib2, time
 
 class ServiceCheck(Script):
   def service_check(self, env):
     import params
     env.set_params(params)
-    Logger.info("Streamline check passed")
     streamline_api = format("http://{params.hostname}:{params.streamline_port}/api/v1/catalog/streams/componentbundles")
     Logger.info(streamline_api)
-    try:
+    max_retries = 3
+    success = False
+    for num in range(0, max_retries):
+      try:
         Logger.info(format("Making http requests to {streamline_api}"))
         response = urllib2.urlopen(streamline_api)
         api_response = response.read()
-        Logger.info(api_response)
+        response_code = response.getcode()
+        Logger.info(format("SAM response http status {response}"))
         if response.getcode() != 200:
             Logger.error(format("Failed to fetch response for {streamline_api}"))
+            show_logs(params.streamline_log_dir, params.streamline_user)
             raise
-    except:
-        Logger.error("Failed to make API request to Streamline server")
-        show_logs(params.streamline_log_dir, params.streamline_user)
-        raise
+        else:
+          success = True
+          Logger.info(format("Successfully made a API request to SAM. {api_response}"))
+          break
+      except urllib2.URLError, e:
+        Logger.error("Failed to make API request to SAM server at {streamline_api},retrying.. {num} out {max_retries}")
+        time.sleep(num * 10) #exponential back-off
+        continue
+
+    if success != True:
+      Logger.error(format("Failed to make API request to  SAM server at {streamline_api} after {max_retries}"))
+      raise
 
 if __name__ == "__main__":
     ServiceCheck().execute()
