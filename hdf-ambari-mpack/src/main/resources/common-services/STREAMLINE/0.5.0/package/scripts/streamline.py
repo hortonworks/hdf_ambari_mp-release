@@ -99,11 +99,12 @@ def download_database_connector_if_needed():
   if params.streamline_storage_type != 'mysql':
       return
 
-  print "hello"
-  print params.jdbc_driver_jar
   if params.jdbc_driver_jar == None:
-      Logger.warn("Failed to find mysql-java-connector jar. Make sure you followed the steps to register mysql driver")
-      show_logs(params.streamline_log_dir, params.streamline_user)
+      Logger.error("Failed to find mysql-java-connector jar. Make sure you followed the steps to register mysql driver")
+      Logger.info("Users should register the mysql java driver jar.")
+      Logger.info("yum install mysql-connector-java*")
+      Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar")
+      raise
 
   File(params.check_db_connection_jar,
        content = DownloadSource(format("{jdk_location}{check_db_connection_jar_name}")))

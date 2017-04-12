@@ -11,7 +11,7 @@
                 "name": "streamline_ui",
                 "label": "SAM UI",
                 "requires_user_name": "false",
-                "component_name": "SAM_SERVER",
+                "component_name": "STREAMLINE_SERVER",
                 "url":"%@://%@:%@/",
                 "port":{
                     "http_property": "port",

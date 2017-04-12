@@ -36,7 +36,7 @@
   </property>
   <property>
     <name>jar.storage</name>
-    <value>/tmp</value>
+    <value>/hdf/streamline</value>
     <description>
       Directory under which custom processor, UDF jars will be stored.
     </description>
@@ -63,7 +63,6 @@
     <description>Password for the storage data base.</description>
     <value-attributes>
       <type>password</type>
-      <empty-value-valid>true</empty-value-valid>
     </value-attributes>
     <on-ambari-upgrade add="false"/>
   </property>
@@ -137,7 +136,7 @@
   </property>
   <property required-input="true">
     <name>registry.url</name>
-    <value>http://localhost:9090</value>
+    <value>http://localhost:7788</value>
     <description> Provide URL for Schema Registry </description>
   </property>
 </configuration>

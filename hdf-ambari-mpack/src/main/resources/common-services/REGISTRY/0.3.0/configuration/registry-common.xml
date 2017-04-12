@@ -36,7 +36,7 @@
   </property>
   <property>
     <name>jar.storage</name>
-    <value>/tmp</value>
+    <value>/hdf/registry</value>
     <description>
       Directory under which custom processor, UDF jars will be stored.
     </description>
@@ -49,7 +49,6 @@
     <description>Password for the storage data base.</description>
     <value-attributes>
       <type>password</type>
-      <empty-value-valid>true</empty-value-valid>
     </value-attributes>
     <on-ambari-upgrade add="false"/>
   </property>
