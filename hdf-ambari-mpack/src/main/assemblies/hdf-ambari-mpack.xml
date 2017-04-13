@@ -52,6 +52,10 @@
       <outputDirectory>stacks</outputDirectory>
     </fileSet>
     <fileSet>
+      <directory>src/main/resources/hdp-addon-services</directory>
+      <outputDirectory>hdp-addon-services</outputDirectory>
+    </fileSet>
+    <fileSet>
       <directory>${project.build.directory}/nifi-toolkit</directory>
       <outputDirectory>common-services/NIFI/1.0.0/package/files</outputDirectory>
     </fileSet>

@@ -24,7 +24,7 @@ import sys, os, glob, socket, re
 from resource_management.libraries.functions import format
 from resource_management.libraries.functions.default import default
 from resource_management.libraries.functions.version import format_stack_version
-from resource_management.libraries.functions.version_select_util import get_component_version
+from resource_management.libraries.functions.version_select_util import get_component_version, get_component_version_with_stack_selector
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions.stack_features import get_stack_feature_version
@@ -42,6 +42,12 @@ stack_name = default("/hostLevelParams/stack_name", None)
 stack_version_buildnum = default("/commandParams/version", None)
 if not stack_version_buildnum and stack_name:
   stack_version_buildnum = get_component_version(stack_name, "nifi")
+if stack_name == "HDP":
+  # Override HDP stack root
+  stack_root = "/usr/hdf"
+  # Override HDP stack version 
+  stack_version_buildnum = get_component_version_with_stack_selector("/usr/bin/hdf-select", "nifi")
+
 service_version = config['availableServices']['NIFI']
 version_for_stack_feature_checks = get_stack_feature_version(config)
 
