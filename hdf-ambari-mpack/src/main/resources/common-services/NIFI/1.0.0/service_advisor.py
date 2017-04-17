@@ -91,7 +91,7 @@ class NIFI100ServiceAdvisor(service_advisor.ServiceAdvisor):
         if siteName == 'nifi-ambari-ssl-config' or siteName == 'nifi-ambari-config':
             return method(self.getSiteProperties(configurations, siteName), None, configurations, services, hosts)
         else:
-            return service_advisor.ServiceAdvisor.validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method)
+            return super(NIFI100ServiceAdvisor, self).validateConfigurationsForSite(configurations, recommendedDefaults, services, hosts, siteName, method)
 
 
     def validateNiFiSslProperties(self, properties, recommendedDefaults, configurations, services, hosts):

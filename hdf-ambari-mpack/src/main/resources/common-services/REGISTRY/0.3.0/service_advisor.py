@@ -22,13 +22,14 @@ import imp
 import os
 import traceback
 import inspect
+from os.path import dirname
 
 # Local imports
 from resource_management.core.logger import Logger
 
-
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-STACKS_DIR = os.path.join(SCRIPT_DIR, '../../../stacks/')
+SCRIPT_DIR = dirname(os.path.abspath(__file__))
+RESOURCES_DIR = dirname(dirname(dirname(SCRIPT_DIR)))
+STACKS_DIR = os.path.join(RESOURCES_DIR, 'stacks')
 PARENT_FILE = os.path.join(STACKS_DIR, 'service_advisor.py')
 
 try:
