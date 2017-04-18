@@ -22,26 +22,38 @@
 <configuration>
   <property>
     <name>port</name>
+    <displayName>Port</displayName>
     <value>7777</value>
     <description>
       The port on which server accepts connections.
     </description>
   </property>
-    <property>
+  <property>
     <name>adminPort</name>
+    <displayName>Jetty Admin Port</displayName>
     <value>7778</value>
     <description>
       The admin port for the server.
     </description>
   </property>
   <property>
+    <displayName>Jar Storage</displayName>
     <name>jar.storage</name>
-    <value>/hdf/streamline</value>
+    <value>/hdf/streamline/jars</value>
     <description>
       Directory under which custom processor, UDF jars will be stored.
     </description>
   </property>
   <property>
+    <displayName>Topology Test Results Dir</displayName>
+    <name>topology.test.results.dir</name>
+    <value>/hdf/streamline/topology_test_results</value>
+    <description>
+      Directory under which topology test results will be stored.
+    </description>
+  </property>
+  <property>
+    <displayName>Storm Client Home</displayName>
     <name>storm.client.home</name>
     <value>/usr/hdf/current/storm-client</value>
     <description>
@@ -49,6 +61,7 @@
     </description>
   </property>
   <property>
+    <displayName>Maven repositories</displayName>
     <name>maven.repo.url</name>
     <value>hwx-public^http://repo.hortonworks.com/content/groups/public/,hwx-private^http://nexus-private.hortonworks.com/nexus/content/groups/public/</value>
     <description>

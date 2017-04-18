@@ -34,6 +34,7 @@ from resource_management.libraries.functions import conf_select
 from resource_management.libraries.functions import get_kinit_path
 from resource_management.libraries.functions.get_not_managed_resources import get_not_managed_resources
 from resource_management.libraries.functions.setup_ranger_plugin_xml import get_audit_configs
+from utils import get_bare_principal
 import ambari_simplejson as json # simplejson is much faster comparing to Python 2.6 json module and has the same functions set
 
 # server configurations
@@ -56,13 +57,15 @@ current_version = default("/hostLevelParams/current_version", None)
 stack_version_unformatted = config['hostLevelParams']['stack_version']
 stack_version_formatted = format_stack_version(stack_version_unformatted)
 upgrade_direction = default("/commandParams/upgrade_direction", None)
+security_enabled = config['configurations']['cluster-env']['security_enabled']
+kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executable_search_paths', None))
+smokeuser = config['configurations']['cluster-env']['smokeuser']
+smokeuser_principal = config['configurations']['cluster-env']['smokeuser_principal_name']
+smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 
 # get the correct version to use for checking stack features
 version_for_stack_feature_checks = get_stack_feature_version(config)
 
-stack_supports_ranger_kerberos = check_stack_feature(StackFeature.RANGER_KERBEROS_SUPPORT, version_for_stack_feature_checks)
-stack_supports_ranger_audit_db = check_stack_feature(StackFeature.RANGER_AUDIT_DB_SUPPORT, version_for_stack_feature_checks)
-stack_supports_core_site_for_ranger_plugin = check_stack_feature(StackFeature.CORE_SITE_FOR_RANGER_PLUGINS_SUPPORT, version_for_stack_feature_checks)
 
 # When downgrading the 'version' and 'current_version' are both pointing to the downgrade-target version
 # downgrade_from_version provides the source-version the downgrade is happening from
@@ -92,7 +95,24 @@ streamine_managed_log_dir = "/var/log/streamline"
 user_group = config['configurations']['cluster-env']['user_group']
 java64_home = config['hostLevelParams']['java_home']
 streamline_env_sh_template = config['configurations']['streamline-env']['content']
+streamline_jaas_conf_template = default("/configurations/streamline_jaas_conf/content", None)
 
+if security_enabled:
+  _hostname_lowercase = config['hostname'].lower()
+  _streamline_principal_name = config['configurations']['streamline-env']['streamline_principal_name']
+  streamline_jaas_principal = _streamline_principal_name.replace('_HOST',_hostname_lowercase)
+  streamline_bare_principal = get_bare_principal(streamline_jaas_principal)
+  streamline_keytab_path = config['configurations']['streamline-env']['streamline_keytab']
+  streamline_ui_keytab_path = config['configurations']['streamline-env']['streamline_ui_keytab']
+  _streamline_ui_jaas_principal_name = config['configurations']['streamline-env']['streamline_ui_principal_name']
+  streamline_ui_jaas_principal = _streamline_ui_jaas_principal_name.replace('_HOST',_hostname_lowercase)
+  streamline_kerberos_params = "-Djava.security.auth.login.config="+ conf_dir +"/streamline_jaas.conf"
+  streamline_servlet_filter = config['configurations']['streamline-common']['servlet.filter']
+  streamline_servlet_kerberos_name_rules = config['configurations']['streamline-common']['kerberos.name.rules']
+  streamline_servlet_token_validity = config['configurations']['streamline-common']['token.validity']
+  streamline_kerberos_params = "-Djava.security.auth.login.config="+ conf_dir +"/streamline_jaas.conf"
+else:
+  streamline_kerberos_params = ''
 
 
 # flatten streamline configs
@@ -101,6 +121,11 @@ storm_client_home = config['configurations']['streamline-common']['storm.client.
 registry_url = config['configurations']['streamline-common']['registry.url']
 maven_repo_url = config['configurations']['streamline-common']['maven.repo.url']
 jar_storage = config['configurations']['streamline-common']['jar.storage']
+if 'topology.test.results.dir' in config['configurations']['streamline-common']:
+  topology_test_results = config['configurations']['streamline-common']['topology.test.results.dir']
+else:
+  topology_test_results = "/hdf/streamline/topology_test_results"
+
 streamline_dashboard_url = config['configurations']['streamline-common']['streamline.dashboard.url']
 
 streamline_storage_type = config['configurations']['streamline-common']['streamline.storage.type']

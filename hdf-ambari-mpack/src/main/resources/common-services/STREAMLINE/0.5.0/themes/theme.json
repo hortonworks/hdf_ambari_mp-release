@@ -63,6 +63,10 @@
                     "subsection-name": "subsection-streamline-row1-col1"
                 },
                 {
+                    "config": "streamline-common/topology.test.results.dir",
+                    "subsection-name": "subsection-streamline-row1-col1"
+                },
+                {
                     "config": "streamline-common/streamline.dashboard.url",
                     "subsection-name": "subsection-streamline-row1-col1"
                 },
@@ -107,6 +111,12 @@
             },
             {
                 "config": "streamline-common/jar.storage",
+                "widget": {
+                    "type": "text-field"
+                }
+            },
+            {
+                "config": "streamline-common/topology.test.results.dir",
                 "widget": {
                     "type": "text-field"
                 }
