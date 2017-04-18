@@ -55,6 +55,7 @@
         <config-type>streamline-common</config-type>
         <config-type>streamline-env</config-type>
         <config-type>streamline-log4j</config-type>
+        <config-type>streamline_jaas_conf</config-type>
       </configuration-dependencies>
 
       <themes>

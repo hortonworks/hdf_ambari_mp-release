@@ -28,6 +28,7 @@ modules:
       stormHomeDir: "{{storm_client_home}}"
       schemaRegistryUrl: "{{registry_url}}"
       mavenRepoUrl: "{{maven_repo_url}}"
+      topologyTestRunResultDir: "{{topology_test_results}}"
 
 catalogRootUrl: {{streamline_catalog_root_url}}
 
@@ -59,6 +60,17 @@ server:
   adminConnectors:
     - type: http
       port: {{streamline_admin_port}}
+
+{% if security_enabled %}
+servletFilters:
+  - className: {{streamline_servlet_filter}}
+    params:
+      type: "kerberos"
+      kerberos.principal: "{{streamline_ui_jaas_principal}}"
+      kerberos.keytab: "{{streamline_ui_keytab_path}}"
+      kerberos.name.rules: "{{streamline_servlet_kerberos_name_rules}}"
+      token.validity: "{{streamline_servlet_token_validity}}"
+{%endif%}
 
 logging:
     # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.

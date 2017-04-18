@@ -61,6 +61,17 @@ server:
     - type: http
       port: {{registry_admin_port}}
 
+{% if security_enabled %}
+servletFilters:
+  - className: {{registry_servlet_filter}}
+    params:
+      type: "kerberos"
+      kerberos.principal: "{{registry_ui_jaas_principal}}"
+      kerberos.keytab: "{{registry_ui_keytab_path}}"
+      kerberos.name.rules: "{{registry_servlet_kerberos_name_rules}}"
+      token.validity: "{{registry_servlet_token_validity}}"
+{%endif%}
+
 logging:
     # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
   level: INFO

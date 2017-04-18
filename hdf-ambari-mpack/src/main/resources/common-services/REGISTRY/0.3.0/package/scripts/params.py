@@ -51,6 +51,11 @@ current_version = default("/hostLevelParams/current_version", None)
 stack_version_unformatted = config['hostLevelParams']['stack_version']
 stack_version_formatted = format_stack_version(stack_version_unformatted)
 upgrade_direction = default("/commandParams/upgrade_direction", None)
+security_enabled = config['configurations']['cluster-env']['security_enabled']
+kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executable_search_paths', None))
+smokeuser = config['configurations']['cluster-env']['smokeuser']
+smokeuser_principal = config['configurations']['cluster-env']['smokeuser_principal_name']
+smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 
 # get the correct version to use for checking stack features
 version_for_stack_feature_checks = get_stack_feature_version(config)
@@ -84,7 +89,18 @@ user_group = config['configurations']['cluster-env']['user_group']
 java64_home = config['hostLevelParams']['java_home']
 registry_env_sh_template = config['configurations']['registry-env']['content']
 
-
+if security_enabled:
+  _hostname_lowercase = config['hostname'].lower()
+  registry_ui_keytab_path = config['configurations']['registry-env']['registry_ui_keytab']
+  _registry_ui_jaas_principal_name = config['configurations']['registry-env']['registry_ui_principal_name']
+  registry_ui_jaas_principal = _registry_ui_jaas_principal_name.replace('_HOST',_hostname_lowercase)
+  registry_kerberos_params = "-Djava.security.auth.login.config="+ conf_dir +"/registry_jaas.conf"
+  registry_servlet_filter = config['configurations']['registry-common']['servlet.filter']
+  registry_servlet_kerberos_name_rules = config['configurations']['registry-common']['kerberos.name.rules']
+  #registry_servlet_token_validity = (config['configurations']['registry-common']['token.validity'])
+  registry_servlet_token_validity = 36000
+  
+  
 
 # flatten registry configs
 jar_storage = config['configurations']['registry-common']['jar.storage']
@@ -99,6 +115,7 @@ registry_admin_port = config['configurations']['registry-common']['adminPort']
 
 registry_schema_cache_size = config['configurations']['registry-common']['registry.schema.cache.size']
 registry_schema_cache_expiry_interval = config['configurations']['registry-common']['registry.schema.cache.expiry.interval']
+
 
 # mysql jar
 jdk_location = config['hostLevelParams']['jdk_location']

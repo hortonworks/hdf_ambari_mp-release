@@ -57,6 +57,14 @@ def streamline(env, upgrade_type=None):
             mode=0755,
     )
 
+    Directory([params.topology_test_results],
+            owner=params.streamline_user,
+            group=params.user_group,
+            create_parents = True,
+            cd_access="a",
+            mode=0755,
+    )
+
     File(os.path.join(params.limits_conf_dir, 'streamline.conf'),
          owner='root',
          group='root',
@@ -70,6 +78,15 @@ def streamline(env, upgrade_type=None):
          group=params.user_group,
          mode=0644
     )
+
+    if params.security_enabled:
+        if params.streamline_jaas_conf_template:
+            File(format("{conf_dir}/streamline_jaas.conf"),
+                 owner=params.streamline_user,
+                 content=InlineTemplate(params.streamline_jaas_conf_template))
+        else:
+            TemplateConfig(format("{conf_dir}/streamline_jaas.conf"),
+                         owner=params.streamline_user)
 
     if not os.path.islink(params.streamline_managed_log_dir):
       Link(params.streamline_managed_log_dir,
