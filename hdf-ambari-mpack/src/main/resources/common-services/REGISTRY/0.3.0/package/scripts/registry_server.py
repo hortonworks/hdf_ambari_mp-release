@@ -36,6 +36,9 @@ from registry import registry
 class RegistryServer(Script):
 
   def get_component_name(self):
+    stack_name = default("/hostLevelParams/stack_name", None)
+    if stack_name == "HDP":
+      return None
     return "registry"
 
   def install(self, env):

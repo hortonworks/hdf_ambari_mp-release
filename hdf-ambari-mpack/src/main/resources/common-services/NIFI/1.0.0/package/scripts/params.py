@@ -40,13 +40,13 @@ config = Script.get_config()
 stack_root = Script.get_stack_root()
 stack_name = default("/hostLevelParams/stack_name", None)
 stack_version_buildnum = default("/commandParams/version", None)
-if not stack_version_buildnum and stack_name:
-  stack_version_buildnum = get_component_version(stack_name, "nifi")
 if stack_name == "HDP":
   # Override HDP stack root
   stack_root = "/usr/hdf"
-  # Override HDP stack version 
+  # Override HDP stack version
   stack_version_buildnum = get_component_version_with_stack_selector("/usr/bin/hdf-select", "nifi")
+elif not stack_version_buildnum and stack_name:
+  stack_version_buildnum = get_component_version(stack_name, "nifi")
 
 service_version = config['availableServices']['NIFI']
 version_for_stack_feature_checks = get_stack_feature_version(config)
