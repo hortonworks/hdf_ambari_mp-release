@@ -21,6 +21,7 @@ from resource_management.core.logger import Logger
 from resource_management.core.resources.system import Execute, File, Directory
 from resource_management.libraries.functions import conf_select
 from resource_management.libraries.functions import stack_select
+from resource_management.libraries.functions import default
 from resource_management.libraries.functions import Direction
 from resource_management.libraries.functions.version import format_stack_version
 from resource_management.libraries.functions.format import format
