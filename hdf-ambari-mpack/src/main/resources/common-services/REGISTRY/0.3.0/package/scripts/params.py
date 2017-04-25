@@ -32,6 +32,7 @@ from resource_management.libraries.resources.hdfs_resource import HdfsResource
 from resource_management.libraries.functions import stack_select
 from resource_management.libraries.functions import conf_select
 from resource_management.libraries.functions import get_kinit_path
+from resource_management.core.logger import Logger
 import ambari_simplejson as json # simplejson is much faster comparing to Python 2.6 json module and has the same functions set
 
 # server configurations
