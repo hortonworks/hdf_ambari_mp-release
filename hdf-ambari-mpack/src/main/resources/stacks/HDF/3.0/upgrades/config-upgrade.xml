@@ -31,7 +31,6 @@
           </definition>
         </changes>
       </component>
-    </service>  
+    </service>
   </services>
 </upgrade-config-changes>
-

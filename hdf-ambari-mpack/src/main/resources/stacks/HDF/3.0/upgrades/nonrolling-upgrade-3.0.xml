@@ -125,6 +125,18 @@
             </execute-stage>
         </group>
 
+
+        <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
+            <direction>UPGRADE</direction>
+            <skippable>true</skippable>
+
+            <!--Cluster Dependent Changes-->
+            <execute-stage service="ZOOKEEPER" component="ZOOKEEPER_SERVER" title="Apply cluster specific configurations">
+                <task xsi:type="configure" id="hdf_3_0_0_0_update_cluster_env_configs"/>
+            </execute-stage>
+
+        </group>
+
         <!--
         After processing this group, the user-specified Kerberos descriptor will be updated to work with
         the new stack-level Kerberos descriptor.
