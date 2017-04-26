@@ -130,7 +130,6 @@ if 'mysql' == registry_storage_type:
     Logger.info("Users should register the mysql java driver jar.")
     Logger.info("yum install mysql-connector-java*")
     Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar")
-    raise
 
   connector_curl_source = format("{jdk_location}/{jdbc_driver_jar}")
   connector_download_dir=format("{registry_home}/libs")
