@@ -24,7 +24,7 @@ import sys, os, glob, socket, re
 from resource_management.libraries.functions import format
 from resource_management.libraries.functions.default import default
 from resource_management.libraries.functions.version import format_stack_version
-from resource_management.libraries.functions.version_select_util import get_component_version, get_component_version_with_stack_selector
+from resource_management.libraries.functions.version_select_util import *
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions.stack_features import get_stack_feature_version
@@ -167,6 +167,8 @@ nifi_ca_config = {
 if nifi_ca_host:
   nifi_ca_config['dn'] = nifi_toolkit_dn_prefix + nifi_ca_host + nifi_toolkit_dn_suffix
 
+stack_support_tls_toolkit_san = check_stack_feature('tls_toolkit_san', version_for_stack_feature_checks)
+
 nifi_ca_client_config = { 
   "days" : int(nifi_ca_parent_config['nifi.toolkit.tls.helper.days']),
   "keyStore" : nifi_keystore,
@@ -181,6 +183,9 @@ nifi_ca_client_config = {
   "trustStoreType" : nifi_truststoreType,
   "trustStorePassword": nifi_truststorePasswd
 }
+
+if stack_support_tls_toolkit_san:
+  nifi_ca_client_config["domainAlternativeNames"] = nifi_node_host
 
 nifi_ambari_ssl_config_version = config['configurationTags']['nifi-ambari-ssl-config']['tag']
 nifi_ambari_config_version = config['configurationTags']['nifi-ambari-config']['tag']
@@ -281,7 +286,6 @@ smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executable_search_paths', None))
 stack_support_encrypt_config = check_stack_feature('nifi_encrypt_config', version_for_stack_feature_checks)
 stack_support_toolkit_update = check_stack_feature('toolkit_config_update', version_for_stack_feature_checks)
-
 
 if security_enabled:
   _hostname_lowercase = nifi_host_name.lower()
