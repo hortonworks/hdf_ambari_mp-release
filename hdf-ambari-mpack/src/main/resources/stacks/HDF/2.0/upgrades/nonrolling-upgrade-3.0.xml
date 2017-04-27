@@ -125,12 +125,12 @@
             </execute-stage>
         </group>
 
-        <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
+        <group xsi:type="cluster" name="Upgrade Cluster Configs" title="Upgrade Cluster Configs">
             <direction>UPGRADE</direction>
             <skippable>true</skippable>
 
             <!--Cluster Dependent Changes-->
-            <execute-stage service="ZOOKEEPER" component="ZOOKEEPER_SERVER" title="Apply cluster specific configurations">
+            <execute-stage title="Apply cluster specific configurations">
                 <task xsi:type="configure" id="hdf_3_0_0_0_update_cluster_env_configs"/>
             </execute-stage>
 
