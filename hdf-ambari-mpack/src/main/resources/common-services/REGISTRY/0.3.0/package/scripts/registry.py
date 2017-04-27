@@ -106,7 +106,7 @@ def download_database_connector_if_needed():
       Logger.info("Users should register the mysql java driver jar.")
       Logger.info("yum install mysql-connector-java*")
       Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar")
-      raise
+      return
 
   File(params.check_db_connection_jar,
        content = DownloadSource(format("{jdk_location}{check_db_connection_jar_name}")))
