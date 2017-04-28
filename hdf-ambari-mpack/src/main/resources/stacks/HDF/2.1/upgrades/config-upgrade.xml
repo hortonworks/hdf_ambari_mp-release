@@ -16,7 +16,18 @@
           </definition>
         </changes>
       </component>
-    </service>  
+    </service>
+    <service name="ZOOKEEPER">
+      <component name="ZOOKEEPER_SERVER">
+        <changes>
+          <!-- Update stack tools to use appropriate hdf conf selector -->
+          <definition xsi:type="configure" id="hdf_3_0_0_0_update_cluster_env_configs">
+            <type>cluster-env</type>
+            <regex-replace key="stack_tools" find="&quot;conf_selector&quot;:(\s)*\[.+\]" replace-with="&quot;conf_selector&quot;:[&quot;hdfconf-select&quot;,&quot;/usr/bin/hdfconf-select&quot;,&quot;hdf-select&quot;]"/>
+          </definition>
+        </changes>
+      </component>
+    </service>
   </services>
 </upgrade-config-changes>
 
