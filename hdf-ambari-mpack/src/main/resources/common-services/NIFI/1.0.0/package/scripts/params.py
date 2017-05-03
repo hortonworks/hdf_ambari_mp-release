@@ -78,12 +78,23 @@ nifi_internal_dir=config['configurations']['nifi-ambari-config']['nifi.internal.
 nifi_state_dir=config['configurations']['nifi-ambari-config']['nifi.state.dir']
 nifi_database_dir=config['configurations']['nifi-ambari-config']['nifi.database.dir']
 nifi_flowfile_repo_dir=config['configurations']['nifi-ambari-config']['nifi.flowfile.repository.dir']
-nifi_content_repo_dir_default=config['configurations']['nifi-ambari-config']['nifi.content.repository.dir.default']
 nifi_provenance_repo_dir_default=config['configurations']['nifi-ambari-config']['nifi.provenance.repository.dir.default']
 nifi_config_dir = config['configurations']['nifi-ambari-config']['nifi.config.dir']
 nifi_flow_config_dir = config['configurations']['nifi-ambari-config']['nifi.flow.config.dir']
 nifi_sensitive_props_key = config['configurations']['nifi-ambari-config']['nifi.sensitive.props.key']
 nifi_security_encrypt_configuration_password = config['configurations']['nifi-ambari-config']['nifi.security.encrypt.configuration.password']
+
+#multiple content repository directories may be defined so search for all values
+nifi_content_repo_dir_default = None
+
+#check if default property is available in configurations
+if 'nifi.content.repository.dir.default' in config['configurations']['nifi-ambari-config']:
+  nifi_content_repo_dir_default=config['configurations']['nifi-ambari-config']['nifi.content.repository.dir.default']
+
+nifi_content_repo_dirs = [v for k,v in config['configurations']['nifi-properties'].items() if k.startswith('nifi.content.repository.dir')]
+
+if nifi_content_repo_dir_default is not None:
+  nifi_content_repo_dirs.append(nifi_content_repo_dir_default)
 
 nifi_flow_config_dir = nifi_flow_config_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
 nifi_state_dir = nifi_state_dir.replace('{nifi_internal_dir}',nifi_internal_dir)
