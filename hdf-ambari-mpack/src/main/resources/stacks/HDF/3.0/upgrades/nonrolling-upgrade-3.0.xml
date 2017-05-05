@@ -23,10 +23,6 @@
     <type>NON_ROLLING</type>
     <prerequisite-checks/>
 
-    <upgrade-path>
-        <intermediate-stack version="2.1"/>
-    </upgrade-path>
-
     <order>
         <group xsi:type="cluster" name="PRE_CLUSTER" title="Prepare Upgrade">
             <direction>UPGRADE</direction>

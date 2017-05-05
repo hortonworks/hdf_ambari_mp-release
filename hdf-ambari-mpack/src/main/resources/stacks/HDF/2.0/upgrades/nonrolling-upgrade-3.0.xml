@@ -23,10 +23,6 @@
     <type>NON_ROLLING</type>
     <prerequisite-checks/>
 
-    <upgrade-path>
-        <intermediate-stack version="2.1"/>
-    </upgrade-path>
-
     <order>
         <group xsi:type="cluster" name="PRE_CLUSTER" title="Prepare Upgrade">
             <direction>UPGRADE</direction>
@@ -121,6 +117,23 @@
         <group xsi:type="update-stack" name="UPDATE_DESIRED_STACK_ID" title="Update Target Stack">
             <execute-stage title="Update Target Stack">
                 <task xsi:type="server_action" class="org.apache.ambari.server.serveraction.upgrades.UpdateDesiredStackAction">
+                </task>
+            </execute-stage>
+        </group>
+
+        <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
+            <direction>UPGRADE</direction>
+            <skippable>true</skippable>
+            <!-- NIFI -->
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
+                <task xsi:type="configure" id="hdf_2_1_0_0_add_nifi_properties_configs"/>
+            </execute-stage>
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
+                <task xsi:type="configure" id="hdf_2_1_0_0_add_nifi_ambari_config_configs"/>
+            </execute-stage>
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
+                <task xsi:type="manual">
+                    <message>Please pause the upgrade, update password property "nifi.security.encrypt.configuration.password" and then resume the upgrade.</message>
                 </task>
             </execute-stage>
         </group>
