@@ -47,7 +47,7 @@ storageProviderConfiguration:
       dataSource.password: "{{streamline_storage_connector_password}}"
       dataSource.url: "{{streamline_storage_connector_connectorURI}}"
       dataSource.user: "{{streamline_storage_connector_user}}"
-      dataSourceClassName: com.mysql.jdbc.jdbc2.optional.MysqlDataSource
+      dataSourceClassName: "{{streamline_storage_java_class}}"
     db.type: {{streamline_storage_type}}
     queryTimeoutInSecs: {{streamline_storage_query_timeout}}
   providerClass: com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager

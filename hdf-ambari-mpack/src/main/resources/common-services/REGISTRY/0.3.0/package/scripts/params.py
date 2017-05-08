@@ -113,6 +113,11 @@ registry_storage_connector_connectorURI = config['configurations']['registry-com
 registry_storage_connector_user = config['configurations']['registry-common']['registry.storage.connector.user']
 registry_storage_connector_password = config['configurations']['registry-common']['registry.storage.connector.password']
 registry_storage_query_timeout = config['configurations']['registry-common']['registry.storage.query.timeout']
+registry_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+
+if registry_storage_type == "postgresql":
+  registry_storage_java_class = "org.postgresql.ds.PGSimpleDataSource"
+
 
 registry_port = config['configurations']['registry-common']['port']
 registry_admin_port = config['configurations']['registry-common']['adminPort']
