@@ -401,9 +401,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
       {'service_name': 'STORM', 'audit_file': 'ranger-storm-audit'}
     ]
 
-    if 'NIFI' in servicesList:
-      ranger_services.append({'service_name': 'NIFI', 'audit_file': 'ranger-nifi-audit'})
-
     for item in range(len(ranger_services)):
       if ranger_services[item]['service_name'] in servicesList:
         component_audit_file =  ranger_services[item]['audit_file']
@@ -427,9 +424,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
       {'service_name': 'STORM', 'file_name': 'storm-env', 'config_name': 'storm_user', 'target_configname': 'ranger.plugins.storm.serviceuser'},
       {'service_name': 'KAFKA', 'file_name': 'kafka-env', 'config_name': 'kafka_user', 'target_configname': 'ranger.plugins.kafka.serviceuser'}
     ]
-
-    if 'NIFI' in servicesList:
-      ranger_plugins_serviceuser.append({'service_name': 'NIFI', 'file_name': 'nifi-env', 'config_name': 'nifi_user', 'target_configname': 'ranger.plugins.nifi.serviceuser'})
 
     for item in range(len(ranger_plugins_serviceuser)):
       if ranger_plugins_serviceuser[item]['service_name'] in servicesList:

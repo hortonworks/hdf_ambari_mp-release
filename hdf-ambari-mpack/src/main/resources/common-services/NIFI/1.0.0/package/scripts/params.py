@@ -48,6 +48,7 @@ if stack_name == "HDP":
 elif not stack_version_buildnum and stack_name:
   stack_version_buildnum = get_component_version(stack_name, "nifi")
 
+service_name = 'nifi'
 service_version = config['availableServices']['NIFI']
 version_for_stack_feature_checks = get_stack_feature_version(config)
 
@@ -457,6 +458,9 @@ hdfs_site = config['configurations']['hdfs-site'] if has_namenode else None
 default_fs = config['configurations']['core-site']['fs.defaultFS'] if has_namenode else None
 hadoop_bin_dir = stack_select.get_hadoop_dir("bin") if has_namenode else None
 hadoop_conf_dir = conf_select.get_hadoop_conf_dir() if has_namenode else None
+
+local_component_list = default("/localComponents", [])
+has_hdfs_client_on_node = 'HDFS_CLIENT' in local_component_list
 
 import functools
 #create partial functions with common arguments for every HdfsResource call

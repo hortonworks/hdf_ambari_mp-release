@@ -86,6 +86,28 @@ class NIFI100ServiceAdvisor(service_advisor.ServiceAdvisor):
                 nifiAmbariSSLConfig = 'SSL' if services["configurations"]["nifi-ambari-ssl-config"]["properties"]["nifi.node.ssl.isenabled"] == 'true' else 'NONE'
                 putNiFiRangerPluginProperty("nifi.authentication",nifiAmbariSSLConfig)
 
+        # Recommend Ranger supported service's audit properties
+        ranger_audit_dict = [
+            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.solr', 'target_configname': 'xasecure.audit.destination.solr'},
+            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs', 'target_configname': 'xasecure.audit.destination.hdfs'},
+            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs.dir', 'target_configname': 'xasecure.audit.destination.hdfs.dir'},
+            {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.urls', 'target_configname': 'xasecure.audit.destination.solr.urls'},
+            {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.zookeepers', 'target_configname': 'xasecure.audit.destination.solr.zookeepers'}
+        ]
+
+        for item in ranger_audit_dict:
+            if item['filename'] in services['configurations'] and item['configname'] in services['configurations'][item['filename']]['properties']:
+                if item['filename'] in configurations and item['configname'] in configurations[item['filename']]['properties']:
+                    rangerAuditProperty = configurations[item['filename']]['properties'][item['configname']]
+                else:
+                    rangerAuditProperty = services['configurations'][item['filename']]['properties'][item['configname']]
+                putNifiRangerAuditProperty = self.putProperty(configurations, "ranger-nifi-audit", services)
+                putNifiRangerAuditProperty(item['target_configname'], rangerAuditProperty)
+
+        if 'ranger-admin-site' in services['configurations'] and 'ranger.plugins.nifi.serviceuser' in services['configurations']['ranger-admin-site']['properties']:
+            nifi_user = services['configurations']['nifi-env']['properties']['nifi_user']
+            putRangerAdminSiteProperty = self.putProperty(configurations, "ranger-admin-site", services)
+            putRangerAdminSiteProperty("ranger.plugins.nifi.serviceuser", nifi_user)
 
     def validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method):
         if siteName == 'nifi-ambari-ssl-config' or siteName == 'nifi-ambari-config':
