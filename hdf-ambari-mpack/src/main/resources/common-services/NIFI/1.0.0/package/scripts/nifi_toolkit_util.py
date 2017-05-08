@@ -161,8 +161,8 @@ def get_config_by_version(config_path,config_name,version):
   return {}
 
 def convert_properties_to_dict(prop_file):
+  dict = {}
   if sudo.path_isfile(prop_file):
-    dict = {}
     lines = sudo.read_file(prop_file).split('\n')
     for line in lines:
       props = line.rstrip().split('=')
@@ -170,12 +170,11 @@ def convert_properties_to_dict(prop_file):
         dict[props[0]] = props[1]
       elif len(props) == 1:
         dict[props[0]] = ''
-
   return dict
 
 def populate_ssl_properties(old_prop,new_prop,params):
 
-  if len(old_prop) > 0:
+  if old_prop and len(old_prop) > 0:
 
     newKeyPasswd = new_prop['nifi.security.keyPasswd'].replace('{{nifi_keyPasswd}}',params.nifi_keyPasswd)
     newKeystorePasswd = new_prop['nifi.security.keystorePasswd'].replace('{{nifi_keystorePasswd}}',params.nifi_keystorePasswd)
