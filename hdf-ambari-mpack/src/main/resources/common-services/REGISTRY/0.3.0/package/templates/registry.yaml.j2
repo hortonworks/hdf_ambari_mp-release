@@ -42,7 +42,7 @@ storageProviderConfiguration:
       dataSource.password: "{{registry_storage_connector_password}}"
       dataSource.url: "{{registry_storage_connector_connectorURI}}"
       dataSource.user: "{{registry_storage_connector_user}}"
-      dataSourceClassName: com.mysql.jdbc.jdbc2.optional.MysqlDataSource
+      dataSourceClassName: "{{registry_storage_java_class}}"
     db.type: "{{registry_storage_type}}"
     queryTimeoutInSecs: {{registry_storage_query_timeout}}
   providerClass: com.hortonworks.registries.storage.impl.jdbc.JdbcStorageManager

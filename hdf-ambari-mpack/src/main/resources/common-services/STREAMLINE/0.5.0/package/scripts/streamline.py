@@ -92,7 +92,8 @@ def streamline(env, upgrade_type=None):
       Link(params.streamline_managed_log_dir,
            to=params.streamline_log_dir)
 
-    download_database_connector_if_needed()
+    if params.streamline_storage_type == "mysql":
+        download_database_connector_if_needed()
 
 
 def ensure_base_directories():

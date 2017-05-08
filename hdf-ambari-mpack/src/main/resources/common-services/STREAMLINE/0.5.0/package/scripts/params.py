@@ -134,6 +134,11 @@ streamline_storage_connector_connectorURI = config['configurations']['streamline
 streamline_storage_connector_user = config['configurations']['streamline-common']['streamline.storage.connector.user']
 streamline_storage_connector_password = config['configurations']['streamline-common']['streamline.storage.connector.password']
 streamline_storage_query_timeout = config['configurations']['streamline-common']['streamline.storage.query.timeout']
+streamline_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+
+if streamline_storage_type == "postgresql":
+  streamline_storage_java_class = "org.postgresql.ds.PGSimpleDataSource"
+
 
 streamline_port = config['configurations']['streamline-common']['port']
 streamline_admin_port = config['configurations']['streamline-common']['adminPort']
