@@ -326,6 +326,11 @@
       "name": "tls_toolkit_san",
       "description": "Support subject alternative name flag",
       "min_version": "3.0.0.0"
+    },
+    {
+      "name": "admin_toolkit_support",
+      "description": "Supports the nifi admin toolkit",
+      "min_version": "3.0.0.0"
     }
   ]
 }

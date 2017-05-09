@@ -115,7 +115,7 @@ class Master(Script):
 
     #write out boostrap.conf
     bootstrap_content=InlineTemplate(params.nifi_boostrap_content)
-    File(format("{params.nifi_config_dir}/bootstrap.conf"), content=bootstrap_content, owner=params.nifi_user, group=params.nifi_group, mode=0600)
+    File(format("{params.nifi_bootstrap_file}"), content=bootstrap_content, owner=params.nifi_user, group=params.nifi_group, mode=0600)
 
     #write out logback.xml
     logback_content=InlineTemplate(params.nifi_node_logback_content)

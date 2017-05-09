@@ -21,6 +21,8 @@ limitations under the License.
 import os
 import urllib2
 import httplib
+import nifi_toolkit_util
+from resource_management.core import shell
 
 from resource_management.core.logger import Logger
 from resource_management.libraries.functions.format import format
@@ -29,24 +31,31 @@ from resource_management.libraries.script.script import Script
 from ambari_commons.inet_utils import openurl
 from ambari_commons.exceptions import TimeoutError
 from resource_management.core.exceptions import Fail
+from resource_management.core.resources import File
 from resource_management.libraries.functions.decorator import retry
 
 class NifiServiceCheck(Script):
   def service_check(self, env):
     import params
     Logger.info("Running Nifi service check")
+    urls = []
+
     for nifi_master_host in params.nifi_master_hosts:
-      url = ""
       if params.nifi_ssl_enabled:
-        url = "https://{0}:{1}/nifi".format(nifi_master_host, params.nifi_node_ssl_port)
+        urls.append("https://{0}:{1}".format(nifi_master_host, params.nifi_node_ssl_port))
       else:
-        url = "http://{0}:{1}/nifi".format(nifi_master_host, params.nifi_node_port)
-      Logger.info("Checking Nifi portal {0} status".format(url))
-      NifiServiceCheck.check_nifi_portal(url)
+        urls.append("http://{0}:{1}".format(nifi_master_host, params.nifi_node_port))
+
+    if params.stack_support_admin_toolkit:
+      NifiServiceCheck.check_nifi_portal_with_toolkit(urls,params.jdk64_home,params.nifi_install_dir,params.nifi_bootstrap_file)
+    else:
+      for url in urls:
+        Logger.info("Checking Nifi portal {0} status".format(url))
+        NifiServiceCheck.check_nifi_portal_with_python(url + "/nifi")
 
   @staticmethod
   @retry(times=30, sleep_time=5, max_sleep_time=20, backoff_factor=2, err_class=Fail)
-  def check_nifi_portal(url):
+  def check_nifi_portal_with_python(url):
     try:
       request = urllib2.Request(url)
       result = openurl(request, timeout=20)
@@ -70,6 +79,21 @@ class NifiServiceCheck(Script):
       raise Fail("Error connecting to {0}. Reason - Not Reachable".format(url))
     except TimeoutError:
       raise Fail("Error connecting to {0}. Reason - Timeout".format(url))
+
+  @staticmethod
+  @retry(times=30, sleep_time=5, max_sleep_time=20, backoff_factor=2, err_class=Fail)
+  def check_nifi_portal_with_toolkit(urls,jdk64_home,nifi_dir,nifi_bootstrap):
+
+    node_manager_script = nifi_toolkit_util.get_toolkit_script('node-manager.sh')
+    File(node_manager_script, mode=0755)
+    command =  'ambari-sudo.sh JAVA_HOME='+jdk64_home+' '+ node_manager_script + ' -d ' + nifi_dir +' -b ' + nifi_bootstrap +' -o status -u "' + ','.join(urls) + '"'
+    code, out = shell.call(command,quiet=True,logoutput=False)
+
+    if code > 0:
+      raise Fail("Call to admin-toolkit encountered error: {0}".format(out))
+    else:
+      if out.find('did not complete due to exception') > -1:
+        raise Fail("Error connecting to one or more nifi nodes: {0}".format(out))
 
 if __name__ == "__main__":
   NifiServiceCheck().execute()

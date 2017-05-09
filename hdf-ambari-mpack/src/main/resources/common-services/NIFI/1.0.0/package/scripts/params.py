@@ -92,6 +92,9 @@ nifi_config_dir = nifi_config_dir.replace('{nifi_install_dir}',nifi_install_dir)
 master_configs = config['clusterHostInfo']
 nifi_master_hosts = master_configs['nifi_master_hosts']
 
+#nifi bootstrap file location
+nifi_bootstrap_file = nifi_config_dir + '/bootstrap.conf'
+
 # detect if running in single (sandbox) box
 nifi_num_nodes = len(master_configs['nifi_master_hosts'])
 #if nifi_num_nodes > 1:
@@ -287,6 +290,7 @@ smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executable_search_paths', None))
 stack_support_encrypt_config = check_stack_feature('nifi_encrypt_config', version_for_stack_feature_checks)
 stack_support_toolkit_update = check_stack_feature('toolkit_config_update', version_for_stack_feature_checks)
+stack_support_admin_toolkit = check_stack_feature('admin_toolkit_support', version_for_stack_feature_checks)
 
 if security_enabled:
   _hostname_lowercase = nifi_host_name.lower()
