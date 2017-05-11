@@ -110,10 +110,14 @@ class NIFI100ServiceAdvisor(service_advisor.ServiceAdvisor):
             putRangerAdminSiteProperty("ranger.plugins.nifi.serviceuser", nifi_user)
 
     def validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method):
-        if siteName == 'nifi-ambari-ssl-config' or siteName == 'nifi-ambari-config':
-            return method(self.getSiteProperties(configurations, siteName), None, configurations, services, hosts)
+        properties = self.getSiteProperties(configurations, siteName)
+        if properties:
+            if siteName == 'nifi-ambari-ssl-config' or siteName == 'nifi-ambari-config':
+                return method(properties, None, configurations, services, hosts)
+            else:
+                return super(NIFI100ServiceAdvisor, self).validateConfigurationsForSite(configurations, recommendedDefaults, services, hosts, siteName, method)
         else:
-            return super(NIFI100ServiceAdvisor, self).validateConfigurationsForSite(configurations, recommendedDefaults, services, hosts, siteName, method)
+            return []
 
 
     def validateNiFiSslProperties(self, properties, recommendedDefaults, configurations, services, hosts):
