@@ -121,7 +121,20 @@
             </execute-stage>
         </group>
 
-        <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
+        <!-- After processing this group, the conf selector will be updated to use the appropriate utility for the stack -->
+        <group xsi:type="cluster" name="Upgrade Cluster Configs" title="Upgrade Cluster Configs">
+            <direction>UPGRADE</direction>
+            <skippable>true</skippable>
+
+            <!--Cluster Dependent Changes-->
+            <execute-stage title="Apply cluster specific configurations">
+                <task xsi:type="configure" id="hdf_3_0_0_0_update_cluster_env_configs"/>
+            </execute-stage>
+
+        </group>
+
+        <!-- After processing this group, update NiFi Service configurations -->
+        <group xsi:type="cluster" name="Upgrade NIFI service configs" title="Upgrade NIFI service configs">
             <direction>UPGRADE</direction>
             <skippable>true</skippable>
             <!-- NIFI -->
@@ -132,21 +145,16 @@
                 <task xsi:type="configure" id="hdf_2_1_0_0_add_nifi_ambari_config_configs"/>
             </execute-stage>
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
+                <task xsi:type="configure" id="hdf_3_0_0_0_update_login_identity_providers_configs"/>
+            </execute-stage>
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
+                <task xsi:type="configure" id="hdf_3_0_0_0_update_nifi_node_logback_configs"/>
+            </execute-stage>
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
                 <task xsi:type="manual">
-                    <message>Please pause the upgrade, update password property "nifi.security.encrypt.configuration.password" and then resume the upgrade.</message>
+                    <message>Please pause the upgrade, update password property "nifi.security.encrypt.configuration.password", and confirm settings in nifi-node-logback-env and nifi-login-identity-providers-env properties. Then resume the upgrade.</message>
                 </task>
             </execute-stage>
-        </group>
-
-        <group xsi:type="cluster" name="Upgrade Cluster Configs" title="Upgrade Cluster Configs">
-            <direction>UPGRADE</direction>
-            <skippable>true</skippable>
-
-            <!--Cluster Dependent Changes-->
-            <execute-stage title="Apply cluster specific configurations">
-                <task xsi:type="configure" id="hdf_3_0_0_0_update_cluster_env_configs"/>
-            </execute-stage>
-
         </group>
 
         <!--

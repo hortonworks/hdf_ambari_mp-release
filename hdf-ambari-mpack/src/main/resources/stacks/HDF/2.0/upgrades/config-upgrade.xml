@@ -14,6 +14,24 @@
                         <type>nifi-ambari-config</type>
                         <set key="nifi.security.encrypt.configuration.password" value=""/>
                     </definition>
+
+                    <!-- Update login identity providers -->
+                    <definition xsi:type="configure" id="hdf_3_0_0_0_update_login_identity_providers_configs">
+                        <type>nifi-login-identity-providers-env</type>
+                        <replace key="content" find="&lt;class&gt;org.apache.nifi.ldap.LdapProvider&lt;/class&gt;" replace-with="&lt;class&gt;org.apache.nifi.ldap.LdapProvider&lt;/class&gt;&lt;property name=&quot;Identity Strategy&quot;&gt;USE_DN&lt;/property&gt;"/>
+                    </definition>
+
+                    <!-- Update node logback configuration -->
+                    <definition xsi:type="configure" id="hdf_3_0_0_0_update_nifi_node_logback_configs">
+                        <type>nifi-node-logback-env</type>
+                        <replace key="content" find="&lt;rollingPolicy class=&quot;ch.qos.logback.core.rolling.TimeBasedRollingPolicy&quot;&gt;" replace-with="&lt;rollingPolicy class=&quot;ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy&quot;&gt;"/>
+                        <replace key="content" find="&lt;timeBasedFileNamingAndTriggeringPolicy class=&quot;ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP&quot;&gt;" replace-with=""/>
+                        <replace key="content" find="&lt;/timeBasedFileNamingAndTriggeringPolicy&gt;" replace-with=""/>
+                        <regex-replace key="content" find="&lt;immediateFlush&gt;(\w+)&lt;/immediateFlush&gt;" replace-with=""/>
+                        <replace key="content" find="&lt;encoder class=&quot;ch.qos.logback.classic.encoder.PatternLayoutEncoder&quot;&gt;" replace-with="&lt;immediateFlush&gt;true&lt;/immediateFlush&gt;&lt;encoder class=&quot;ch.qos.logback.classic.encoder.PatternLayoutEncoder&quot;&gt;"/>
+                        <replace key="content" find="&lt;/configuration&gt;" replace-with="&lt;logger name=&quot;org.apache.calcite.runtime.CalciteException&quot; level=&quot;OFF&quot;/&gt;&lt;/configuration&gt;"/>
+                    </definition>
+
                 </changes>
             </component>
         </service>
