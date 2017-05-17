@@ -31,6 +31,13 @@
           <cardinality>1+</cardinality>
           <versionAdvertised>true</versionAdvertised>
           <timelineAppId>STREAMLINE</timelineAppId>
+          <dependency>
+              <name>STORM</name>
+              <scope>host</scope>
+              <auto-deploy>
+                <enabled>true</enabled>
+              </auto-deploy>
+            </dependency>
           <commandScript>
             <script>scripts/streamline_server.py</script>
             <scriptType>PYTHON</scriptType>

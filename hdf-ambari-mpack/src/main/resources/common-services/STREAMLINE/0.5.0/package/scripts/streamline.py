@@ -29,8 +29,11 @@ from resource_management.libraries.functions import format
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions import Direction
-
+from resource_management.libraries.functions.get_user_call_output import get_user_call_output
+from resource_management.core.exceptions import ExecutionFailed
 from resource_management.core.logger import Logger
+
+import urllib2, time, json
 
 def streamline(env, upgrade_type=None):
     import params
@@ -92,8 +95,8 @@ def streamline(env, upgrade_type=None):
       Link(params.streamline_managed_log_dir,
            to=params.streamline_log_dir)
 
-    if params.streamline_storage_type == "mysql":
-        download_database_connector_if_needed()
+      
+    download_database_connector_if_needed()
 
 
 def ensure_base_directories():
@@ -151,3 +154,47 @@ def download_database_connector_if_needed():
 
       File(target_jar_with_directory, owner="root",
            group=params.user_group)
+
+
+def wait_until_server_starts():
+    import params
+    streamline_api = format("http://{params.hostname}:{params.streamline_port}/api/v1/config/streamline")
+    Logger.info(streamline_api)
+    max_retries = 6
+    success = False
+    curl_connection_timeout = '5'
+    for num in range(0, max_retries):
+      try:
+        Logger.info(format("Making http requests to {streamline_api}"))
+
+        if params.security_enabled:
+          get_app_info_cmd = "curl --negotiate -u : -ks --location-trusted --connect-timeout " + curl_connection_timeout + " " + streamline_api
+          return_code, stdout, _ = get_user_call_output(get_app_info_cmd, user=params.smokeuser, path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',)
+          try:
+            json_response = json.loads(stdout)
+            success = True
+            Logger.info(format("Successfully made a API request to SAM. {stdout}"))
+            break
+          except Exception as e:
+            Logger.error(format("Response from SAM API was not a valid JSON. Response: {stdout}"))
+        else:
+          response = urllib2.urlopen(streamline_api)
+          api_response = response.read()
+          response_code = response.getcode()
+          Logger.info(format("SAM response http status {response}"))
+          if response.getcode() != 200:
+            Logger.error(format("Failed to fetch response for {streamline_api}"))
+            show_logs(params.streamline_log_dir, params.streamline_user)
+            raise
+          else:
+            success = True
+            Logger.info(format("Successfully made a API request to SAM. {api_response}"))
+            break
+      except (urllib2.URLError, ExecutionFailed) as e:
+        Logger.error(format("Failed to make API request to SAM server at {streamline_api},retrying.. {num} out of {max_retries}"))
+        time.sleep(num * 5) #exponential back-off
+        continue
+
+    if success != True:
+      Logger.error(format("Failed to make API request to  SAM server at {streamline_api} after {max_retries}"))
+      raise

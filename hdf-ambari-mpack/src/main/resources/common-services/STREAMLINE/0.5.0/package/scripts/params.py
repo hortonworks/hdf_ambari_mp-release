@@ -60,9 +60,6 @@ stack_version_formatted = format_stack_version(stack_version_unformatted)
 upgrade_direction = default("/commandParams/upgrade_direction", None)
 security_enabled = config['configurations']['cluster-env']['security_enabled']
 kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executable_search_paths', None))
-smokeuser = config['configurations']['cluster-env']['smokeuser']
-smokeuser_principal = config['configurations']['cluster-env']['smokeuser_principal_name']
-smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 
 # get the correct version to use for checking stack features
 version_for_stack_feature_checks = get_stack_feature_version(config)
@@ -99,6 +96,9 @@ streamline_env_sh_template = config['configurations']['streamline-env']['content
 streamline_jaas_conf_template = default("/configurations/streamline_jaas_conf/content", None)
 
 if security_enabled:
+  smokeuser = config['configurations']['cluster-env']['smokeuser']
+  smokeuser_principal = config['configurations']['cluster-env']['smokeuser_principal_name']
+  smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
   _hostname_lowercase = config['hostname'].lower()
   _streamline_principal_name = config['configurations']['streamline-env']['streamline_principal_name']
   streamline_jaas_principal = _streamline_principal_name.replace('_HOST',_hostname_lowercase)
@@ -112,6 +112,12 @@ if security_enabled:
   streamline_servlet_kerberos_name_rules = config['configurations']['streamline-common']['kerberos.name.rules']
   streamline_servlet_token_validity = config['configurations']['streamline-common']['token.validity']
   streamline_kerberos_params = "-Djava.security.auth.login.config="+ conf_dir +"/streamline_jaas.conf"
+  streamline_authorizer_class = config['configurations']['streamline-common']['authorizer.class.name']
+  streamline_admin_principals = config['configurations']['streamline-common']['admin.principals'].replace("{{streamline_bare_principal}}", streamline_bare_principal)
+  streamline_kinit_cmd = config['configurations']['streamline-common']['kinit.cmd']
+  streamline_ticket_renew_window_factor = config['configurations']['streamline-common']['ticket.renew.window.factor']
+  streamline_ticket_renew_jitter = config['configurations']['streamline-common']['ticket.renew.jitter']
+  streamline_min_time_before_login = config['configurations']['streamline-common']['min.time.before.login']
 else:
   streamline_kerberos_params = ''
 

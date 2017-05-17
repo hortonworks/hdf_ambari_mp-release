@@ -36,6 +36,14 @@ class ServiceCheck(Script):
     Logger.info(streamline_api)
     max_retries = 3
     success = False
+
+    if params.security_enabled:
+      kinit_cmd = format("{kinit_path_local} -kt {smoke_user_keytab} {smokeuser_principal};")
+      return_code, out = shell.checked_call(kinit_cmd,
+                                          path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',
+                                          user=params.smokeuser,
+                                          )
+    
     for num in range(0, max_retries):
       try:
         Logger.info(format("Making http requests to {streamline_api}"))

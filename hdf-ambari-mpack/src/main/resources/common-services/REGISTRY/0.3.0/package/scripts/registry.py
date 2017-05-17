@@ -76,8 +76,7 @@ def registry(env, upgrade_type=None):
       Link(params.registry_managed_log_dir,
            to=params.registry_log_dir)
 
-    if 'mysql' == params.registry_storage_type:
-        download_database_connector_if_needed()
+    download_database_connector_if_needed()
 
 def ensure_base_directories():
   import params

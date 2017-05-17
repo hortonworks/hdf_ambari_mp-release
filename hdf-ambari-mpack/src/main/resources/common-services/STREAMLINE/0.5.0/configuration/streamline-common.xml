@@ -149,7 +149,7 @@
   </property>
   <property required-input="true">
     <name>registry.url</name>
-    <value>http://localhost:7788</value>
+    <value>http://localhost:7788/api/v1</value>
     <description> Provide URL for Schema Registry </description>
   </property>
 </configuration>

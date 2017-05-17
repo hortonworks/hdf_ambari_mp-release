@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-from resource_management import Script
+from resource_management import *
 from resource_management.core.logger import Logger
 from resource_management.core.resources.system import Execute, File, Directory
 from resource_management.libraries.functions import conf_select
@@ -31,7 +31,7 @@ from resource_management.libraries.functions.stack_features import check_stack_f
 from resource_management.libraries.functions.show_logs import show_logs
 import os, time
 from streamline import ensure_base_directories
-from streamline import streamline
+from streamline import streamline, wait_until_server_starts
 
 
 class StreamlineServer(Script):
@@ -85,7 +85,12 @@ class StreamlineServer(Script):
 
     if not os.path.isfile(params.bootstrap_file):
       try:
-        time.sleep(20)
+        if params.security_enabled:
+          kinit_cmd = format("{kinit_path_local} -kt {params.streamline_keytab_path} {params.streamline_jaas_principal};")
+          return_code, out = shell.checked_call(kinit_cmd,
+                                                path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',
+                                                user="root")
+        wait_until_server_starts()
         Execute(params.bootstrap_run_cmd,
                 user="root")
         File(params.bootstrap_file,

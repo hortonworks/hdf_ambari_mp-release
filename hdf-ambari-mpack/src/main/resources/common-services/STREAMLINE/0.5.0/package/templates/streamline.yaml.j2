@@ -52,6 +52,21 @@ storageProviderConfiguration:
     queryTimeoutInSecs: {{streamline_storage_query_timeout}}
   providerClass: com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager
 
+{% if security_enabled %}
+authorizerConfiguration:
+  className: {{streamline_authorizer_class}}
+  adminPrincipals:
+    - {{streamline_admin_principals}}
+
+loginConfiguration:
+  className: "com.hortonworks.registries.auth.KerberosLogin"
+  params:
+    kinit.cmd: {{streamline_kinit_cmd}}
+    ticket.renew.window.factor: {{streamline_ticket_renew_window_factor}}
+    ticket.renew.jitter: {{streamline_ticket_renew_jitter}}
+    min.time.before.relogin: {{streamline_min_time_before_login}}
+{%endif%}
+
 server:
   rootPath: '/api/*'
   applicationConnectors:
