@@ -55,8 +55,7 @@ storageProviderConfiguration:
 {% if security_enabled %}
 authorizerConfiguration:
   className: {{streamline_authorizer_class}}
-  adminPrincipals:
-    - {{streamline_admin_principals}}
+  adminPrincipals: {{streamline_admin_principals}}    
 
 loginConfiguration:
   className: "com.hortonworks.registries.auth.KerberosLogin"

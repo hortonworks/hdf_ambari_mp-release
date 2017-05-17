@@ -89,7 +89,7 @@ class StreamlineServer(Script):
           kinit_cmd = format("{kinit_path_local} -kt {params.streamline_keytab_path} {params.streamline_jaas_principal};")
           return_code, out = shell.checked_call(kinit_cmd,
                                                 path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',
-                                                user="root")
+                                                user=params.streamline_user)
         wait_until_server_starts()
         Execute(params.bootstrap_run_cmd,
                 user="root")
