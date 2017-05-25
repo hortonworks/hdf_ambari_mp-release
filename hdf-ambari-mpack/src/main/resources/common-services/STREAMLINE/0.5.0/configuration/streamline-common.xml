@@ -144,7 +144,7 @@
   </property>
   <property required-input="true">
     <name>streamline.dashboard.url</name>
-    <value>http://localhost:9090</value>
+    <value>http://localhost:9088</value>
     <description> Provide URL for superset dashboard </description>
   </property>
   <property required-input="true">
