@@ -302,11 +302,18 @@ kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executab
 stack_support_encrypt_config = check_stack_feature('nifi_encrypt_config', version_for_stack_feature_checks)
 stack_support_toolkit_update = check_stack_feature('toolkit_config_update', version_for_stack_feature_checks)
 stack_support_admin_toolkit = check_stack_feature('admin_toolkit_support', version_for_stack_feature_checks)
+stack_support_nifi_jaas = check_stack_feature('nifi_jaas_conf_create', version_for_stack_feature_checks)
 
 if security_enabled:
   _hostname_lowercase = nifi_host_name.lower()
   nifi_properties['nifi.kerberos.service.principal'] = nifi_properties['nifi.kerberos.service.principal'].replace('_HOST',_hostname_lowercase)
   nifi_properties['nifi.kerberos.spnego.principal'] = nifi_properties['nifi.kerberos.spnego.principal'].replace('_HOST',_hostname_lowercase)
+
+  if stack_support_nifi_jaas:
+    nifi_service_principal = nifi_properties['nifi.kerberos.service.principal']
+    nifi_service_keytab = nifi_properties['nifi.kerberos.service.keytab.location']
+    nifi_jaas_conf_template = config['configurations']['nifi-jaas-conf']['content']
+    nifi_jaas_conf= nifi_config_dir +"/nifi_jaas.conf"
 
 # ranger host
 # E.g., 2.3

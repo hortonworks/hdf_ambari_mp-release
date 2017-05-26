@@ -29,6 +29,7 @@ from resource_management.libraries.functions import stack_select
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.constants import Direction
+from resource_management.libraries.resources.template_config import TemplateConfig
 from resource_management.core.exceptions import Fail
 
 reload(sys)
@@ -137,6 +138,10 @@ class Master(Script):
     #write out bootstrap-notification-services.xml
     boostrap_notification_content=InlineTemplate(params.nifi_boostrap_notification_content)
     File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
+
+    #if security is enabled for kerberos create the nifi_jaas.conf file
+    if params.security_enabled and params.stack_support_nifi_jaas:
+      File(params.nifi_jaas_conf, content=InlineTemplate(params.nifi_jaas_conf_template), owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
     if params.stack_support_encrypt_config:
       self.encrypt_sensitive_properties(config_version_file,params.nifi_ambari_config_version,

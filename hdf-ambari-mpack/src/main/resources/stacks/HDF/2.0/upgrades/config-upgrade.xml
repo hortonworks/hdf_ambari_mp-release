@@ -32,6 +32,14 @@
                         <replace key="content" find="&lt;/configuration&gt;" replace-with="&lt;logger name=&quot;org.apache.calcite.runtime.CalciteException&quot; level=&quot;OFF&quot;/&gt;&lt;/configuration&gt;"/>
                     </definition>
 
+                    <!-- Update bootstrap config -->
+                    <definition xsi:type="configure" id="hdf_3_0_0_0_update_nifi_bootstrap_env_configs">
+                        <type>nifi-bootstrap-env</type>
+                        <insert key="content" value="{% if security_enabled %}" insert-type="append" newline-before="true" newline-after="true"/>
+                        <insert key="content" value="java.arg.0=-Djava.security.auth.login.config={{nifi_jaas_conf}}" insert-type="append" newline-after="true"/>
+                        <insert key="content" value="{% endif %}" insert-type="append" newline-after="true"/>
+                    </definition>
+
                 </changes>
             </component>
         </service>

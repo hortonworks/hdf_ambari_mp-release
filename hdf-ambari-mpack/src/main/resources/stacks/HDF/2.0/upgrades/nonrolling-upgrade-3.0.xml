@@ -151,8 +151,11 @@
                 <task xsi:type="configure" id="hdf_3_0_0_0_update_nifi_node_logback_configs"/>
             </execute-stage>
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
+                <task xsi:type="configure" id="hdf_3_0_0_0_update_nifi_bootstrap_env_configs"/>
+            </execute-stage>
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
                 <task xsi:type="manual">
-                    <message>Please pause the upgrade, update password property "nifi.security.encrypt.configuration.password", and confirm settings in nifi-node-logback-env and nifi-login-identity-providers-env properties. Then resume the upgrade.</message>
+                    <message>Please pause the upgrade, update password property "nifi.security.encrypt.configuration.password", and confirm settings in nifi-bootstrap-env, nifi-node-logback-env, and nifi-login-identity-providers-env properties. In nifi-bootstrap-env ensure that the new system property "java.arg.0=-Djava.security.auth.login.config=" has a unique arg value. Then resume the upgrade.</message>
                 </task>
             </execute-stage>
         </group>
