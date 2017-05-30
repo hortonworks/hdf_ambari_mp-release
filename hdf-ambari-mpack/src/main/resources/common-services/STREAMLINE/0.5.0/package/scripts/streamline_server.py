@@ -92,7 +92,7 @@ class StreamlineServer(Script):
                                                 user=params.streamline_user)
         wait_until_server_starts()
         Execute(params.bootstrap_run_cmd,
-                user="root")
+                user=params.streamline_user)
         File(params.bootstrap_file,
              owner=params.streamline_user,
              group=params.user_group,
