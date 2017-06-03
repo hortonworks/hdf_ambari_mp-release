@@ -74,6 +74,7 @@ def streamline(env, upgrade_type=None):
          mode=0644,
          content=Template("streamline.conf.j2")
     )
+
     
     File(format("{conf_dir}/streamline.yaml"),
          content=Template("streamline.yaml.j2"),

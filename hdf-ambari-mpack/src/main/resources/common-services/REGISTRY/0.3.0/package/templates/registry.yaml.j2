@@ -32,9 +32,12 @@ modules:
 
 # Filesystem based jar storage
 fileStorageConfiguration:
-  className: "com.hortonworks.registries.common.util.LocalFileSystemStorage"
+  className: {{jar_storage_class}}
   properties:
     directory: {{jar_storage}}
+  {% if jar_remote_storage_enabled %}
+  fsUrl: {{jar_storage_hdfs_url}}
+  {%endif%}
 
 storageProviderConfiguration: 
   properties: 
@@ -73,18 +76,4 @@ servletFilters:
 {%endif%}
 
 logging:
-    # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
-  level: INFO
-  # Logger-specific levels.
-  loggers:
-    # Sets the level for 'com.example.app' to DEBUG.
-    com.hortonworks.registry: INFO
-  appenders:
-    - type: file
-      threshold: DEBUG
-      logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
-      currentLogFilename: {{registry_log_dir}}/registry.log
-      archivedLogFilenamePattern: {{registry_log_dir}}/registry-%d{yyyy-MM-dd}-%i.log.gz
-      archivedFileCount: 7
-      timeZone: UTC
-      maxFileSize: 50MB
+  {{registry_log_template}}

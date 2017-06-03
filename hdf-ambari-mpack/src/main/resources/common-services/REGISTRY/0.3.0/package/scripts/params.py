@@ -106,6 +106,14 @@ if security_enabled:
   
   
 
+registry_log_dir = config['configurations']['registry-env']['registry_log_dir']
+registry_log_maxbackupindex = config['configurations']['registry-log4j']['registry_log_maxbackupindex']
+registry_log_maxfilesize = config['configurations']['registry-log4j']['registry_log_maxfilesize']
+registry_log_template = config['configurations']['registry-log4j']['content']
+registry_log_template = registry_log_template.replace('{{registry_log_dir}}', registry_log_dir)
+registry_log_template = registry_log_template.replace('{{registry_log_maxbackupindex}}', registry_log_maxbackupindex)
+registry_log_template = registry_log_template.replace('{{registry_log_maxfilesize}}', ("%sMB" % registry_log_maxfilesize))
+
 # flatten registry configs
 jar_storage = config['configurations']['registry-common']['jar.storage']
 registry_storage_type = config['configurations']['registry-common']['registry.storage.type']
@@ -114,6 +122,18 @@ registry_storage_connector_user = config['configurations']['registry-common']['r
 registry_storage_connector_password = config['configurations']['registry-common']['registry.storage.connector.password']
 registry_storage_query_timeout = config['configurations']['registry-common']['registry.storage.query.timeout']
 registry_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+
+jar_storage_type = config['configurations']['registry-common']['jar.storage.type']
+jar_storage_hdfs_url = config['configurations']['registry-common']['jar.storage.hdfs.url']
+jar_storage = config['configurations']['registry-common']['jar.storage']
+jar_storage_class = "com.hortonworks.registries.common.util.LocalFileSystemStorage"
+jar_remote_storage_enabled  = False
+
+
+if jar_storage_type != None and jar_storage_type == "hdfs":
+  jar_storage_class = "com.hortonworks.registries.common.util.HdfsFileStorage"
+  jar_remote_storage_enabled = True
+
 
 if registry_storage_type == "postgresql":
   registry_storage_java_class = "org.postgresql.ds.PGSimpleDataSource"

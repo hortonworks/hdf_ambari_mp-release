@@ -59,6 +59,14 @@
                     "subsection-name": "subsection-streamline-row1-col1"
                 },
                 {
+                    "config": "streamline-common/jar.storage.type",
+                    "subsection-name": "subsection-streamline-row1-col1"
+                },
+                {
+                    "config": "streamline-common/jar.storage.hdfs.url",
+                    "subsection-name": "subsection-streamline-row1-col1"
+                },
+                {
                     "config": "streamline-common/jar.storage",
                     "subsection-name": "subsection-streamline-row1-col1"
                 },
@@ -105,6 +113,18 @@
             },
             {
                 "config": "streamline-common/adminPort",
+                "widget": {
+                    "type": "text-field"
+                }
+            },
+            {
+                "config": "streamline-common/jar.storage.type",
+                "widget": {
+                    "type": "combo"
+                }
+            },
+            {
+                "config": "streamline-common/jar.storage.hdfs.url",
                 "widget": {
                     "type": "text-field"
                 }

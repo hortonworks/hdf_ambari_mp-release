@@ -59,6 +59,14 @@
                     "subsection-name": "subsection-registry-row1-col1"
                 },
                 {
+                    "config": "registry-common/jar.storage.type",
+                    "subsection-name": "subsection-registry-row1-col1"
+                },
+                {
+                    "config": "registry-common/jar.storage.hdfs.url",
+                    "subsection-name": "subsection-registry-row1-col1"
+                },
+                {
                     "config": "registry-common/jar.storage",
                     "subsection-name": "subsection-registry-row1-col1"
                 },
@@ -93,6 +101,18 @@
             },
             {
                 "config": "registry-common/adminPort",
+                "widget": {
+                    "type": "text-field"
+                }
+            },
+            {
+                "config": "registry-common/jar.storage.type",
+                "widget": {
+                    "type": "combo"
+                }
+            },
+            {
+                "config": "registry-common/jar.storage.hdfs.url",
                 "widget": {
                     "type": "text-field"
                 }

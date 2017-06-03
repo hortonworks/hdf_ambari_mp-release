@@ -36,6 +36,43 @@
       The admin port for the server.
     </description>
   </property>
+  <property require-input="true">
+    <name>jar.storage.type</name>
+    <display-name>Jar Storage Type</display-name>
+    <value>local</value>
+    <value-attributes>
+      <overridable>false</overridable>
+      <type>value-list</type>
+      <entries>
+        <entry>
+          <value>local</value>
+          <label>Local</label>
+        </entry>
+        <entry>
+          <value>hdfs</value>
+          <label>HDFS</label>
+        </entry>
+      </entries>
+    </value-attributes>
+    <description>Type of the jar storage. 
+      In HA mode, make sure you select HDFS as the jar storage.
+    </description>
+    <on-ambari-upgrade add="false"/>
+  </property>
+  <property>
+    <name>jar.storage.hdfs.url</name>
+    <display-name>Jar Storage HDFS URL</display-name>
+    <value>hdfs://localhost:9090</value>
+    <depends-on>
+      <property>
+        <type>streamline-common</type>
+        <name>jar.storage.type</name>
+      </property>
+    </depends-on>
+    <description>Required only if HDFS selected as jar.storage.type. It will
+    be ignored if "Local" storage is selected.</description>
+    <on-ambari-upgrade add="false"/>
+  </property>
   <property>
     <displayName>Jar Storage</displayName>
     <name>jar.storage</name>

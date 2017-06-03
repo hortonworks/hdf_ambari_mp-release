@@ -34,6 +34,7 @@ from resource_management.libraries.functions import conf_select
 from resource_management.libraries.functions import get_kinit_path
 from resource_management.libraries.functions.get_not_managed_resources import get_not_managed_resources
 from resource_management.libraries.functions.setup_ranger_plugin_xml import get_audit_configs
+from resource_management.core.source import InlineTemplate
 from resource_management.core.logger import Logger
 from utils import get_bare_principal
 import ambari_simplejson as json # simplejson is much faster comparing to Python 2.6 json module and has the same functions set
@@ -85,6 +86,14 @@ streamline_user_nproc_limit = default('/configurations/streamline-env/streamline
 
 streamline_user = config['configurations']['streamline-env']['streamline_user']
 streamline_log_dir = config['configurations']['streamline-env']['streamline_log_dir']
+streamline_log_maxbackupindex = config['configurations']['streamline-log4j']['streamline_log_maxbackupindex']
+streamline_log_maxfilesize = config['configurations']['streamline-log4j']['streamline_log_maxfilesize']
+streamline_log_template = config['configurations']['streamline-log4j']['content']
+streamline_log_template = streamline_log_template.replace('{{streamline_log_dir}}', streamline_log_dir)
+streamline_log_template = streamline_log_template.replace('{{streamline_log_maxbackupindex}}', streamline_log_maxbackupindex)
+streamline_log_template = streamline_log_template.replace('{{streamline_log_maxfilesize}}', ("%sMB" % streamline_log_maxfilesize))
+
+
 
 # This is hardcoded on the streamline bash process lifecycle on which we have no control over
 streamline_managed_pid_dir = "/var/run/streamline"
@@ -127,7 +136,18 @@ else:
 storm_client_home = config['configurations']['streamline-common']['storm.client.home']
 registry_url = config['configurations']['streamline-common']['registry.url']
 maven_repo_url = config['configurations']['streamline-common']['maven.repo.url']
+jar_storage_type = config['configurations']['streamline-common']['jar.storage.type']
+jar_storage_hdfs_url = config['configurations']['streamline-common']['jar.storage.hdfs.url']
 jar_storage = config['configurations']['streamline-common']['jar.storage']
+jar_storage_class = "com.hortonworks.streamline.common.util.LocalFileSystemStorage"
+jar_remote_storage_enabled  = False
+
+
+if jar_storage_type != None and jar_storage_type == "hdfs":
+  jar_storage_class = "com.hortonworks.streamline.common.util.HdfsFileStorage"
+  jar_remote_storage_enabled = True
+
+
 if 'topology.test.results.dir' in config['configurations']['streamline-common']:
   topology_test_results = config['configurations']['streamline-common']['topology.test.results.dir']
 else:

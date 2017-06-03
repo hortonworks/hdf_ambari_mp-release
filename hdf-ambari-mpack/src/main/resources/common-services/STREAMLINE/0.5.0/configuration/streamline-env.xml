@@ -51,9 +51,22 @@
     <on-ambari-upgrade add="true"/>
   </property>
   <property>
+    <name>streamline_principal_name</name>
+    <value>streamline</value>
+    <display-name>Streamline Principal Name</display-name>
+    <description/>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
     <name>streamline_user_nofile_limit</name>
     <value>65536</value>
     <description>Max open files limit setting for STREAMLINE user.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>streamline_user_nproc_limit</name>
+    <value>65536</value>
+    <description>Max number of processes limit setting for STREAMLINE user.</description>
     <on-ambari-upgrade add="true"/>
   </property>
   <property>
