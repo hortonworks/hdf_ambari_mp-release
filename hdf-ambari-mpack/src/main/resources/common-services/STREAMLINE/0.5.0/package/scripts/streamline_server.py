@@ -68,12 +68,6 @@ class StreamlineServer(Script):
                owner=params.streamline_user,
                group=params.user_group,
                mode=0644)
-          # this is hard-coded as we are not accepting
-          # the registry local-jars 
-          File("/tmp/schema-registry/local-jars",
-               owner=params.streamline_user,
-               group=params.user_group,
-               mode=0644)
         except:
           show_logs(params.streamline_log_dir, params.streamline_user)
           raise

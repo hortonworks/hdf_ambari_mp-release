@@ -60,6 +60,16 @@ def streamline(env, upgrade_type=None):
             mode=0755,
     )
 
+    # this is hard-coded as we are not accepting
+    # the registry local-jars
+    # should be removed from future releases
+    Directory("/tmp/schema-registry/local-jars",
+        owner=params.streamline_user,
+        group=params.user_group,
+        create_parents = True,
+        cd_access="a",
+        mode=0755)
+
     Directory([params.topology_test_results],
             owner=params.streamline_user,
             group=params.user_group,
