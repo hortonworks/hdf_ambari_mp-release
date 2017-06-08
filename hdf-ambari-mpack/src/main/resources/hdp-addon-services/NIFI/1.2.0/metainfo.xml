@@ -38,7 +38,7 @@
           <osFamily>redhat7,amazon2015,redhat6,suse11,suse12</osFamily>
           <packages>
             <package>
-              <name>nifi_3_0_0_0*</name>
+              <name>nifi_3_0_*</name>
             </package>
           </packages>
         </osSpecific>
@@ -46,7 +46,7 @@
           <osFamily>debian7,ubuntu12,ubuntu14,ubuntu16</osFamily>
           <packages>
             <package>
-              <name>nifi-3_0_0_0*</name>
+              <name>nifi-3_0_*</name>
             </package>
            </packages>
         </osSpecific>

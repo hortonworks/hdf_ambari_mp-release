@@ -32,7 +32,7 @@
           <osFamily>redhat7,amazon2015,redhat6,suse11,suse12</osFamily>
           <packages>
             <package>
-              <name>registry_3_0_0_0*</name>
+              <name>registry_3_0_*</name>
             </package>
           </packages>
         </osSpecific>
@@ -40,7 +40,7 @@
           <osFamily>debian7,ubuntu12,ubuntu14,ubuntu16</osFamily>
           <packages>
             <package>
-              <name>registry-3_0_0_0*</name>
+              <name>registry-3_0_*</name>
             </package>
           </packages>
         </osSpecific>
