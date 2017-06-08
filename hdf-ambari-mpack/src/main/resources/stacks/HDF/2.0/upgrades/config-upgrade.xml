@@ -38,6 +38,32 @@
                         <insert key="content" value="{% if security_enabled %}" insert-type="append" newline-before="true" newline-after="true"/>
                         <insert key="content" value="java.arg.0=-Djava.security.auth.login.config={{nifi_jaas_conf}}" insert-type="append" newline-after="true"/>
                         <insert key="content" value="{% endif %}" insert-type="append" newline-after="true"/>
+                        <insert key="content" value="java.arg.9999=-Djava.security.egd=file:/dev/urandom" insert-type="append" newline-after="true"/>
+                    </definition>
+
+                    <!-- Update state management -->
+                    <definition xsi:type="configure" id="hdf_3_0_0_0_update_nifi_state_management_env_configs">
+                    <type>nifi-state-management-env</type>
+                        <replace key="content" find="&lt;class&gt;org.apache.nifi.controller.state.providers.local.WriteAheadLocalStateProvider&lt;/class&gt;&#xA;        &lt;property name=&quot;Directory&quot;&gt;{{nifi_state_dir}}&lt;/property&gt;"
+                                 replace-with="&lt;class&gt;org.apache.nifi.controller.state.providers.local.WriteAheadLocalStateProvider&lt;/class&gt;&#xA;
+                                       &lt;property name=&quot;Directory&quot;&gt;{{nifi_state_dir}}&lt;/property&gt;&#xA;
+                                       &lt;property name=&quot;Always Sync&quot;&gt;false&lt;/property&gt;&#xA;
+                                       &lt;property name=&quot;Partitions&quot;&gt;16&lt;/property&gt;&#xA;
+                                       &lt;property name=&quot;Checkpoint Interval&quot;&gt;2 mins&lt;/property&gt;&#xA;            "/>
+                    </definition>
+
+                    <!-- Update bootstrap notification services -->
+                    <definition xsi:type="configure" id="hdf_3_0_0_0_update_nifi_bootstrap_notification_services_env_configs">
+                        <type>nifi-bootstrap-notification-services-env</type>
+                        <replace key="content" find="&lt;/services&gt;" replace-with="&#xA;
+                        &lt;!--&#xA;
+                        &lt;service&gt;&#xA;
+                        &lt;id&gt;http-notification&lt;/id&gt;&#xA;
+                        &lt;class&gt;org.apache.nifi.bootstrap.notification.http.HttpNotificationService&lt;/class&gt;&#xA;
+                        &lt;property name=&quot;URL&quot;&gt;&lt;/property&gt;&#xA;
+                        &lt;/service&gt;&#xA;
+                        --&gt;&#xA;
+                        &lt;/services&gt;"/>
                     </definition>
 
                 </changes>

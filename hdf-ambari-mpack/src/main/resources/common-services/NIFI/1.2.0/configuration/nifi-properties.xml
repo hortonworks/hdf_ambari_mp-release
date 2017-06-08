@@ -45,4 +45,81 @@
         <description>The number of archive files allowed. NiFi will delete the oldest archive files so that only N latest archives can be kept, if this property is specified.</description>
     </property>
 
+    <property>
+        <name>nifi.web.http.network.interface.default</name>
+        <value></value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description>The name of the network interface to which NiFi should bind for HTTP requests. </description>
+    </property>
+
+    <property>
+        <name>nifi.web.https.network.interface.default</name>
+        <value></value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description>The name of the network interface to which NiFi should bind for HTTPS requests. It is blank by default.</description>
+    </property>
+
+    <property>
+        <name>nifi.provenance.repository.debug.frequency</name>
+        <value>1_000_000</value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description>nifi.provenance.repository.debug.frequency
+            Controls the number of events processed between DEBUG statements documenting the performance metrics of the repository. This value is only used when DEBUG level statements are enabled in the log configuration.</description>
+    </property>
+    <property>
+        <name>nifi.provenance.repository.encryption.key.provider.implementation</name>
+        <value></value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description>This is the fully-qualified class name of the key provider. </description>
+    </property>
+    <property>
+        <name>nifi.provenance.repository.encryption.key.provider.location</name>
+        <value></value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description>The path to the key definition resource (empty for StaticKeyProvider, ./keys.nkp or similar path for FileBasedKeyProvider)</description>
+    </property>
+    <property>
+        <name>nifi.provenance.repository.encryption.key.id</name>
+        <value></value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description>The active key ID to use for encryption (e.g. Key1).</description>
+    </property>
+    <property>
+        <name>nifi.provenance.repository.encryption.key</name>
+        <value></value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description>The key to use for StaticKeyProvider</description>
+    </property>
+
+    <property>
+        <name>nifi.cluster.node.protocol.max.threads</name>
+        <value></value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description></description>
+    </property>
+
 </configuration>

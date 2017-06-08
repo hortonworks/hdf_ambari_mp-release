@@ -148,8 +148,14 @@
                 <task xsi:type="configure" id="hdf_3_0_0_0_update_nifi_bootstrap_env_configs"/>
             </execute-stage>
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
+                <task xsi:type="configure" id="hdf_3_0_0_0_update_nifi_state_management_env_configs"/>
+            </execute-stage>
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
+                <task xsi:type="configure" id="hdf_3_0_0_0_update_nifi_bootstrap_notification_services_env_configs"/>
+            </execute-stage>
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
                 <task xsi:type="manual">
-                    <message>Please pause the upgrade to confirm settings in nifi-bootstrap-env, nifi-node-logback-env properties, and nifi-login-identity-providers-env.  In nifi-bootstrap-env ensure that the new system property "java.arg.0=-Djava.security.auth.login.config=" has a unique arg value.</message>
+                    <message>Please pause the upgrade to confirm settings in nifi-bootstrap-env, nifi-bootstrap-notification-services-env, nifi-node-logback-env properties, nifi-state-management-env, and nifi-login-identity-providers-env.  In nifi-bootstrap-env ensure that the new system properties, "java.arg.0=-Djava.security.auth.login.config=" and "java.arg.9999=-Djava.security.egd=file:/dev/urandom", have unique arg values.</message>
                 </task>
             </execute-stage>
 
