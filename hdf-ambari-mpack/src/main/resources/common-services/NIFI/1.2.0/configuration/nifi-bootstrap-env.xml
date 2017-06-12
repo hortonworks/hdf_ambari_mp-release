@@ -87,6 +87,8 @@ java.arg.15=-Dambari.metrics.collector.url=http://{{metrics_collector_host}}:{{m
 #Application ID - used in flow.xml - passed into flow.xml for AmbariReportingTask
 java.arg.16=-Dambari.application.id=nifi
 
+#Sets the provider of SecureRandom to /dev/urandom to prevent blocking on VMs
+java.arg.17=-Djava.security.egd=file:/dev/urandom
 
 ###
 # Notification Services for notifying interested parties when NiFi is stopped, started, dies
