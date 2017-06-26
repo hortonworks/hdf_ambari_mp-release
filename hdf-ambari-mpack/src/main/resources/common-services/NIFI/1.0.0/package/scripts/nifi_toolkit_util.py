@@ -60,6 +60,25 @@ def get_toolkit_script(scriptName, scriptDir = files_dir):
     raise Exception("Couldn't find file " + result)
   return result
 
+def move_toolkit_scripts(toolkit_files_dir, toolkit_tmp_dir,upgrade_type):
+
+  run_ca_files_script = os.path.join(toolkit_files_dir,'run_ca.sh')
+  run_ca_tmp_script = os.path.join(toolkit_tmp_dir,'run_ca.sh')
+
+  if not sudo.path_isfile(run_ca_tmp_script) or not (upgrade_type is None):
+    os.system("\cp " + run_ca_files_script + " " + toolkit_tmp_dir +".")
+
+  nifiToolkitDirFilesPath = None
+  nifiToolkitDirTmpPath = None
+
+  for dir in os.listdir(toolkit_files_dir):
+    if dir.startswith('nifi-toolkit-'):
+      nifiToolkitDirFilesPath = os.path.join(toolkit_files_dir, dir)
+      nifiToolkitDirTmpPath = os.path.join(toolkit_tmp_dir, dir)
+
+  if not sudo.path_isfile(nifiToolkitDirTmpPath) or not (upgrade_type is None):
+    os.system("\cp -r " + nifiToolkitDirFilesPath+ " " + toolkit_tmp_dir)
+
 def update_nifi_properties(client_dict, nifi_properties):
   nifi_properties[nifi_constants.NIFI_SECURITY_KEYSTORE_TYPE] = client_dict['keyStoreType']
   nifi_properties[nifi_constants.NIFI_SECURITY_KEYSTORE_PASSWD] = client_dict['keyStorePassword']
