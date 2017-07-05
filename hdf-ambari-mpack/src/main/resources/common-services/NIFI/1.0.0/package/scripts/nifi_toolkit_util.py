@@ -60,7 +60,7 @@ def get_toolkit_script(scriptName, scriptDir = files_dir):
     raise Exception("Couldn't find file " + result)
   return result
 
-def move_toolkit_scripts(toolkit_files_dir, toolkit_tmp_dir,upgrade_type):
+def copy_toolkit_scripts(toolkit_files_dir, toolkit_tmp_dir, upgrade_type):
 
   run_ca_files_script = os.path.join(toolkit_files_dir,'run_ca.sh')
   run_ca_tmp_script = os.path.join(toolkit_tmp_dir,'run_ca.sh')

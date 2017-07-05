@@ -67,7 +67,7 @@ class Master(Script):
             recursive_ownership=True
     )
 
-    nifi_toolkit_util.move_toolkit_scripts(params.toolkit_files_dir,params.toolkit_tmp_dir,upgrade_type=None)
+    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, upgrade_type=None)
 
     #update the configs specified by user
     self.configure(env, True)
@@ -149,7 +149,7 @@ class Master(Script):
       self.encrypt_sensitive_properties(config_version_file,params.nifi_ambari_config_version,
                                         params.nifi_config_dir,params.jdk64_home,params.nifi_user,
                                         params.nifi_group,params.nifi_security_encrypt_configuration_password,
-                                        params.nifi_flow_config_dir, params.nifi_sensitive_props_key, is_starting,params.toolkit_tmp_dir)
+                                        params.nifi_flow_config_dir, params.nifi_sensitive_props_key, is_starting, params.toolkit_tmp_dir)
 
     # Write out flow.xml.gz to internal dir only if AMS installed (must be writable by Nifi)
     # only during first install. It is used to automate setup of Ambari metrics reporting task in Nifi
@@ -177,7 +177,7 @@ class Master(Script):
     import params
     import status_params
 
-    nifi_toolkit_util.move_toolkit_scripts(params.toolkit_files_dir,params.toolkit_tmp_dir,upgrade_type=None)
+    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, upgrade_type=None)
     self.configure(env, is_starting = True)
     setup_ranger_nifi(upgrade_type=None)
 
@@ -233,7 +233,7 @@ class Master(Script):
 
       if changed_keystore_truststore or params.nifi_toolkit_tls_regenerate:
         nifi_toolkit_util.overlay(ca_client_dict, params.nifi_ca_client_config)
-        updated_properties = self.run_toolkit_client(ca_client_dict,params.nifi_config_dir, params.jdk64_home, params.nifi_user,params.nifi_group, params.toolkit_tmp_dir, params.stack_support_toolkit_update)
+        updated_properties = self.run_toolkit_client(ca_client_dict, params.nifi_config_dir, params.jdk64_home, params.nifi_user, params.nifi_group, params.toolkit_tmp_dir, params.stack_support_toolkit_update)
         nifi_toolkit_util.update_nifi_properties(updated_properties, params.nifi_properties)
         nifi_toolkit_util.save_config_version(config_version_file,'ssl', params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
       elif using_client_json:
