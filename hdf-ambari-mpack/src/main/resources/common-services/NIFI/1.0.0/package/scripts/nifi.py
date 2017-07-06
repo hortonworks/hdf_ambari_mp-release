@@ -67,6 +67,8 @@ class Master(Script):
             recursive_ownership=True
     )
 
+    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, upgrade_type=None)
+
     #update the configs specified by user
     self.configure(env, True)
     Execute('touch ' +  params.nifi_node_log_file, user=params.nifi_user)
@@ -147,7 +149,7 @@ class Master(Script):
       self.encrypt_sensitive_properties(config_version_file,params.nifi_ambari_config_version,
                                         params.nifi_config_dir,params.jdk64_home,params.nifi_user,
                                         params.nifi_group,params.nifi_security_encrypt_configuration_password,
-                                        params.nifi_flow_config_dir, params.nifi_sensitive_props_key, is_starting)
+                                        params.nifi_flow_config_dir, params.nifi_sensitive_props_key, is_starting, params.toolkit_tmp_dir)
 
     # Write out flow.xml.gz to internal dir only if AMS installed (must be writable by Nifi)
     # only during first install. It is used to automate setup of Ambari metrics reporting task in Nifi
@@ -174,6 +176,8 @@ class Master(Script):
   def start(self, env, upgrade_type=None):
     import params
     import status_params
+
+    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, upgrade_type=None)
     self.configure(env, is_starting = True)
     setup_ranger_nifi(upgrade_type=None)
 
@@ -229,7 +233,7 @@ class Master(Script):
 
       if changed_keystore_truststore or params.nifi_toolkit_tls_regenerate:
         nifi_toolkit_util.overlay(ca_client_dict, params.nifi_ca_client_config)
-        updated_properties = self.run_toolkit_client(ca_client_dict,params.nifi_config_dir, params.jdk64_home, params.nifi_user,params.nifi_group, params.stack_support_toolkit_update)
+        updated_properties = self.run_toolkit_client(ca_client_dict, params.nifi_config_dir, params.jdk64_home, params.nifi_user, params.nifi_group, params.toolkit_tmp_dir, params.stack_support_toolkit_update)
         nifi_toolkit_util.update_nifi_properties(updated_properties, params.nifi_properties)
         nifi_toolkit_util.save_config_version(config_version_file,'ssl', params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
       elif using_client_json:
@@ -241,9 +245,9 @@ class Master(Script):
     else:
       return params.nifi_properties
 
-  def run_toolkit_client(self,ca_client_dict, nifi_config_dir, jdk64_home, nifi_user,nifi_group, no_client_file=False):
+  def run_toolkit_client(self,ca_client_dict, nifi_config_dir, jdk64_home, nifi_user,nifi_group,toolkit_tmp_dir, no_client_file=False):
     Logger.info("Generating NiFi Keystore and Truststore")
-    ca_client_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh')
+    ca_client_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',toolkit_tmp_dir)
     File(ca_client_script, mode=0755)
     if no_client_file:
       cert_command = 'echo \'' + json.dumps(ca_client_dict) + '\' | ambari-sudo.sh JAVA_HOME='+jdk64_home+' '+ ca_client_script + ' client -f /dev/stdout --configJsonIn /dev/stdin'
@@ -274,9 +278,9 @@ class Master(Script):
 
     return params.nifi_properties
 
-  def encrypt_sensitive_properties(self,config_version_file,current_version,nifi_config_dir,jdk64_home,nifi_user,nifi_group,master_key_password,nifi_flow_config_dir,nifi_sensitive_props_key,is_starting):
+  def encrypt_sensitive_properties(self,config_version_file,current_version,nifi_config_dir,jdk64_home,nifi_user,nifi_group,master_key_password,nifi_flow_config_dir,nifi_sensitive_props_key,is_starting,toolkit_tmp_dir):
     Logger.info("Encrypting NiFi sensitive configuration properties")
-    encrypt_config_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh')
+    encrypt_config_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir)
     encrypt_config_script_prefix = ('JAVA_HOME='+jdk64_home,encrypt_config_script)
     File(encrypt_config_script, mode=0755)
 

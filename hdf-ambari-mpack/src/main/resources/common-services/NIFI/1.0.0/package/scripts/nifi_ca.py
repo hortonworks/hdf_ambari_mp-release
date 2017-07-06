@@ -36,7 +36,7 @@ class CertificateAuthority(Script):
     self.install_packages(env)
 
     #Be sure ca script is in cache
-    nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh')
+    nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',params.toolkit_files_dir)
 
   def configure(self, env):
     import params
@@ -73,13 +73,15 @@ class CertificateAuthority(Script):
     import status_params
     check_process_status(status_params.nifi_ca_pid_file)
 
-  def start(self, env):
+  def start(self, env, upgrade_type=None):
     import params
     import status_params
 
+    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, upgrade_type=None)
+
     self.configure(env)
-    ca_server_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh')
-    run_ca_script = os.path.join(os.path.dirname(__file__), 'run_ca.sh')
+    ca_server_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',params.toolkit_tmp_dir)
+    run_ca_script = os.path.join(params.toolkit_tmp_dir, 'run_ca.sh')
     Directory([params.nifi_config_dir],
         owner=params.nifi_user,
         group=params.nifi_group,
@@ -88,7 +90,7 @@ class CertificateAuthority(Script):
     )
 
     File(ca_server_script, mode=0755)
-    File(run_ca_script, mode=0755) 
+    File(run_ca_script, mode=0755)
     Execute((run_ca_script, params.jdk64_home, ca_server_script, params.nifi_config_dir + '/nifi-certificate-authority.json', params.nifi_ca_log_file_stdout, params.nifi_ca_log_file_stderr, status_params.nifi_ca_pid_file), user=params.nifi_user)
     if not os.path.isfile(status_params.nifi_ca_pid_file):
       raise Exception('Expected pid file to exist')

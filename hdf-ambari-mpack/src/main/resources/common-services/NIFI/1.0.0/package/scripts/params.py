@@ -52,6 +52,10 @@ service_name = 'nifi'
 service_version = config['availableServices']['NIFI']
 version_for_stack_feature_checks = get_stack_feature_version(config)
 
+script_dir = os.path.dirname(__file__)
+toolkit_files_dir = os.path.realpath(os.path.join(os.path.dirname(script_dir), 'files'))
+toolkit_tmp_dir = '/tmp/'
+
 # Version being upgraded/downgraded to
 version = default("/commandParams/version", None)
 # Version that is CURRENT.
