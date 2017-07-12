@@ -23,6 +23,7 @@ import os
 import traceback
 import inspect
 from os.path import dirname
+from ambari_server.serverConfiguration import get_ambari_properties, get_ambari_version
 
 # Local imports
 from resource_management.core.logger import Logger
@@ -72,6 +73,15 @@ class RegistryServiceAdvisor(service_advisor.ServiceAdvisor):
                 (self.__class__.__name__, inspect.stack()[0][3]))
 
     pass
+
+  def getServiceConfigurationRecommendations(self, configurations, clusterData, services, hosts):
+    properties = get_ambari_properties()
+    ambari_version = get_ambari_version(properties)
+    if not(ambari_version) or not(ambari_version.startswith('2.5')):
+      putRegistryLogSearchConfAttribute = self.putPropertyAttribute(configurations, "registry-logsearch-conf")
+      putRegistryLogSearchConfAttribute('service_name', 'visible', 'false')
+      putRegistryLogSearchConfAttribute('component_mappings', 'visible', 'false')
+      putRegistryLogSearchConfAttribute('content', 'visible', 'false')
 
   def getServiceConfigurationsValidationItems(self, configurations, recommendedDefaults, services, hosts):
     """

@@ -20,6 +20,7 @@ import os
 import imp
 import traceback
 from os.path import dirname
+from ambari_server.serverConfiguration import get_ambari_properties, get_ambari_version
 
 SCRIPT_DIR = dirname(dirname(dirname(dirname(os.path.abspath(__file__)))))
 STACKS_DIR = os.path.join(SCRIPT_DIR,'stacks')
@@ -108,6 +109,14 @@ class NIFI100ServiceAdvisor(service_advisor.ServiceAdvisor):
             nifi_user = services['configurations']['nifi-env']['properties']['nifi_user']
             putRangerAdminSiteProperty = self.putProperty(configurations, "ranger-admin-site", services)
             putRangerAdminSiteProperty("ranger.plugins.nifi.serviceuser", nifi_user)
+
+        properties = get_ambari_properties()
+        ambari_version = get_ambari_version(properties)
+        if not(ambari_version) or not(ambari_version.startswith('2.5')):
+            putNiFiLogSearchConfAttribute = self.putPropertyAttribute(configurations, "nifi-logsearch-conf")
+            putNiFiLogSearchConfAttribute('service_name', 'visible', 'false')
+            putNiFiLogSearchConfAttribute('component_mappings', 'visible', 'false')
+            putNiFiLogSearchConfAttribute('content', 'visible', 'false')
 
     def validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method):
         properties = self.getSiteProperties(configurations, siteName)

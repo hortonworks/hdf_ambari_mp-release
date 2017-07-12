@@ -17,6 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from resource_management.libraries.functions.get_bare_principal import get_bare_principal
+from ambari_server.serverConfiguration import get_ambari_properties, get_ambari_version
 
 class HDF30StackAdvisor(HDF21StackAdvisor):
 
@@ -77,6 +78,15 @@ class HDF30StackAdvisor(HDF21StackAdvisor):
       else:
         putStormSiteProperty("nimbus.credential.renewers.classes", "['org.apache.storm.hdfs.security.AutoHDFS', 'org.apache.storm.hbase.security.AutoHBase', 'org.apache.storm.hive.security.AutoHive']")
       putStormSiteProperty("nimbus.credential.renewers.freq.secs", "82800")
+
+    properties = get_ambari_properties()
+    ambari_version = get_ambari_version(properties)
+    if not(ambari_version) or not(ambari_version.startswith('2.5')):
+      putStreamlineLogSearchConfAttribute = self.putPropertyAttribute(configurations, "streamline-logsearch-conf")
+      putStreamlineLogSearchConfAttribute('service_name', 'visible', 'false')
+      putStreamlineLogSearchConfAttribute('component_mappings', 'visible', 'false')
+      putStreamlineLogSearchConfAttribute('content', 'visible', 'false')
+
     pass
 
   def recommendRangerConfigurations(self, configurations, clusterData, services, hosts):

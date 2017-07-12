@@ -17,9 +17,13 @@ limitations under the License.
 
 """
 import os
+import ConfigParser
 
 import ambari_simplejson as json
 from resource_management.core.logger import Logger
+from resource_management.core.resources.system import Directory, File
+from resource_management.core.source import InlineTemplate, Template
+from resource_management.libraries.functions import default
 from resource_management.libraries.functions import conf_select
 from resource_management.libraries.functions import stack_select
 from resource_management.libraries.functions.format import format
@@ -68,6 +72,39 @@ def setup_config():
               owner=params.hdfs_user,
               group=params.user_group,
               only_if=format("ls {hadoop_conf_dir}"))
+
+  ambari_version = get_ambari_version()
+  if ambari_version and ambari_version >= '3.0.0.0':
+    Directory(params.logsearch_logfeeder_conf,
+              mode=0755,
+              cd_access='a',
+              create_parents=True
+              )
+
+    if params.logsearch_config_file_exists:
+      File(format("{logsearch_logfeeder_conf}/" + params.logsearch_config_file_name),
+           content=Template(params.logsearch_config_file_path,extra_imports=[default])
+           )
+    else:
+      Logger.warning('No logsearch configuration exists at ' + params.logsearch_config_file_path)
+
+def get_ambari_version():
+  ambari_version = None
+  AMBARI_AGENT_CONF = '/etc/ambari-agent/conf/ambari-agent.ini'
+  if os.path.exists(AMBARI_AGENT_CONF):
+    try:
+      ambari_agent_config = ConfigParser.RawConfigParser()
+      ambari_agent_config.read(AMBARI_AGENT_CONF)
+      data_dir = ambari_agent_config.get('agent', 'prefix')
+      ver_file = os.path.join(data_dir, 'version')
+      with open(ver_file, "r") as f:
+        ambari_version = f.read().strip()
+    except Exception, e:
+      Logger.info('Unable to determine ambari version from the agent version file.')
+      Logger.debug('Exception: %s' % str(e))
+      pass
+    pass
+  return ambari_version
 
 
 def load_version(struct_out_file):

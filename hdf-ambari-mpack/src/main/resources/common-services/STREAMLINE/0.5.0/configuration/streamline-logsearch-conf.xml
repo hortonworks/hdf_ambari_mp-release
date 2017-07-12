@@ -24,14 +24,14 @@
     <name>service_name</name>
     <display-name>Service name</display-name>
     <description>Service name for Logsearch Portal (label)</description>
-    <value>NiFi</value>
+    <value>Streamline</value>
     <on-ambari-upgrade add="true"/>
   </property>
   <property>
     <name>component_mappings</name>
     <display-name>Component mapping</display-name>
     <description>Logsearch component logid mapping list (e.g.: COMPONENT1:logid1,logid2;COMPONENT2:logid3)</description>
-    <value>NIFI_MASTER:nifi_app,nifi_bootstrap,nifi_setup,nifi_user;NIFI_CA:nifi_ca</value>
+    <value>STREAMLINE_SERVER:streamline_server</value>
     <on-ambari-upgrade add="true"/>
   </property>
   <property>
@@ -40,66 +40,35 @@
     <description>Metadata jinja template for Logfeeder which contains grok patterns for reading service specific logs.</description>
     <value>
 {
-  "input":[
+  "input": [
     {
-      "type":"nifi_app",
-      "rowtype":"service",
-      "path":"{{nifi_log_dir}}/nifi-app.log"
-    },
-    {
-      "type":"nifi_bootstrap",
-      "rowtype":"service",
-      "path":"{{nifi_log_dir}}/nifi-bootstrap.log"
-    },
-    {
-      "type":"nifi_setup",
-      "rowtype":"service",
-      "path":"{{nifi_log_dir}}/nifi-setup.log"
-    },
-    {
-      "type":"nifi_user",
-      "rowtype":"service",
-      "path":"{{nifi_log_dir}}/nifi-user.log"
-    },
-    {
-      "type":"nifi_ca",
-      "rowtype":"service",
-      "path":"{{nifi_log_dir}}/nifi-ca.stdout"
+      "type": "streamline_server",
+      "rowtype": "service",
+      "path": "{{default('/configurations/streamline-env/streamline_log_dir', '/var/log/streamline')}}/streamline.log"
     }
   ],
-  "filter":[
+  "filter": [
     {
-      "filter":"grok",
-      "conditions":{
-        "fields":{
-          "type":[
-            "nifi_app",
-            "nifi_bootstrap",
-            "nifi_setup",
-            "nifi_user",
-            "nifi_ca"
+      "filter": "grok",
+      "conditions": {
+        "fields": {
+          "type": [
+            "streamline_server"
           ]
-
         }
-
       },
-      "log4j_format":"",
-      "multiline_pattern":"^(%{TIMESTAMP_ISO8601:logtime})",
-      "message_pattern":"(?m)^%{TIMESTAMP_ISO8601:logtime}%{SPACE}%{LOGLEVEL:level}%{SPACE}\\[%{DATA:thread_name}\\]%{SPACE}%{GREEDYDATA:log_message}",
-      "post_map_values":{
-        "logtime":{
-          "map_date":{
-            "target_date_pattern":"yyyy-MM-dd HH:mm:ss,SSS"
+    "multiline_pattern":"^(%{LOGLEVEL:level}%{SPACE}\\[%{TIME:logtime}\\])",
+    "message_pattern":"(?m)^%{LOGLEVEL:level}%{SPACE}\\[%{TIME:logtime}\\]%{SPACE}\\[%{DATA:thread_name}\\]%{SPACE}%{JAVACLASS:logger_name}%{SPACE}-%{SPACE}%{GREEDYDATA:log_message}",
+      "post_map_values": {
+        "logtime": {
+          "map_date": {
+            "target_date_pattern": "yyyy-MM-dd HH:mm:ss,SSS",
+            "src_date_pattern" :"HH:mm:ss.SSS"
           }
-
         }
-
       }
-
     }
-
   ]
-
 }
     </value>
     <value-attributes>
