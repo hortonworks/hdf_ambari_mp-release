@@ -67,7 +67,7 @@ class Master(Script):
             recursive_ownership=True
     )
 
-    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, upgrade_type=None)
+    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type=None)
 
     #update the configs specified by user
     self.configure(env, True)
@@ -83,7 +83,7 @@ class Master(Script):
     #create the log, pid, conf dirs if not already present
     nifi_dirs = [status_params.nifi_pid_dir, params.nifi_node_log_dir, params.nifi_internal_dir, params.nifi_database_dir, params.nifi_flowfile_repo_dir, params.nifi_provenance_repo_dir_default, params.nifi_config_dir, params.nifi_flow_config_dir, params.nifi_state_dir, params.lib_dir]
     nifi_dirs.extend(params.nifi_content_repo_dirs)
-    Directory(nifi_dirs, owner=params.nifi_user, group=params.nifi_group, create_parents=True, recursive_ownership=True)
+    Directory(nifi_dirs, owner=params.nifi_user, group=params.nifi_group, create_parents=True, recursive_ownership=True, cd_access='a')
 
     # On some OS this folder may not exist, so we will create it before pushing files there
     Directory(params.limits_conf_dir,
@@ -177,7 +177,7 @@ class Master(Script):
     import params
     import status_params
 
-    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, upgrade_type=None)
+    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type=None)
     self.configure(env, is_starting = True)
     setup_ranger_nifi(upgrade_type=None)
 

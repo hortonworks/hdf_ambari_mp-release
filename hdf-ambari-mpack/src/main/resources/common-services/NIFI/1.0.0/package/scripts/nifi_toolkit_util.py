@@ -20,8 +20,10 @@ limitations under the License.
 
 import json, nifi_constants, os
 from resource_management.core import sudo
-from resource_management.core.resources.system import File
+from resource_management.core.resources.system import File, Directory
 from resource_management.core.utils import PasswordString
+from resource_management.core.source import StaticFile
+from resource_management.libraries.functions import format
 
 script_dir = os.path.dirname(__file__)
 files_dir = os.path.realpath(os.path.join(os.path.dirname(script_dir), 'files'))
@@ -60,13 +62,13 @@ def get_toolkit_script(scriptName, scriptDir = files_dir):
     raise Exception("Couldn't find file " + result)
   return result
 
-def copy_toolkit_scripts(toolkit_files_dir, toolkit_tmp_dir, upgrade_type):
-
-  run_ca_files_script = os.path.join(toolkit_files_dir,'run_ca.sh')
+def copy_toolkit_scripts(toolkit_files_dir, toolkit_tmp_dir, user, group, upgrade_type):
   run_ca_tmp_script = os.path.join(toolkit_tmp_dir,'run_ca.sh')
 
   if not sudo.path_isfile(run_ca_tmp_script) or not (upgrade_type is None):
-    os.system("\cp " + run_ca_files_script + " " + toolkit_tmp_dir +".")
+    File(format(run_ca_tmp_script),
+         content=StaticFile("run_ca.sh"),
+         mode=0755,owner=user, group=group)
 
   nifiToolkitDirFilesPath = None
   nifiToolkitDirTmpPath = None
@@ -76,8 +78,9 @@ def copy_toolkit_scripts(toolkit_files_dir, toolkit_tmp_dir, upgrade_type):
       nifiToolkitDirFilesPath = os.path.join(toolkit_files_dir, dir)
       nifiToolkitDirTmpPath = os.path.join(toolkit_tmp_dir, dir)
 
-  if not sudo.path_isfile(nifiToolkitDirTmpPath) or not (upgrade_type is None):
+  if not sudo.path_isdir(nifiToolkitDirTmpPath) or not (upgrade_type is None):
     os.system("\cp -r " + nifiToolkitDirFilesPath+ " " + toolkit_tmp_dir)
+    Directory(nifiToolkitDirTmpPath, owner=user, group=group, create_parents=False, recursive_ownership=True, cd_access="a", mode=0755)
 
 def update_nifi_properties(client_dict, nifi_properties):
   nifi_properties[nifi_constants.NIFI_SECURITY_KEYSTORE_TYPE] = client_dict['keyStoreType']

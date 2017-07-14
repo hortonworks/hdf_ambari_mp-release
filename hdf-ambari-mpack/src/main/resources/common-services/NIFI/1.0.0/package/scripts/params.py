@@ -38,6 +38,7 @@ import ambari_simplejson as json # simplejson is much faster comparing to Python
 # server configurations
 config = Script.get_config()
 stack_root = Script.get_stack_root()
+tmp_dir = Script.get_tmp_dir()
 stack_name = default("/hostLevelParams/stack_name", None)
 stack_version_buildnum = default("/commandParams/version", None)
 if stack_name == "HDP":
@@ -54,7 +55,7 @@ version_for_stack_feature_checks = get_stack_feature_version(config)
 
 script_dir = os.path.dirname(__file__)
 toolkit_files_dir = os.path.realpath(os.path.join(os.path.dirname(script_dir), 'files'))
-toolkit_tmp_dir = '/tmp/'
+toolkit_tmp_dir = tmp_dir
 
 # Version being upgraded/downgraded to
 version = default("/commandParams/version", None)
@@ -95,7 +96,7 @@ nifi_content_repo_dir_default = None
 if 'nifi.content.repository.dir.default' in config['configurations']['nifi-ambari-config']:
   nifi_content_repo_dir_default=config['configurations']['nifi-ambari-config']['nifi.content.repository.dir.default']
 
-nifi_content_repo_dirs = [v for k,v in config['configurations']['nifi-properties'].items() if k.startswith('nifi.content.repository.dir')]
+nifi_content_repo_dirs = [ v.replace('{{nifi_content_repo_dir_default}}',nifi_content_repo_dir_default) for k,v in config['configurations']['nifi-properties'].items() if k.startswith('nifi.content.repository.dir')]
 
 if nifi_content_repo_dir_default is not None:
   nifi_content_repo_dirs.append(nifi_content_repo_dir_default)
