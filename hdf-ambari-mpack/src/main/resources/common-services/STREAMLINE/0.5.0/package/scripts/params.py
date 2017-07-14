@@ -168,6 +168,9 @@ if streamline_storage_type == "postgresql":
 
 streamline_port = config['configurations']['streamline-common']['port']
 streamline_admin_port = config['configurations']['streamline-common']['adminPort']
+http_proxy_server = config['configurations']['streamline-common']['httpProxyServer']
+http_proxy_username = config['configurations']['streamline-common']['httpProxyUsername']
+http_proxy_password = config['configurations']['streamline-common']['httpProxyPassword']
 
 streamline_catalog_root_url = 'http://{0}:{1}/api/v1/catalog'.format(hostname,streamline_port)
 
