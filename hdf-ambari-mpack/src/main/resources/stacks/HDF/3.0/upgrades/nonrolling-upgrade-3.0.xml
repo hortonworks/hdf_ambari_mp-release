@@ -40,6 +40,14 @@
                     <message>Please determine if you need to stop any currently running NIFI flows before proceeding with this upgrade.</message>
                 </task>
             </execute-stage>
+
+            <execute-stage service="REGISTRY" component="REGISTRY_SERVER" title="Review Registry Integrations">
+                <task xsi:type="manual">
+                  <message>Please determine if you need to stop any currently running process thats using Registry server to lookup schemas.
+                  </message>
+                </task>
+            </execute-stage>
+
         </group>
 
         <group xsi:type="stop" name="STOP_HIGH_LEVEL_SERVICE_COMPONENTS" title="Stop Components for High-Level Services">
@@ -59,6 +67,14 @@
                 <component>NIFI_MASTER</component>
             </service>
 
+            <service name="REGISTRY">
+                <component>REGISTRY_SERVER</component>
+            </service>
+
+            <service name="STREAMLINE">
+                <component>STREAMLINE_SERVER</component>
+            </service>
+
         </group>
 
         <group xsi:type="cluster" name="Backups" title="Perform Backups">
@@ -73,6 +89,18 @@
                         1. Backup the audit table from audit database.
                         2. Truncate audit table.
                         3. Follow upgrade process and once completed then restore audit data to audit table.</message>
+                </task>
+            </execute-stage>
+
+            <execute-stage service="STREAMLINE" component="STREAMLINE_SERVER" title="Backup SAM Database">
+                <task xsi:type="manual">
+                    <message>Before continuing, please backup the SAM database.</message>
+                </task>
+            </execute-stage>
+
+            <execute-stage service="REGISTRY" component="REGISTRY_SERVER" title="Backup Registry Database">
+                <task xsi:type="manual">
+                    <message>Before continuing, please backup the Registry database.</message>
                 </task>
             </execute-stage>
         </group>
@@ -96,6 +124,15 @@
             <service name="ZOOKEEPER">
                 <component>ZOOKEEPER_SERVER</component>
             </service>
+
+             <service name="REGISTRY">
+               <component>REGISTRY_SERVER</component>
+            </service>
+
+            <service name="STREAMLINE">
+               <component>STREAMLINE_SERVER</component>
+            </service>
+
         </group>
 
         <group xsi:type="cluster" name="Restore Backups" title="Restore Backups">
@@ -108,6 +145,18 @@
             <execute-stage service="RANGER" component="RANGER_ADMIN" title="Restore Ranger Database">
                 <task xsi:type="manual">
                     <message>Before continuing, please restore the Ranger Admin database and Ranger Audit database on the following host(s): {{hosts.all}}.</message>
+                </task>
+            </execute-stage>
+
+            <execute-stage service="STREAMLINE" component="STREAMLINE_SERVER" title="Restore SAM Database">
+                <task xsi:type="manual">
+                    <message>Before continuing, please restore the SAM database on the following host(s): {{hosts.all}}.</message>
+                </task>
+            </execute-stage>
+
+            <execute-stage service="REGISTRY" component="REGISTRY_SERVER" title="Restore Registry Database">
+                <task xsi:type="manual">
+                    <message>Before continuing, please restore the Registry database on the following host(s): {{hosts.all}}.</message>
                 </task>
             </execute-stage>
 
@@ -211,6 +260,24 @@
             <parallel-scheduler/>
             <service name="NIFI">
                 <component>NIFI_MASTER</component>
+            </service>
+        </group>
+
+        <group xsi:type="restart" name="REGISTRY" title="Registry">
+            <service-check>false</service-check>
+            <skippable>true</skippable>
+            <parallel-scheduler/>
+            <service name="REGISTRY">
+                <component>REGISTRY_SERVER</component>
+            </service>
+        </group>
+
+        <group xsi:type="restart" name="STREAMLINE" title="Streaming Analytics Manager">
+            <service-check>false</service-check>
+            <skippable>true</skippable>
+            <parallel-scheduler/>
+            <service name="STREAMLINE">
+                <component>STREAMLINE_SERVER</component>
             </service>
         </group>
 
@@ -345,6 +412,22 @@
 
         <service name="NIFI">
             <component name="NIFI_MASTER">
+                <upgrade>
+                    <task xsi:type="restart-task"/>
+                </upgrade>
+            </component>
+        </service>
+
+        <service name="REGISTRY">
+            <component name="REGISTRY_SERVER">
+                <upgrade>
+                    <task xsi:type="restart-task"/>
+                </upgrade>
+            </component>
+        </service>
+
+        <service name="STREAMLINE">
+            <component name="STREAMLINE_SERVER">
                 <upgrade>
                     <task xsi:type="restart-task"/>
                 </upgrade>
