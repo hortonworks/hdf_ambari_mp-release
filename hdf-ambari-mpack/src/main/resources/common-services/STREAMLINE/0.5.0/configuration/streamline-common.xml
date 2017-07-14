@@ -194,7 +194,7 @@
     <displayName>HTTP Proxy Server</displayName>
     <value></value>
     <description>
-      Url of the http proxy server if SAM server is behind a proxy.
+      URL for http proxy server to fetch maven artifacts
     </description>
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
@@ -206,7 +206,7 @@
     <displayName>Username For HTTP Proxy Server</displayName>
     <value></value>
     <description>
-      Username to access http proxy server if SAM server is behind a proxy.
+      Username for http proxy server to fetch maven artifacts
     </description>
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
@@ -219,7 +219,7 @@
     <value></value>
     <property-type>PASSWORD</property-type>
     <description>
-      Password for username to access http proxy server if SAM server is behind a proxy.
+      Password for http proxy server to fetch maven artifacts 
     </description>
     <value-attributes>
       <type>password</type>
