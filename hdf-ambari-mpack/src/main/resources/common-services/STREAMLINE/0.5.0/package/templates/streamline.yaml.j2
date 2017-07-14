@@ -29,6 +29,15 @@ modules:
       schemaRegistryUrl: "{{registry_url}}"
       mavenRepoUrl: "{{maven_repo_url}}"
       topologyTestRunResultDir: "{{topology_test_results}}"
+{% if http_proxy_server %}
+      proxyUrl: "{{http_proxy_server}}"
+{%endif%}
+{% if http_proxy_username %}
+      proxyUsername: "{{http_proxy_username}}"
+{%endif%}
+{% if http_proxy_password %}
+      proxyPassword: "{{http_proxy_password}}"
+{%endif%}
 
 catalogRootUrl: {{streamline_catalog_root_url}}
 
@@ -87,6 +96,7 @@ servletFilters:
       kerberos.keytab: "{{streamline_ui_keytab_path}}"
       kerberos.name.rules: "{{streamline_servlet_kerberos_name_rules}}"
       token.validity: "{{streamline_servlet_token_validity}}"
+      cookie.path: "/"
 {%endif%}
 
 logging:
