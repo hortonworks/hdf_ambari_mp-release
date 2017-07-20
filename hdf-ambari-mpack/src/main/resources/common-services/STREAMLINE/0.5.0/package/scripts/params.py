@@ -155,7 +155,7 @@ else:
 
 streamline_dashboard_url = config['configurations']['streamline-common']['streamline.dashboard.url']
 
-streamline_storage_type = config['configurations']['streamline-common']['streamline.storage.type']
+streamline_storage_type = str(config['configurations']['streamline-common']['streamline.storage.type']).lower()
 streamline_storage_connector_connectorURI = config['configurations']['streamline-common']['streamline.storage.connector.connectURI']
 streamline_storage_connector_user = config['configurations']['streamline-common']['streamline.storage.connector.user']
 streamline_storage_connector_password = config['configurations']['streamline-common']['streamline.storage.connector.password']
