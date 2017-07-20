@@ -116,7 +116,7 @@ registry_log_template = registry_log_template.replace('{{registry_log_maxfilesiz
 
 # flatten registry configs
 jar_storage = config['configurations']['registry-common']['jar.storage']
-registry_storage_type = config['configurations']['registry-common']['registry.storage.type']
+registry_storage_type = str(config['configurations']['registry-common']['registry.storage.type']).lower()
 registry_storage_connector_connectorURI = config['configurations']['registry-common']['registry.storage.connector.connectURI']
 registry_storage_connector_user = config['configurations']['registry-common']['registry.storage.connector.user']
 registry_storage_connector_password = config['configurations']['registry-common']['registry.storage.connector.password']
