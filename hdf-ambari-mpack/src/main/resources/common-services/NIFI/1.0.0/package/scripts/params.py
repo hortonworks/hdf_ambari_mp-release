@@ -77,6 +77,7 @@ nifi_node_port = config['configurations']['nifi-ambari-config']['nifi.node.port'
 nifi_node_ssl_port = config['configurations']['nifi-ambari-config']['nifi.node.ssl.port']
 nifi_node_protocol_port = config['configurations']['nifi-ambari-config']['nifi.node.protocol.port']
 
+#zookeeper node path
 nifi_znode = config['configurations']['nifi-ambari-config']['nifi.nifi_znode']
 
 nifi_internal_dir=config['configurations']['nifi-ambari-config']['nifi.internal.dir']
@@ -113,14 +114,12 @@ nifi_bootstrap_file = nifi_config_dir + '/bootstrap.conf'
 
 # detect if running in single (sandbox) box
 nifi_num_nodes = len(master_configs['nifi_master_hosts'])
-#if nifi_num_nodes > 1:
-#  nifi_is_node='true'
-#else:
-#  nifi_is_node='false'
-#nifi_node_hosts = ",".join(master_configs['nifi_master_hosts'])
 
 # In sandbox scenario, Ambari should still setup nifi in clustered mode for now
 nifi_is_node='true'
+
+#is node joining an existing cluster
+is_additional_node = False
 
 nifi_node_dir=nifi_install_dir
 bin_dir = os.path.join(*[nifi_node_dir,'bin'])
@@ -133,7 +132,6 @@ if 'nifi_ca_hosts' in master_configs:
     nifi_ca_host = nifi_ca_hosts[0]
 
 # params from nifi-ambari-ssl-config
-
 nifi_ssl_enabled = config['configurations']['nifi-ambari-ssl-config']['nifi.node.ssl.isenabled']
 nifi_keystore = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystore']
 nifi_keystoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystoreType']
@@ -292,7 +290,6 @@ else:
   namenode_host = namenode_hosts
 
 has_namenode = not namenode_host == None
-
 
 nifi_authorizer = 'file-provider'
 

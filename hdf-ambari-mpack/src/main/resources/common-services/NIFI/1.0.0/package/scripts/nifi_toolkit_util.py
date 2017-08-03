@@ -17,13 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-
 import json, nifi_constants, os
+from resource_management import *
 from resource_management.core import sudo
 from resource_management.core.resources.system import File, Directory
 from resource_management.core.utils import PasswordString
 from resource_management.core.source import StaticFile
+from resource_management.core.logger import Logger
 from resource_management.libraries.functions import format
+from subprocess import call
 
 script_dir = os.path.dirname(__file__)
 files_dir = os.path.realpath(os.path.join(os.path.dirname(script_dir), 'files'))
@@ -285,4 +287,141 @@ def contains_providers(login_provider_file):
   else:
     return False
 
+def existing_cluster(params):
 
+  import re
+
+  ZK_CONNECT_ERROR = "ConnectionLoss"
+  ZK_NODE_NOT_EXIST = "Node does not exist"
+
+  if params.security_enabled:
+    kinit_cmd = "{0} -kt {1} {2}; ".format(params.kinit_path_local, params.nifi_properties['nifi.kerberos.service.keytab.location'], params.nifi_properties['nifi.kerberos.service.principal'])
+  else:
+    kinit_cmd = ""
+
+  # For every zk server try to find nifi zk dir
+  zookeeper_server_list = params.config['clusterHostInfo']['zookeeper_hosts']
+
+  for zookeeper_server in zookeeper_server_list:
+
+    # Determine where the zkCli.sh shell script is
+    zk_command_location = os.path.join(params.stack_root, "current", "zookeeper-client", "bin", "zkCli.sh")
+
+    if params.stack_version_buildnum is not None:
+      zk_command_location = os.path.join(params.stack_root, params.stack_version_buildnum, "zookeeper", "bin", "zkCli.sh")
+
+    # create the ZooKeeper query command e.g.
+    command = "{0} -server {1}:{2} ls {3}".format(zk_command_location, zookeeper_server, params.zookeeper_port, params.nifi_znode)
+
+    Logger.info("Running command: " + command)
+
+    code, out = shell.call( kinit_cmd + command, logoutput=True, quiet=False, timeout=20)
+
+    if not out or re.search(ZK_CONNECT_ERROR, out):
+      Logger.info("Unable to query Zookeeper: " + zookeeper_server + ". Skipping and trying next ZK server")
+      continue
+    elif re.search(ZK_NODE_NOT_EXIST, out):
+      Logger.info("Nifi ZNode does not exist, so no pre-existing cluster.: " + params.nifi_znode)
+      return False
+    else:
+      Logger.info("Nifi ZNode exists, so a cluster is defined: " + params.nifi_znode)
+      return True
+
+  return False
+
+
+def setup_keystore_truststore(is_starting, params, config_version_file):
+  if is_starting:
+    #check against last version to determine if key/trust has changed
+    last_config_version = get_config_version(config_version_file,'ssl')
+    last_config = get_config_by_version('/var/lib/ambari-agent/data','nifi-ambari-ssl-config',last_config_version)
+    ca_client_dict = get_nifi_ca_client_dict(last_config, params)
+    using_client_json = len(ca_client_dict) == 0 and sudo.path_isfile(params.nifi_config_dir+ '/nifi-certificate-authority-client.json')
+
+    if using_client_json:
+      ca_client_dict = load(params.nifi_config_dir + '/nifi-certificate-authority-client.json')
+
+    changed_ks_ts = changed_keystore_truststore(ca_client_dict,params.nifi_ca_client_config,using_client_json) if not len(ca_client_dict) == 0 else True
+
+    if params.nifi_toolkit_tls_regenerate:
+      move_keystore_truststore(ca_client_dict)
+      ca_client_dict = {}
+    elif changed_ks_ts:
+      move_keystore_truststore(ca_client_dict)
+
+    if changed_ks_ts or params.nifi_toolkit_tls_regenerate:
+      overlay(ca_client_dict, params.nifi_ca_client_config)
+      updated_properties = run_toolkit_client(ca_client_dict, params.nifi_config_dir, params.jdk64_home, params.nifi_user, params.nifi_group, params.toolkit_tmp_dir, params.stack_support_toolkit_update)
+      update_nifi_properties(updated_properties, params.nifi_properties)
+      save_config_version(config_version_file,'ssl', params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
+    elif using_client_json:
+      save_config_version(config_version_file,'ssl', params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
+
+    old_nifi_properties = convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties')
+    return populate_ssl_properties(old_nifi_properties,params.nifi_properties,params)
+
+  else:
+    return params.nifi_properties
+
+def run_toolkit_client(ca_client_dict, nifi_config_dir, jdk64_home, nifi_user,nifi_group,toolkit_tmp_dir, no_client_file=False):
+  Logger.info("Generating NiFi Keystore and Truststore")
+  ca_client_script = get_toolkit_script('tls-toolkit.sh',toolkit_tmp_dir)
+  File(ca_client_script, mode=0755)
+  if no_client_file:
+    cert_command = 'echo \'' + json.dumps(ca_client_dict) + '\' | ambari-sudo.sh JAVA_HOME='+jdk64_home+' '+ ca_client_script + ' client -f /dev/stdout --configJsonIn /dev/stdin'
+    code, out = shell.call(cert_command,quiet=True,logoutput=False)
+    if code > 0:
+      raise Fail("Call to tls-toolkit encountered error: {0}".format(out))
+    else:
+      json_out = out[out.index('{'):len(out)]
+      updated_properties = json.loads(json_out)
+      shell.call(['chown',nifi_user+':'+nifi_group,updated_properties['keyStore']],sudo=True)
+      shell.call(['chown',nifi_user+':'+nifi_group,updated_properties['trustStore']],sudo=True)
+  else:
+    ca_client_json = os.path.realpath(os.path.join(nifi_config_dir, 'nifi-certificate-authority-client.json'))
+    dump(ca_client_json, ca_client_dict, nifi_user, nifi_group)
+    Execute('JAVA_HOME='+jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=nifi_user)
+    updated_properties = load(ca_client_json)
+
+  return updated_properties
+
+def cleanup_toolkit_client_files(params,config_version_file):
+  if get_config_version(config_version_file,'ssl'):
+    Logger.info("Search and remove any generated keystores and truststores")
+    ca_client_dict = get_nifi_ca_client_dict(params.config, params)
+    move_keystore_truststore(ca_client_dict)
+    params.nifi_properties['nifi.security.keystore'] = ''
+    params.nifi_properties['nifi.security.truststore'] = ''
+    remove_config_version(config_version_file,'ssl',params.nifi_user, params.nifi_group)
+
+  return params.nifi_properties
+
+def encrypt_sensitive_properties(config_version_file,current_version,nifi_config_dir,jdk64_home,nifi_user,nifi_group,master_key_password,nifi_flow_config_dir,nifi_sensitive_props_key,is_starting,toolkit_tmp_dir):
+  Logger.info("Encrypting NiFi sensitive configuration properties")
+  encrypt_config_script = get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir)
+  encrypt_config_script_prefix = ('JAVA_HOME='+jdk64_home,encrypt_config_script)
+  File(encrypt_config_script, mode=0755)
+
+  if is_starting:
+    last_master_key_password = None
+    last_config_version = get_config_version(config_version_file,'encrypt')
+    encrypt_config_script_params = ('-v','-b',nifi_config_dir+'/bootstrap.conf')
+    encrypt_config_script_params = encrypt_config_script_params + ('-n',nifi_config_dir+'/nifi.properties')
+
+    if sudo.path_isfile(nifi_flow_config_dir+'/flow.xml.gz') and len(sudo.read_file(nifi_flow_config_dir+'/flow.xml.gz')) > 0:
+      encrypt_config_script_params = encrypt_config_script_params + ('-f',nifi_flow_config_dir+'/flow.xml.gz','-s',PasswordString(nifi_sensitive_props_key))
+
+    if contains_providers(nifi_config_dir+'/login-identity-providers.xml'):
+      encrypt_config_script_params = encrypt_config_script_params + ('-l',nifi_config_dir+'/login-identity-providers.xml')
+
+    if last_config_version:
+      last_config = get_config_by_version('/var/lib/ambari-agent/data','nifi-ambari-config',last_config_version)
+      last_master_key_password = last_config['configurations']['nifi-ambari-config']['nifi.security.encrypt.configuration.password']
+
+    if last_master_key_password and last_master_key_password != master_key_password:
+      encrypt_config_script_params = encrypt_config_script_params + ('-m','-w',PasswordString(last_master_key_password))
+
+    encrypt_config_script_params = encrypt_config_script_params + ('-p',PasswordString(master_key_password))
+    encrypt_config_script_prefix = encrypt_config_script_prefix + encrypt_config_script_params
+    Execute(encrypt_config_script_prefix, user=nifi_user,logoutput=False)
+    save_config_version(config_version_file,'encrypt', current_version, nifi_user, nifi_group)
