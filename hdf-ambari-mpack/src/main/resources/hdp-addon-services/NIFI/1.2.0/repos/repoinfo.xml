@@ -45,13 +45,6 @@
             <reponame>HDF</reponame>
         </repo>
     </os>
-    <os family="ubuntu12">
-        <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/ubuntu12/3.x/updates/3.0.0.0</baseurl>
-            <repoid>HDF-3.0</repoid>
-            <reponame>HDF</reponame>
-        </repo>
-    </os>
     <os family="debian7">
         <repo>
             <baseurl>http://public-repo-1.hortonworks.com/HDF/debian7/3.x/updates/3.0.0.0</baseurl>
