@@ -1,4 +1,14 @@
 {
-  "stack_selector": ["hdf-select", "/usr/bin/hdf-select", "hdf-select"],
-  "conf_selector": ["conf-select", "/usr/bin/conf-select", "conf-select"]
+  "HDF": {
+  "stack_selector": [
+    "hdf-select",
+    "/usr/bin/hdf-select",
+    "hdf-select"
+  ],
+  "conf_selector": [
+    "conf-select",
+    "/usr/bin/conf-select",
+    "conf-select"
+  ]
+}
 }
