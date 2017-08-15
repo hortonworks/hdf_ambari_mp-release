@@ -57,11 +57,12 @@ class Master(Script):
 
     self.install_packages(env)
 
-    Directory([params.nifi_node_dir],
+    Directory([params.nifi_node_dir, params.nifi_node_log_dir],
             owner=params.nifi_user,
             group=params.nifi_group,
             create_parents=True,
-            recursive_ownership=True
+            recursive_ownership=True,
+            cd_access='a'
     )
 
     nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type=None)
@@ -75,7 +76,7 @@ class Master(Script):
     env.set_params(status_params)
 
     #create the log, pid, conf dirs if not already present
-    nifi_dirs = [status_params.nifi_pid_dir, params.nifi_node_log_dir, params.nifi_internal_dir, params.nifi_database_dir, params.nifi_flowfile_repo_dir, params.nifi_provenance_repo_dir_default, params.nifi_config_dir, params.nifi_flow_config_dir, params.nifi_state_dir, params.lib_dir]
+    nifi_dirs = [status_params.nifi_pid_dir, params.nifi_internal_dir, params.nifi_database_dir, params.nifi_flowfile_repo_dir, params.nifi_provenance_repo_dir_default, params.nifi_config_dir, params.nifi_flow_config_dir, params.nifi_state_dir, params.lib_dir]
     nifi_dirs.extend(params.nifi_content_repo_dirs)
     Directory(nifi_dirs, owner=params.nifi_user, group=params.nifi_group, create_parents=True, recursive_ownership=True, cd_access='a')
 
