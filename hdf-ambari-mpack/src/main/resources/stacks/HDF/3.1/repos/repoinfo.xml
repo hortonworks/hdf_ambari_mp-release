@@ -65,18 +65,6 @@
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
-    <os family="ubuntu12">
-        <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDF/ubuntu12/3.x/updates/3.1.0.0</baseurl>
-            <repoid>HDF-3.1</repoid>
-            <reponame>HDF</reponame>
-        </repo>
-        <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu12</baseurl>
-            <repoid>HDP-UTILS-1.1.0.21</repoid>
-            <reponame>HDP-UTILS</reponame>
-        </repo>
-    </os>
     <os family="debian7">
         <repo>
             <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDF/debian7/3.x/updates/3.1.0.0</baseurl>
@@ -97,6 +85,18 @@
         </repo>
         <repo>
             <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu14</baseurl>
+            <repoid>HDP-UTILS-1.1.0.21</repoid>
+            <reponame>HDP-UTILS</reponame>
+        </repo>
+    </os>
+    <os family="ubuntu16">
+        <repo>
+            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDF/ubuntu16/3.x/updates/3.1.0.0</baseurl>
+            <repoid>HDF-3.1</repoid>
+            <reponame>HDF</reponame>
+        </repo>
+        <repo>
+            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu16</baseurl>
             <repoid>HDP-UTILS-1.1.0.21</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
