@@ -218,12 +218,12 @@ check_db_connection_jar_name = "DBConnectionVerification.jar"
 check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar_name}")
 
 # bootstrap commands
-
+jdk64_home=config['hostLevelParams']['java_home']
 bootstrap_storage_command = os.path.join(streamline_home, "bootstrap", "bootstrap-storage.sh")
-bootstrap_storage_run_cmd = format('source {conf_dir}/streamline-env.sh ; {bootstrap_storage_command}')
+bootstrap_storage_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/streamline-env.sh ; {bootstrap_storage_command}')
 
 bootstrap_command = os.path.join(streamline_home, "bootstrap", "bootstrap.sh")
-bootstrap_run_cmd = format('source {conf_dir}/streamline-env.sh ; {bootstrap_command}')
+bootstrap_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/streamline-env.sh ; {bootstrap_command}')
 
 bootstrap_storage_file = "/var/lib/ambari-agent/data/streamline/bootstrap_storage_done"
 bootstrap_file = "/var/lib/ambari-agent/data/streamline/bootstrap_done"

@@ -42,8 +42,24 @@ class StreamlineServer(Script):
       return None
     return "streamline"
 
+  def execute_bootstrap(self, params):
+    if not os.path.isfile(params.bootstrap_storage_file):
+      try:
+        Execute(params.bootstrap_storage_run_cmd + ' migrate',
+                user="root")
+        File(params.bootstrap_storage_file,
+             owner=params.streamline_user,
+             group=params.user_group,
+             mode=0644)
+      except:
+        show_logs(params.streamline_log_dir, params.streamline_user)
+        raise
+
   def install(self, env):
+    import params
     self.install_packages(env)
+    self.configure(env)
+    self.execute_bootstrap(params)
 
   def configure(self, env, upgrade_type=None):
     import params
@@ -53,24 +69,13 @@ class StreamlineServer(Script):
   def pre_upgrade_restart(self, env, upgrade_type=None):
     import params
     env.set_params(params)
+    self.execute_bootstrap(params)
 
   def start(self, env, upgrade_type=None):
     import params
     import status_params
     env.set_params(params)
     self.configure(env)
-
-    if not os.path.isfile(params.bootstrap_storage_file):
-        try:
-          Execute(params.bootstrap_storage_run_cmd,
-                  user="root")
-          File(params.bootstrap_storage_file,
-               owner=params.streamline_user,
-               group=params.user_group,
-               mode=0644)
-        except:
-          show_logs(params.streamline_log_dir, params.streamline_user)
-          raise
 
     daemon_cmd = format('source {params.conf_dir}/streamline-env.sh ; {params.streamline_bin} start')
     no_op_test = format('ls {status_params.streamline_pid_file} >/dev/null 2>&1 && ps -p `cat {status_params.streamline_pid_file}` >/dev/null 2>&1')

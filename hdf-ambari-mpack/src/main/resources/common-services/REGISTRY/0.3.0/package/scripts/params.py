@@ -166,8 +166,8 @@ check_db_connection_jar_name = "DBConnectionVerification.jar"
 check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar_name}")
 
 # bootstrap commands
-
+jdk64_home=config['hostLevelParams']['java_home']
 bootstrap_storage_command = os.path.join(registry_home, "bootstrap", "bootstrap-storage.sh")
-bootstrap_storage_run_cmd = format('source {conf_dir}/registry-env.sh ; {bootstrap_storage_command}')
+bootstrap_storage_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/registry-env.sh ; {bootstrap_storage_command}')
 bootstrap_storage_file = "/var/lib/ambari-agent/data/registry/bootstrap_storage_done"
 registry_agent_dir = "/var/lib/ambari-agent/data/registry"
