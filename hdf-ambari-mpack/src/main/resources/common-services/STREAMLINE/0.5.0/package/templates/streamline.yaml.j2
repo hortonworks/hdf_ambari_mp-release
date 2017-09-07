@@ -64,6 +64,13 @@ storageProviderConfiguration:
     queryTimeoutInSecs: {{streamline_storage_query_timeout}}
   providerClass: com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager
 
+{% if streamline_truststore_path %}
+trustStorePath: "{{streamline_truststore_path}}"
+{% endif %}
+{% if streamline_truststore_password %}
+trustStorePassword: "{{streamline_truststore_password}}"
+{% endif %}
+
 {% if security_enabled %}
 authorizerConfiguration:
   className: {{streamline_authorizer_class}}

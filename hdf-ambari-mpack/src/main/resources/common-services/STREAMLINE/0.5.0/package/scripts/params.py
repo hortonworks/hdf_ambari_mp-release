@@ -185,6 +185,17 @@ if 'httpProxyPassword' in config['configurations']['streamline-common']:
 else:
   http_proxy_password = None
 
+# Custom Truststore
+if 'streamlineTrustStorePath' in config['configurations']['streamline-common']:
+  streamline_truststore_path = config['configurations']['streamline-common']['streamlineTrustStorePath']
+else:
+  streamline_truststore_path = None
+
+if 'streamlineTrustStorePassword' in config['configurations']['streamline-common']:
+  streamline_truststore_password = config['configurations']['streamline-common']['streamlineTrustStorePassword']
+else:
+  streamline_truststore_password = None
+
 streamline_catalog_root_url = 'http://{0}:{1}/api/v1/catalog'.format(hostname,streamline_port)
 
 # mysql jar
