@@ -159,7 +159,8 @@
           "STANDARD": [
             "nifi"
           ]
-        },
+        }
+       },
        "REGISTRY": {
         "REGISTRY_SERVER": {
           "STACK-SELECT-PACKAGE": "registry",
