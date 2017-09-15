@@ -17,23 +17,18 @@ limitations under the License.
 
 """
 import os
-import ConfigParser
 
 import ambari_simplejson as json
 from resource_management.core.logger import Logger
-from resource_management.core.resources.system import Directory, File
-from resource_management.core.source import InlineTemplate, Template
-from resource_management.libraries.functions import default
 from resource_management.libraries.functions import conf_select
 from resource_management.libraries.functions import stack_select
 from resource_management.libraries.functions.format import format
-from resource_management.libraries.functions.version import compare_versions
 from resource_management.libraries.functions.fcntl_based_process_lock import FcntlBasedProcessLock
 from resource_management.libraries.resources.xml_config import XmlConfig
 from resource_management.libraries.script import Script
 
 
-def setup_stack_symlinks():
+def setup_stack_symlinks(struct_out_file):
   """
   Invokes <stack-selector-tool> set all against a calculated fully-qualified, "normalized" version based on a
   stack version, such as "0.3". This should always be called after a component has been
@@ -42,15 +37,30 @@ def setup_stack_symlinks():
   :return:
   """
   import params
-  if params.stack_version_formatted != "" and compare_versions(params.stack_version_formatted, '0.2') >= 0:
-    # try using the exact version first, falling back in just the stack if it's not defined
-    # which would only be during an intial cluster installation
-    version = params.current_version if params.current_version is not None else params.stack_version_unformatted
+  if params.upgrade_suspended:
+    Logger.warning("Skipping running stack-selector-tool because there is a suspended upgrade")
+    return
 
-    if not params.upgrade_suspended:
-      # On parallel command execution this should be executed by a single process at a time.
-      with FcntlBasedProcessLock(params.stack_select_lock_file, enabled = params.is_parallel_execution_enabled, skip_fcntl_failures = True):
-        stack_select.select_all(version)
+  if params.host_sys_prepped:
+    Logger.warning("Skipping running stack-selector-tool because this is a sys_prepped host. This may cause symlink pointers not to be created for HDP components installed later on top of an already sys_prepped host")
+    return
+
+  # get the packages which the stack-select tool should be used on
+  stack_packages = stack_select.get_packages(stack_select.PACKAGE_SCOPE_INSTALL)
+  if stack_packages is None:
+    return
+
+  json_version = load_version(struct_out_file)
+
+  if not json_version:
+    Logger.info("There is no advertised version for this component stored in {0}".format(struct_out_file))
+    return
+
+  # On parallel command execution this should be executed by a single process at a time.
+  with FcntlBasedProcessLock(params.stack_select_lock_file, enabled = params.is_parallel_execution_enabled, skip_fcntl_failures = True):
+    for package in stack_packages:
+      stack_select.select(package, json_version)
+
 
 def setup_config():
   import params
@@ -73,65 +83,25 @@ def setup_config():
               group=params.user_group,
               only_if=format("ls {hadoop_conf_dir}"))
 
-  ambari_version = get_ambari_version()
-  if ambari_version and ambari_version >= '3.0.0.0':
-    Directory(params.logsearch_logfeeder_conf,
-              mode=0755,
-              cd_access='a',
-              create_parents=True
-              )
-
-    if params.logsearch_config_file_exists:
-      File(format("{logsearch_logfeeder_conf}/" + params.logsearch_config_file_name),
-           content=Template(params.logsearch_config_file_path,extra_imports=[default])
-           )
-    else:
-      Logger.warning('No logsearch configuration exists at ' + params.logsearch_config_file_path)
-
-def get_ambari_version():
-  ambari_version = None
-  AMBARI_AGENT_CONF = '/etc/ambari-agent/conf/ambari-agent.ini'
-  if os.path.exists(AMBARI_AGENT_CONF):
-    try:
-      ambari_agent_config = ConfigParser.RawConfigParser()
-      ambari_agent_config.read(AMBARI_AGENT_CONF)
-      data_dir = ambari_agent_config.get('agent', 'prefix')
-      ver_file = os.path.join(data_dir, 'version')
-      with open(ver_file, "r") as f:
-        ambari_version = f.read().strip()
-    except Exception, e:
-      Logger.info('Unable to determine ambari version from the agent version file.')
-      Logger.debug('Exception: %s' % str(e))
-      pass
-    pass
-  return ambari_version
-
 
 def load_version(struct_out_file):
   """
   Load version from file.  Made a separate method for testing
   """
-  json_version = None
   try:
-    if os.path.exists(struct_out_file):
-      with open(struct_out_file, 'r') as fp:
-        json_info = json.load(fp)
-        json_version = json_info['version']
-  except:
-    pass
+    with open(struct_out_file, 'r') as fp:
+      json_info = json.load(fp)
 
-  return json_version
-  
+    return json_info['version']
+  except (IOError, KeyError, TypeError):
+    return None
+
 
 def link_configs(struct_out_file):
   """
   Links configs, only on a fresh install of HDF-0.3 and higher
   """
   import params
-
-  if not Script.is_stack_greater_or_equal("0.3"):
-    Logger.info("Can only link configs for HDF-0.3 and higher.")
-    return
 
   json_version = load_version(struct_out_file)
 

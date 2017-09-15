@@ -24,33 +24,49 @@ from resource_management.libraries.functions import stack_select
 from resource_management.libraries.functions import default
 from resource_management.libraries.functions import format_jvm_option
 from resource_management.libraries.functions import format
-from resource_management.libraries.functions.version import format_stack_version, compare_versions
+from resource_management.libraries.functions.version import format_stack_version, compare_versions, get_major_version
 from ambari_commons.os_check import OSCheck
 from resource_management.libraries.script.script import Script
 from resource_management.libraries.functions import get_kinit_path
 from resource_management.libraries.functions.get_not_managed_resources import get_not_managed_resources
 from resource_management.libraries.resources.hdfs_resource import HdfsResource
+from resource_management.libraries.functions.stack_features import check_stack_feature
+from resource_management.libraries.functions.stack_features import get_stack_feature_version
+from resource_management.libraries.functions import StackFeature
+from ambari_commons.constants import AMBARI_SUDO_BINARY
 
 config = Script.get_config()
-
 tmp_dir = Script.get_tmp_dir()
 artifact_dir = tmp_dir + "/AMBARI-artifacts"
 
+version_for_stack_feature_checks = get_stack_feature_version(config)
+stack_supports_hadoop_custom_extensions = check_stack_feature(StackFeature.HADOOP_CUSTOM_EXTENSIONS, version_for_stack_feature_checks)
+
+sudo = AMBARI_SUDO_BINARY
+
 # Global flag enabling or disabling the sysprep feature
 host_sys_prepped = default("/hostLevelParams/host_sys_prepped", False)
+
+# Whether to skip copying fast-hdfs-resource.jar to /var/lib/ambari-agent/lib/
+# This is required if tarballs are going to be copied to HDFS, so set to False
+sysprep_skip_copy_fast_jar_hdfs = host_sys_prepped and default("/configurations/cluster-env/sysprep_skip_copy_fast_jar_hdfs", False)
 
 # Whether to skip setting up the unlimited key JCE policy
 sysprep_skip_setup_jce = host_sys_prepped and default("/configurations/cluster-env/sysprep_skip_setup_jce", False)
 
 stack_version_unformatted = config['hostLevelParams']['stack_version']
 stack_version_formatted = format_stack_version(stack_version_unformatted)
+major_stack_version = get_major_version(stack_version_formatted)
 
 dfs_type = default("/commandParams/dfs_type", "")
 hadoop_conf_dir = "/etc/hadoop/conf"
-
 component_list = default("/localComponents", [])
 
 hdfs_tmp_dir = config['configurations']['hadoop-env']['hdfs_tmp_dir']
+
+hadoop_metrics2_properties_content = None
+if 'hadoop-metrics2.properties' in config['configurations']:
+  hadoop_metrics2_properties_content = config['configurations']['hadoop-metrics2.properties']['content']
 
 # hadoop default params
 mapreduce_libs_path = "/usr/lib/hadoop-mapreduce/*"
@@ -74,7 +90,7 @@ security_enabled = config['configurations']['cluster-env']['security_enabled']
 
 ambari_server_resources_url = default("/hostLevelParams/jdk_location", None)
 if ambari_server_resources_url is not None and ambari_server_resources_url.endswith('/'):
-    ambari_server_resources_url = ambari_server_resources_url[:-1]
+  ambari_server_resources_url = ambari_server_resources_url[:-1]
 
 # Unlimited key JCE policy params
 jce_policy_zip = default("/hostLevelParams/jce_name", None) # None when jdk is already installed by user
@@ -105,7 +121,14 @@ jtnode_host = default("/clusterHostInfo/jtnode_host", [])
 namenode_host = default("/clusterHostInfo/namenode_host", [])
 zk_hosts = default("/clusterHostInfo/zookeeper_hosts", [])
 ganglia_server_hosts = default("/clusterHostInfo/ganglia_server_host", [])
-ams_collector_hosts = default("/clusterHostInfo/metrics_collector_hosts", [])
+cluster_name = config["clusterName"]
+set_instanceId = "false"
+if 'cluster-env' in config['configurations'] and \
+    'metrics_collector_external_hosts' in config['configurations']['cluster-env']:
+  ams_collector_hosts = config['configurations']['cluster-env']['metrics_collector_external_hosts']
+  set_instanceId = "true"
+else:
+  ams_collector_hosts = ",".join(default("/clusterHostInfo/metrics_collector_hosts", []))
 
 has_namenode = not len(namenode_host) == 0
 has_resourcemanager = not len(rm_host) == 0
@@ -124,19 +147,17 @@ is_rmnode_master = hostname in rm_host
 is_hsnode_master = hostname in hs_host
 is_hbase_master = hostname in hbase_master_hosts
 is_slave = hostname in slave_hosts
+
 if has_ganglia_server:
   ganglia_server_host = ganglia_server_hosts[0]
+
+metric_collector_port = None
 if has_metric_collector:
   if 'cluster-env' in config['configurations'] and \
-      'metrics_collector_vip_host' in config['configurations']['cluster-env']:
-    metric_collector_host = config['configurations']['cluster-env']['metrics_collector_vip_host']
+      'metrics_collector_external_port' in config['configurations']['cluster-env']:
+    metric_collector_port = config['configurations']['cluster-env']['metrics_collector_external_port']
   else:
-    metric_collector_host = ams_collector_hosts[0]
-  if 'cluster-env' in config['configurations'] and \
-      'metrics_collector_vip_port' in config['configurations']['cluster-env']:
-    metric_collector_port = config['configurations']['cluster-env']['metrics_collector_vip_port']
-  else:
-    metric_collector_web_address = default("/configurations/ams-site/timeline.metrics.service.webapp.address", "localhost:6188")
+    metric_collector_web_address = default("/configurations/ams-site/timeline.metrics.service.webapp.address", "0.0.0.0:6188")
     if metric_collector_web_address.find(':') != -1:
       metric_collector_port = metric_collector_web_address.split(':')[1]
     else:
@@ -152,6 +173,17 @@ if has_metric_collector:
   pass
 metrics_report_interval = default("/configurations/ams-site/timeline.metrics.sink.report.interval", 60)
 metrics_collection_period = default("/configurations/ams-site/timeline.metrics.sink.collection.period", 10)
+
+# Cluster Zookeeper quorum
+zookeeper_quorum = None
+if has_zk_host:
+  if 'zoo.cfg' in config['configurations'] and 'clientPort' in config['configurations']['zoo.cfg']:
+    zookeeper_clientPort = config['configurations']['zoo.cfg']['clientPort']
+  else:
+    zookeeper_clientPort = '2181'
+  zookeeper_quorum = (':' + zookeeper_clientPort + ',').join(config['clusterHostInfo']['zookeeper_hosts'])
+  # last port config
+  zookeeper_quorum += ':' + zookeeper_clientPort
 
 #hadoop params
 
@@ -211,6 +243,16 @@ mapred_log_dir_prefix = default("/configurations/mapred-env/mapred_log_dir_prefi
 yarn_log_dir_prefix = default("/configurations/yarn-env/yarn_log_dir_prefix","/var/log/hadoop-yarn")
 
 dfs_hosts = default('/configurations/hdfs-site/dfs.hosts', None)
+
+# Hdfs log4j settings
+hadoop_log_max_backup_size = default('configurations/hdfs-log4j/hadoop_log_max_backup_size', 256)
+hadoop_log_number_of_backup_files = default('configurations/hdfs-log4j/hadoop_log_number_of_backup_files', 10)
+hadoop_security_log_max_backup_size = default('configurations/hdfs-log4j/hadoop_security_log_max_backup_size', 256)
+hadoop_security_log_number_of_backup_files = default('configurations/hdfs-log4j/hadoop_security_log_number_of_backup_files', 20)
+
+# Yarn log4j settings
+yarn_rm_summary_log_max_backup_size = default('configurations/yarn-log4j/yarn_rm_summary_log_max_backup_size', 256)
+yarn_rm_summary_log_number_of_backup_files = default('configurations/yarn-log4j/yarn_rm_summary_log_number_of_backup_files', 20)
 
 #log4j.properties
 if (('hdfs-log4j' in config['configurations']) and ('content' in config['configurations']['hdfs-log4j'])):
@@ -284,16 +326,21 @@ if dfs_ha_namenode_ids:
 if dfs_ha_enabled:
  for nn_id in dfs_ha_namemodes_ids_list:
    nn_host = config['configurations']['hdfs-site'][format('dfs.namenode.rpc-address.{dfs_ha_nameservices}.{nn_id}')]
-   if hostname in nn_host:
+   if hostname.lower() in nn_host.lower():
      namenode_id = nn_id
      namenode_rpc = nn_host
    pass
  pass
 else:
- namenode_rpc = default('/configurations/hdfs-site/dfs.namenode.rpc-address', None)
+ namenode_rpc = default('/configurations/hdfs-site/dfs.namenode.rpc-address', default_fs)
 
-if namenode_rpc:
- nn_rpc_client_port = namenode_rpc.split(':')[1].strip()
+# if HDFS is not installed in the cluster, then don't try to access namenode_rpc
+if "core-site" in config['configurations'] and namenode_rpc:
+ port_str = namenode_rpc.split(':')[-1].strip()
+ try:
+   nn_rpc_client_port = int(port_str)
+ except ValueError:
+   nn_rpc_client_port = None
 
 if dfs_ha_enabled:
  dfs_service_rpc_address = default(format('/configurations/hdfs-site/dfs.namenode.servicerpc-address.{dfs_ha_nameservices}.{namenode_id}'), None)

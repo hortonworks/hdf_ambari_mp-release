@@ -41,12 +41,18 @@
     <property-type>USER</property-type>
     <display-name>Nifi User</display-name>
     <description>User nifi daemon runs as</description>
-    <on-ambari-upgrade add="true"/>
     <value-attributes>
-      <type>user</type>
-      <overridable>false</overridable>
-    </value-attributes>
-  </property> 
+            <type>user</type>
+            <overridable>false</overridable>
+            <user-groups>
+                <property>
+                    <type>nifi-env</type>
+                    <name>nifi_group</name>
+                </property>
+            </user-groups>
+        </value-attributes>
+    <on-ambari-upgrade add="true"/>
+ </property>
         
   <property>
     <name>nifi_group</name>

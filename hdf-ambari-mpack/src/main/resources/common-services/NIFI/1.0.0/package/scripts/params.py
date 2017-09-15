@@ -50,7 +50,7 @@ elif not stack_version_buildnum and stack_name:
   stack_version_buildnum = get_component_version(stack_name, "nifi")
 
 service_name = 'nifi'
-service_version = config['componentVersionMap']['NIFI']['NIFI_MASTER']
+service_version = config['componentVersionMap']['NIFI']
 version_for_stack_feature_checks = get_stack_feature_version(config)
 
 script_dir = os.path.dirname(__file__)

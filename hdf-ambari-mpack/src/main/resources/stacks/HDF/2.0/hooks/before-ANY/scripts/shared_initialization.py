@@ -24,13 +24,19 @@ import tempfile
 from copy import copy
 from resource_management.libraries.functions.version import compare_versions
 from resource_management import *
+from resource_management.core import shell
 
 def setup_users():
   """
   Creates users before cluster installation
   """
   import params
-  should_create_users_and_groups = not params.host_sys_prepped and not params.ignore_groupsusers_create
+
+  should_create_users_and_groups = False
+  if params.host_sys_prepped:
+    should_create_users_and_groups = not params.sysprep_skip_create_users_and_groups
+  else:
+    should_create_users_and_groups = not params.ignore_groupsusers_create
 
   if should_create_users_and_groups:
     for group in params.group_list:
@@ -39,10 +45,11 @@ def setup_users():
 
     for user in params.user_list:
       User(user,
-          gid = params.user_to_gid_dict[user],
-          groups = params.user_to_groups_dict[user],
-          fetch_nonlocal_groups = params.fetch_nonlocal_groups
-      )
+           uid = get_uid(user) if params.override_uid == "true" else None,
+           gid = params.user_to_gid_dict[user],
+           groups = params.user_to_groups_dict[user],
+           fetch_nonlocal_groups = params.fetch_nonlocal_groups,
+           )
 
     if params.override_uid == "true":
       set_uid(params.smoke_user, params.smoke_user_dirs)
@@ -60,19 +67,17 @@ def setup_users():
                create_parents = True,
                cd_access="a",
     )
-    if not params.host_sys_prepped and params.override_uid == "true":
+
+    if params.override_uid == "true":
       set_uid(params.hbase_user, params.hbase_user_dirs)
     else:
-      Logger.info('Skipping setting uid for hbase user as host is sys prepped')      
-      pass
+      Logger.info('Skipping setting uid for hbase user as host is sys prepped')
 
-  if not params.host_sys_prepped:
+  if should_create_users_and_groups:
     if params.has_namenode:
-      if should_create_users_and_groups:
-        create_dfs_cluster_admins()
-    if params.has_tez and params.stack_version_formatted != "" and compare_versions(params.stack_version_formatted, '0.3') >= 0:
-      if should_create_users_and_groups:
-        create_tez_am_view_acls()
+      create_dfs_cluster_admins()
+    if params.has_tez and params.stack_version_formatted != "" and compare_versions(params.stack_version_formatted, '2.3') >= 0:
+      create_tez_am_view_acls()
   else:
     Logger.info('Skipping setting dfs cluster admin and tez view acls as host is sys prepped')
 
@@ -86,7 +91,7 @@ def create_dfs_cluster_admins():
 
   User(params.hdfs_user,
     groups = params.user_to_groups_dict[params.hdfs_user] + groups_list,
-          fetch_nonlocal_groups = params.fetch_nonlocal_groups
+    fetch_nonlocal_groups = params.fetch_nonlocal_groups
   )
 
 def create_tez_am_view_acls():
@@ -103,12 +108,16 @@ def create_users_and_groups(user_and_groups):
 
   import params
 
-  parts = re.split('\s', user_and_groups)
+  parts = re.split('\s+', user_and_groups)
   if len(parts) == 1:
     parts.append("")
 
   users_list = parts[0].split(",") if parts[0] else []
   groups_list = parts[1].split(",") if parts[1] else []
+
+  # skip creating groups and users if * is provided as value.
+  users_list = filter(lambda x: x != '*' , users_list)
+  groups_list = filter(lambda x: x != '*' , groups_list)
 
   if users_list:
     User(users_list,
@@ -119,7 +128,7 @@ def create_users_and_groups(user_and_groups):
     Group(copy(groups_list),
     )
   return groups_list
-    
+
 def set_uid(user, user_dirs):
   """
   user_dirs - comma separated directories
@@ -130,9 +139,30 @@ def set_uid(user, user_dirs):
        content=StaticFile("changeToSecureUid.sh"),
        mode=0555)
   ignore_groupsusers_create_str = str(params.ignore_groupsusers_create).lower()
-  Execute(format("{tmp_dir}/changeUid.sh {user} {user_dirs}"),
+  uid = get_uid(user)
+  Execute(format("{tmp_dir}/changeUid.sh {user} {user_dirs} {new_uid}", new_uid=0 if uid is None else uid),
           not_if = format("(test $(id -u {user}) -gt 1000) || ({ignore_groupsusers_create_str})"))
-    
+
+def get_uid(user):
+  import params
+  user_str = str(user) + "_uid"
+  service_env = [ serviceEnv for serviceEnv in params.config['configurations'] if user_str in params.config['configurations'][serviceEnv]]
+
+  if service_env and params.config['configurations'][service_env[0]][user_str]:
+    service_env_str = str(service_env[0])
+    uid = params.config['configurations'][service_env_str][user_str]
+    if len(service_env) > 1:
+      Logger.warning("Multiple values found for %s, using %s"  % (user_str, uid))
+    return uid
+  else:
+    if user == params.smoke_user:
+      return None
+    File(format("{tmp_dir}/changeUid.sh"),
+         content=StaticFile("changeToSecureUid.sh"),
+         mode=0555)
+    code, newUid = shell.call(format("{tmp_dir}/changeUid.sh {user}"))
+    return int(newUid)
+
 def setup_hadoop_env():
   import params
   stackversion = params.stack_version_unformatted
@@ -165,7 +195,7 @@ def setup_hadoop_env():
     Directory(params.hadoop_java_io_tmpdir,
               owner=params.hdfs_user,
               group=params.user_group,
-              mode=0777
+              mode=01777
     )
 
 def setup_java():
@@ -190,6 +220,10 @@ def setup_java():
     File(jdk_curl_target,
          content = DownloadSource(format("{jdk_location}/{jdk_name}")),
          not_if = format("test -f {jdk_curl_target}")
+    )
+
+    File(jdk_curl_target,
+         mode = 0755,
     )
 
     tmp_java_dir = tempfile.mkdtemp(prefix="jdk_tmp_", dir=params.tmp_dir)
