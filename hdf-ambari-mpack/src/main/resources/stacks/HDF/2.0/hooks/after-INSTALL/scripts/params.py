@@ -21,11 +21,12 @@ import os
 
 from ambari_commons.constants import AMBARI_SUDO_BINARY
 from resource_management.libraries.script import Script
+from resource_management.libraries.script.script import get_config_lock_file
 from resource_management.libraries.functions import default
 from resource_management.libraries.functions import conf_select
 from resource_management.libraries.functions import stack_select
 from resource_management.libraries.functions import format_jvm_option
-from resource_management.libraries.functions.version import format_stack_version
+from resource_management.libraries.functions.version import format_stack_version,get_major_version
 
 config = Script.get_config()
 tmp_dir = Script.get_tmp_dir()
@@ -33,14 +34,12 @@ tmp_dir = Script.get_tmp_dir()
 dfs_type = default("/commandParams/dfs_type", "")
 
 is_parallel_execution_enabled = int(default("/agentConfigParams/agent/parallel_execution", 0)) == 1
-
+host_sys_prepped = default("/hostLevelParams/host_sys_prepped", False)
 sudo = AMBARI_SUDO_BINARY
 
 stack_version_unformatted = config['hostLevelParams']['stack_version']
 stack_version_formatted = format_stack_version(stack_version_unformatted)
-
-# current host stack version
-current_version = default("/hostLevelParams/current_version", None)
+major_stack_version = get_major_version(stack_version_formatted)
 
 # default hadoop params
 mapreduce_libs_path = "/usr/lib/hadoop-mapreduce/*"
@@ -95,7 +94,7 @@ has_namenode = not len(namenode_host) == 0
 if has_namenode or dfs_type == 'HCFS':
   hadoop_conf_dir = conf_select.get_hadoop_conf_dir(force_latest_on_upgrade=True)
 
-link_configs_lock_file = os.path.join(tmp_dir, "link_configs_lock_file")
+link_configs_lock_file = get_config_lock_file()
 stack_select_lock_file = os.path.join(tmp_dir, "stack_select_lock_file")
 
 upgrade_suspended = default("/roleParams/upgrade_suspended", False)

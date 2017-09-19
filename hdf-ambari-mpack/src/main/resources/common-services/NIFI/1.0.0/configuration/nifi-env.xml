@@ -45,6 +45,12 @@
     <value-attributes>
       <type>user</type>
       <overridable>false</overridable>
+      <user-groups>
+	<property>
+		<type>nifi-env</type>
+		<name>nifi_group</name>
+	</property>
+       </user-groups>
     </value-attributes>
   </property> 
         
