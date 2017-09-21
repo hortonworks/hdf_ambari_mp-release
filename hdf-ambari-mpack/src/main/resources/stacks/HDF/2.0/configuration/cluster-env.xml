@@ -206,7 +206,7 @@ gpgcheck=0</value>
 
     <property>
         <name>stack_root</name>
-        <value>/usr/hdf</value>
+        <value>{"HDF":"/usr/hdf"}</value>
         <description>Stack root folder</description>
         <on-ambari-upgrade add="true"/>
     </property>
