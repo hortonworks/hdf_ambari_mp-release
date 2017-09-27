@@ -46,7 +46,7 @@ if stack_name == "HDP":
   # Override HDP stack version
   stack_version_buildnum = get_component_version_with_stack_selector("/usr/bin/hdf-select", "nifi")
 elif not stack_version_buildnum and stack_name:
-  stack_version_buildnum = get_component_version(stack_name, "nifi")
+  stack_version_buildnum = get_component_version_from_symlink(stack_name, "nifi")
 
 service_name = 'nifi'
 service_version = config['componentVersionMap']['NIFI']['NIFI_MASTER']
