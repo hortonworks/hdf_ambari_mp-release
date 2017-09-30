@@ -39,6 +39,7 @@ servletFilters:
       kerberos.keytab: "{{registry_ui_keytab_path}}"
       kerberos.name.rules: "{{registry_servlet_kerberos_name_rules}}"
       token.validity: "{{registry_servlet_token_validity}}"
+      allowed.resources: "401.html,back-default.png,favicon.ico"
 {%endif%}
   - className: "com.hortonworks.registries.schemaregistry.webservice.RewriteUriFilter"
     params:
