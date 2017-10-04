@@ -113,10 +113,9 @@
     </group>
 
     <!-- After processing this group, will change the effective Stack of the UpgradeContext object. -->
-    <group xsi:type="update-stack" name="UPDATE_DESIRED_STACK_ID" title="Update Target Stack">
-      <execute-stage title="Update Target Stack">
-        <task xsi:type="server_action" class="org.apache.ambari.server.serveraction.upgrades.UpdateDesiredStackAction">
-        </task>
+    <group xsi:type="update-stack" name="UPDATE_DESIRED_REPOSITORY_ID" title="Update Target Repositories">
+      <execute-stage title="Update Target Repositories">
+        <task xsi:type="server_action" class="org.apache.ambari.server.serveraction.upgrades.UpdateDesiredRepositoryAction"/>
       </execute-stage>
     </group>
 
@@ -129,6 +128,9 @@
       </execute-stage>
       <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
         <task xsi:type="configure" id="hdf_2_1_0_0_add_nifi_ambari_config_configs"/>
+      </execute-stage>
+      <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
+        <task xsi:type="configure" id="hdf_2_1_0_0_update_nifi_properties_configs"/>
       </execute-stage>
       <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
         <task xsi:type="manual">
