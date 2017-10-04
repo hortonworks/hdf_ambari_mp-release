@@ -3,6 +3,23 @@
         <service name="NIFI">
             <component name="NIFI_MASTER">
                 <changes>
+
+                    <!-- Update these configs in nifi-properties. -->
+                    <definition xsi:type="configure" id="hdf_2_0_0_0_update_nifi_properties_configs">
+                        <type>nifi-properties</type>
+                        <set key="nifi.version" value="1.0.0.{{stack_version_buildnum}}"/>
+                    </definition>
+
+                    <definition xsi:type="configure" id="hdf_2_1_0_0_update_nifi_properties_configs">
+                        <type>nifi-properties</type>
+                        <set key="nifi.version" value="1.1.0.{{stack_version_buildnum}}"/>
+                    </definition>
+
+                    <definition xsi:type="configure" id="hdf_3_0_0_0_update_nifi_properties_configs">
+                        <type>nifi-properties</type>
+                        <set key="nifi.version" value="1.2.0.{{stack_version_buildnum}}"/>
+                    </definition>
+
                     <!-- Add these configs to nifi-properties. -->
                     <definition xsi:type="configure" id="hdf_2_1_0_0_add_nifi_properties_configs">
                         <type>nifi-properties</type>
@@ -66,17 +83,6 @@
                         &lt;/services&gt;"/>
                     </definition>
 
-                </changes>
-            </component>
-        </service>
-        <service name="ZOOKEEPER">
-            <component name="ZOOKEEPER_SERVER">
-                <changes>
-                    <!-- Update stack tools to use appropriate hdf conf selector -->
-                    <definition xsi:type="configure" id="hdf_3_0_0_0_update_cluster_env_configs">
-                        <type>cluster-env</type>
-                        <regex-replace key="stack_tools" find="&quot;conf_selector&quot;:(\s)*\[.+\]" replace-with="&quot;conf_selector&quot;:[&quot;hdfconf-select&quot;,&quot;/usr/bin/hdfconf-select&quot;,&quot;hdf-select&quot;]"/>
-                    </definition>
                 </changes>
             </component>
         </service>

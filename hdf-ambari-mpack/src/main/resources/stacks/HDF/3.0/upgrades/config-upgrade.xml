@@ -1,0 +1,18 @@
+<upgrade-config-changes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="upgrade-config.xsd">
+    <services>
+        <service name="NIFI">
+            <component name="NIFI_MASTER">
+                <changes>
+
+                    <!-- Update these configs in nifi-properties. -->
+                    <definition xsi:type="configure" id="hdf_3_0_0_0_update_nifi_properties_configs">
+                        <type>nifi-properties</type>
+                        <set key="nifi.version" value="1.2.0.{{stack_version_buildnum}}"/>
+                    </definition>
+
+                </changes>
+            </component>
+        </service>
+    </services>
+</upgrade-config-changes>
+

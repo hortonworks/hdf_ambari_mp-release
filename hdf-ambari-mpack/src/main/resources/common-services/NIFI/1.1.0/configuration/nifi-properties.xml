@@ -18,6 +18,13 @@
 <configuration supports_final="false">
 
     <property>
+      <name>nifi.version</name>
+      <value>1.1.0.{{stack_version_buildnum}}</value>
+      <on-ambari-upgrade add="true" update="true" delete="false"/>
+      <description>The version number of the current release.</description>
+    </property>
+
+    <property>
         <name>nifi.sensitive.props.additional.keys</name>
         <value/>
         <value-attributes>

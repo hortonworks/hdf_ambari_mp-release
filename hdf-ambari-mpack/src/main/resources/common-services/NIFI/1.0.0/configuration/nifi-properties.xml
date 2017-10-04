@@ -19,8 +19,8 @@
   <!--# Core Properties #-->
   <property>
     <name>nifi.version</name>
-    <value>{{service_version}}.{{stack_version_buildnum}}</value>
-    <on-ambari-upgrade add="true"/>
+    <value>1.0.0.{{stack_version_buildnum}}</value>
+    <on-ambari-upgrade add="true" update="true" delete="false"/>
     <description>The version number of the current release.</description>
   </property>
 

@@ -18,6 +18,13 @@
 <configuration supports_final="false">
 
     <property>
+      <name>nifi.version</name>
+      <deleted>true</deleted>
+      <on-ambari-upgrade add="false" update="false" delete="true"/>
+      <description>The version number of the current release.</description>
+    </property>
+
+    <property>
         <name>nifi.flow.configuration.archive.max.time</name>
         <value>30 days</value>
         <value-attributes>

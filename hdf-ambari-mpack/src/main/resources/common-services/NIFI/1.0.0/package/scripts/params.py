@@ -49,7 +49,6 @@ elif not stack_version_buildnum and stack_name:
   stack_version_buildnum = get_component_version_from_symlink(stack_name, "nifi")
 
 service_name = 'nifi'
-service_version = config['componentVersionMap']['NIFI']['NIFI_MASTER']
 version_for_stack_feature_checks = get_stack_feature_version(config)
 
 # Version being upgraded/downgraded to
