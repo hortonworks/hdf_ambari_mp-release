@@ -20,6 +20,11 @@
                         <set key="nifi.version" value="1.2.0.{{stack_version_buildnum}}"/>
                     </definition>
 
+                    <definition xsi:type="configure" id="hdf_3_1_0_0_update_nifi_properties_configs">
+                        <type>nifi-properties</type>
+                        <set key="nifi.version" value="1.4.0.{{stack_version_buildnum}}"/>
+                    </definition>
+
                     <!-- Add these configs to nifi-properties. -->
                     <definition xsi:type="configure" id="hdf_2_1_0_0_add_nifi_properties_configs">
                         <type>nifi-properties</type>
