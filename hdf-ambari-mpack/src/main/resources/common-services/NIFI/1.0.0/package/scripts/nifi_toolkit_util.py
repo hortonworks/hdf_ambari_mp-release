@@ -351,7 +351,10 @@ def setup_keystore_truststore(is_starting, params, config_version_file):
 
     if changed_ks_ts or params.nifi_toolkit_tls_regenerate:
       overlay(ca_client_dict, params.nifi_ca_client_config)
-      updated_properties = run_toolkit_client(ca_client_dict, params.nifi_config_dir, params.jdk64_home, params.nifi_user, params.nifi_group, params.toolkit_tmp_dir, params.stack_support_toolkit_update)
+      updated_properties = run_toolkit_client(ca_client_dict, params.nifi_config_dir,
+                                              params.jdk64_home, params.nifi_toolkit_java_options,
+                                              params.nifi_user, params.nifi_group,
+                                              params.toolkit_tmp_dir, params.stack_support_toolkit_update)
       update_nifi_properties(updated_properties, params.nifi_properties)
       save_config_version(config_version_file,'ssl', params.nifi_ambari_ssl_config_version, params.nifi_user, params.nifi_group)
     elif using_client_json:
@@ -363,13 +366,21 @@ def setup_keystore_truststore(is_starting, params, config_version_file):
   else:
     return params.nifi_properties
 
-def run_toolkit_client(ca_client_dict, nifi_config_dir, jdk64_home, nifi_user,nifi_group,toolkit_tmp_dir, no_client_file=False):
+def run_toolkit_client(ca_client_dict, nifi_config_dir, jdk64_home, java_options, nifi_user,nifi_group,toolkit_tmp_dir, no_client_file=False):
   Logger.info("Generating NiFi Keystore and Truststore")
   ca_client_script = get_toolkit_script('tls-toolkit.sh',toolkit_tmp_dir)
   File(ca_client_script, mode=0755)
   if no_client_file:
-    cert_command = 'echo \'' + json.dumps(ca_client_dict) + '\' | ambari-sudo.sh JAVA_HOME='+jdk64_home+' '+ ca_client_script + ' client -f /dev/stdout --configJsonIn /dev/stdin'
-    code, out = shell.call(cert_command,quiet=True,logoutput=False)
+    ca_client_json_dump = json.dumps(ca_client_dict)
+    cert_command = (
+        'echo \'%(ca_client_json_dump)s\''
+        ' | ambari-sudo.sh'
+        ' JAVA_HOME=%(jdk64_home)s'
+        ' JAVA_OPTS=%(java_options)s'
+        ' %(ca_client_script)s'
+        ' client -f /dev/stdout --configJsonIn /dev/stdin'
+    ) % locals()
+    code, out = shell.call(cert_command, quiet=True, logoutput=False)
     if code > 0:
       raise Fail("Call to tls-toolkit encountered error: {0}".format(out))
     else:
@@ -380,7 +391,8 @@ def run_toolkit_client(ca_client_dict, nifi_config_dir, jdk64_home, nifi_user,ni
   else:
     ca_client_json = os.path.realpath(os.path.join(nifi_config_dir, 'nifi-certificate-authority-client.json'))
     dump(ca_client_json, ca_client_dict, nifi_user, nifi_group)
-    Execute('JAVA_HOME='+jdk64_home+' '+ca_client_script+' client -F -f '+ca_client_json, user=nifi_user)
+    environment = {'JAVA_HOME': jdk64_home, 'JAVA_OPTS': java_options}
+    Execute((ca_client_script, 'client', '-F', '-f', ca_client_json), user=nifi_user, environment=environment)
     updated_properties = load(ca_client_json)
 
   return updated_properties
@@ -396,32 +408,34 @@ def cleanup_toolkit_client_files(params,config_version_file):
 
   return params.nifi_properties
 
-def encrypt_sensitive_properties(config_version_file,current_version,nifi_config_dir,jdk64_home,nifi_user,nifi_group,master_key_password,nifi_flow_config_dir,nifi_sensitive_props_key,is_starting,toolkit_tmp_dir):
+def encrypt_sensitive_properties(config_version_file,current_version,nifi_config_dir,jdk64_home,java_options,nifi_user,nifi_group,master_key_password,nifi_flow_config_dir,nifi_sensitive_props_key,is_starting,toolkit_tmp_dir):
   Logger.info("Encrypting NiFi sensitive configuration properties")
   encrypt_config_script = get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir)
-  encrypt_config_script_prefix = ('JAVA_HOME='+jdk64_home,encrypt_config_script)
+
+  encrypt_config_command = (encrypt_config_script,)
+  environment = {'JAVA_HOME': jdk64_home, 'JAVA_OPTS': java_options}
   File(encrypt_config_script, mode=0755)
 
   if is_starting:
     last_master_key_password = None
     last_config_version = get_config_version(config_version_file,'encrypt')
-    encrypt_config_script_params = ('-v','-b',nifi_config_dir+'/bootstrap.conf')
-    encrypt_config_script_params = encrypt_config_script_params + ('-n',nifi_config_dir+'/nifi.properties')
+    encrypt_config_command += ('-v', '-b', nifi_config_dir + '/bootstrap.conf')
+    encrypt_config_command += ('-n', nifi_config_dir + '/nifi.properties')
 
-    if sudo.path_isfile(nifi_flow_config_dir+'/flow.xml.gz') and len(sudo.read_file(nifi_flow_config_dir+'/flow.xml.gz')) > 0:
-      encrypt_config_script_params = encrypt_config_script_params + ('-f',nifi_flow_config_dir+'/flow.xml.gz','-s',PasswordString(nifi_sensitive_props_key))
+    if (sudo.path_isfile(nifi_flow_config_dir + '/flow.xml.gz')
+            and len(sudo.read_file(nifi_flow_config_dir + '/flow.xml.gz')) > 0):
+      encrypt_config_command += ('-f', nifi_flow_config_dir + '/flow.xml.gz', '-s', PasswordString(nifi_sensitive_props_key))
 
     if contains_providers(nifi_config_dir+'/login-identity-providers.xml'):
-      encrypt_config_script_params = encrypt_config_script_params + ('-l',nifi_config_dir+'/login-identity-providers.xml')
+      encrypt_config_command += ('-l', nifi_config_dir + '/login-identity-providers.xml')
 
     if last_config_version:
-      last_config = get_config_by_version('/var/lib/ambari-agent/data','nifi-ambari-config',last_config_version)
+      last_config = get_config_by_version('/var/lib/ambari-agent/data', 'nifi-ambari-config', last_config_version)
       last_master_key_password = last_config['configurations']['nifi-ambari-config']['nifi.security.encrypt.configuration.password']
 
     if last_master_key_password and last_master_key_password != master_key_password:
-      encrypt_config_script_params = encrypt_config_script_params + ('-m','-w',PasswordString(last_master_key_password))
+      encrypt_config_command += ('-m', '-w', PasswordString(last_master_key_password))
 
-    encrypt_config_script_params = encrypt_config_script_params + ('-p',PasswordString(master_key_password))
-    encrypt_config_script_prefix = encrypt_config_script_prefix + encrypt_config_script_params
-    Execute(encrypt_config_script_prefix, user=nifi_user,logoutput=False)
+    encrypt_config_command += ('-p', PasswordString(master_key_password))
+    Execute(encrypt_config_command, user=nifi_user, logoutput=False, environment=environment)
     save_config_version(config_version_file,'encrypt', current_version, nifi_user, nifi_group)

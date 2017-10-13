@@ -115,7 +115,8 @@ class Master(Script):
 
     if params.stack_support_encrypt_config:
       nifi_toolkit_util.encrypt_sensitive_properties(config_version_file,params.nifi_ambari_config_version,
-                                        params.nifi_config_dir,params.jdk64_home,params.nifi_user,
+                                        params.nifi_config_dir,params.jdk64_home,
+                                        params.nifi_toolkit_java_options,params.nifi_user,
                                         params.nifi_group,params.nifi_security_encrypt_configuration_password,
                                         params.nifi_flow_config_dir, params.nifi_sensitive_props_key, is_starting, params.toolkit_tmp_dir)
 
