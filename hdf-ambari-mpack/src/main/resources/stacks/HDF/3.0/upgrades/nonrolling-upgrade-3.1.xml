@@ -295,6 +295,8 @@
             <priority>
                 <service>STORM</service>
                 <service>NIFI</service>
+                <service>REGISTRY</service>
+                <service>STREAMLINE</service>
             </priority>
         </group>
 
