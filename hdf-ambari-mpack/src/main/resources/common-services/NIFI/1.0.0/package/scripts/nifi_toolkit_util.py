@@ -375,8 +375,8 @@ def run_toolkit_client(ca_client_dict, nifi_config_dir, jdk64_home, java_options
     cert_command = (
         'echo \'%(ca_client_json_dump)s\''
         ' | ambari-sudo.sh'
-        ' JAVA_HOME=%(jdk64_home)s'
-        ' JAVA_OPTS=%(java_options)s'
+        ' JAVA_HOME="%(jdk64_home)s"'
+        ' JAVA_OPTS="%(java_options)s"'
         ' %(ca_client_script)s'
         ' client -f /dev/stdout --configJsonIn /dev/stdin'
     ) % locals()
