@@ -42,6 +42,9 @@
     <fileSet>
       <directory>src/main/resources/hooks</directory>
       <outputDirectory>hooks</outputDirectory>
+      <excludes>
+        <exclude>**/*.json</exclude>
+      </excludes>
     </fileSet>
      <fileSet>
       <directory>src/main/resources/common-services</directory>
@@ -74,7 +77,46 @@
   -->
   <files>
     <file>
-      <source>target/mpack.json</source>
+      <source>src/main/resources/mpack.json</source>
+      <filtered>true</filtered>
+    </file>
+    <file>
+      <source>src/main/resources/hooks/HDF-3.0.json</source>
+      <outputDirectory>hooks</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+    <file>
+      <source>src/main/resources/hooks/HDF-3.1.json</source>
+      <outputDirectory>hooks</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+
+    <!-- Copy HDF-3.0 repooinfo to HDF-3.0 addon services -->
+    <file>
+      <source>src/main/resources/stacks/HDF/3.0/repos/repoinfo.xml</source>
+      <outputDirectory>hdp-addon-services/HDF/3.0/NIFI/1.2.0/repos</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/resources/stacks/HDF/3.0/repos/repoinfo.xml</source>
+      <outputDirectory>hdp-addon-services/HDF/3.0/REGISTRY/0.3.0/repos</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/resources/stacks/HDF/3.0/repos/repoinfo.xml</source>
+      <outputDirectory>hdp-addon-services/HDF/3.0/STREAMLINE/0.5.0/repos</outputDirectory>
+    </file>
+
+    <!-- Copy HDF-3.1 repooinfo to HDF-3.1 addon services -->
+    <file>
+      <source>src/main/resources/stacks/HDF/3.1/repos/repoinfo.xml</source>
+      <outputDirectory>hdp-addon-services/HDF/3.1/NIFI/1.4.0/repos</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/resources/stacks/HDF/3.1/repos/repoinfo.xml</source>
+      <outputDirectory>hdp-addon-services/HDF/3.1/REGISTRY/0.3.0/repos</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/resources/stacks/HDF/3.1/repos/repoinfo.xml</source>
+      <outputDirectory>hdp-addon-services/HDF/3.1/STREAMLINE/0.5.0/repos</outputDirectory>
     </file>
   </files>    
   <dependencySets>

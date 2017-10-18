@@ -9,32 +9,15 @@
     "min-ambari-version" : "${minAmbariVersion}",
     "max-ambari-version" : "${maxAmbariVersion}"
   },
-  "hooks": [
-    {
-      "name": "after-install",
-      "type": "python",
-      "script": "hooks/after_install.py"
-    }
-  ],
   "artifacts": [
-    {
-      "name" : "hdf-service-definitions",
-      "type" : "service-definitions",
-      "source_dir": "common-services"
-    },
-    {
-      "name" : "hdf-stack-definitions",
-      "type" : "stack-definitions",
-      "source_dir": "stacks"
-    },
     {
       "name" : "hdp-addon-services",
       "type" : "stack-addon-service-definitions",
-      "source_dir": "hdp-addon-services/HDF/3.0",
+      "source_dir": "hdp-addon-services/HDF/3.1",
       "service_versions_map": [
         {
           "service_name" : "NIFI",
-          "service_version" : "1.2.0",
+          "service_version" : "1.4.0",
           "applicable_stacks" : [
             {
               "stack_name" : "HDP",

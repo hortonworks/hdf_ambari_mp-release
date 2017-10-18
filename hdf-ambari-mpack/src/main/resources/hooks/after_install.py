@@ -20,29 +20,13 @@ limitations under the License.
 
 import sys
 import os
-from ambari_server.serverConfiguration import get_ambari_properties, get_resources_location
-from resource_management.core import sudo
+from switch_addon_services import switch_addon_services
 
 def main():
-  properties = get_ambari_properties()
-  if properties == -1:
-    print >> sys.stderr, "Error getting ambari properties"
-    return -1
-
-  resources_location = get_resources_location(properties)
-  views_dir = os.path.join(resources_location, "views")
-
-  for file in os.listdir(views_dir):
-    path = os.path.join(views_dir, file)
-    if os.path.isfile(path):
-      if "ambari-admin" in path or "storm-view" in path:
-        print "Keeping views jar : " + path
-      else:
-        print "Deleting views jar : " + path
-        sudo.unlink(path)
-    else:
-      print "Deleting views directory : " + path
-      sudo.rmtree(path)
+  file_path = os.path.realpath(__file__)
+  hooks_dir = os.path.dirname(file_path)
+  hdf31_config_path = os.path.join(hooks_dir, "HDF-3.1.json")
+  switch_addon_services(hdf31_config_path)
   return 0
 
 if __name__ == "__main__":
