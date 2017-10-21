@@ -203,18 +203,6 @@
             "current_dir": "{0}/current/nifi/conf"
           }
         ],
-        "streamline": [
-          {
-            "conf_dir": "/etc/streamline/conf",
-            "current_dir": "{0}/current/streamline/conf"
-          }
-        ],
-        "registry": [
-          {
-            "conf_dir": "/etc/registry/conf",
-            "current_dir": "{0}/current/registry/conf"
-          }
-        ],
         "ranger-admin": [
           {
             "conf_dir": "/etc/ranger/admin/conf",
