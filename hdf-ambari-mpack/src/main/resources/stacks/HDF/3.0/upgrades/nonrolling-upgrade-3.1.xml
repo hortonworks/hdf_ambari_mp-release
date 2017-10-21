@@ -191,6 +191,40 @@
         </group>
 
         <!--
+        NOTE: We need to create streamline and registry config versions only during HDF-3.0 -> HDF-3.1 upgrade.
+        Reason:
+        hdfconf-select supports streamline and registry in HDF-3.1. So we need to explicitly invoke hdfconf-select
+        after stopping these services running on HDF-3.0 and after switching the stack version to HDF-3.1
+        -->
+        <group xsi:type="cluster" name="CREATE_STREAMLINE_CONFIG_VERSION" title="Streamline - Create Streamline Config Version">
+            <service-check>false</service-check>
+            <skippable>true</skippable>
+            <supports-auto-skip-failure>false</supports-auto-skip-failure>
+
+            <execute-stage service="STREAMLINE" component="STREAMLINE_SERVER" title="Create Streamline Config Version">
+                <task xsi:type="execute" hosts="all">
+                    <summary>Create Streamline Config Version</summary>
+                    <script>scripts/streamline_server.py</script>
+                    <function>create_config_version</function>
+                </task>
+            </execute-stage>
+        </group>
+
+        <group xsi:type="cluster" name="CREATE_REGISTRY_CONFIG_VERSION" title="Registry - Create Registry Config Version">
+            <service-check>false</service-check>
+            <skippable>true</skippable>
+            <supports-auto-skip-failure>false</supports-auto-skip-failure>
+
+            <execute-stage service="REGISTRY" component="REGISTRY_SERVER" title="Create Registry Config Version">
+                <task xsi:type="execute" hosts="all">
+                    <summary>Create Registry Config Version</summary>
+                    <script>scripts/registry_server.py</script>
+                    <function>create_config_version</function>
+                </task>
+            </execute-stage>
+        </group>
+
+        <!--
         Invoke "hdp-select set all" to change any components we may have missed
         that are installed on the hosts but not known by Ambari.
         -->

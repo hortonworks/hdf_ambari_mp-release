@@ -93,6 +93,7 @@ class RegistryServer(Script):
     import status_params
     env.set_params(params)
     ensure_base_directories()
+
     daemon_cmd = format('source {params.conf_dir}/registry-env.sh; {params.registry_bin} stop')
     try:
       Execute(daemon_cmd,
@@ -120,6 +121,12 @@ class RegistryServer(Script):
   def get_pid_files(self):
     import status_params
     return [status_params.registry_pid_file]
+
+  def create_config_version(self, env):
+    import params
+    for package_name, directories in conf_select.get_package_dirs().iteritems():
+      if package_name == 'registry':
+        conf_select.convert_conf_directories_to_symlinks(package_name, params.current_version, directories)
 
 if __name__ == "__main__":
   RegistryServer().execute()
