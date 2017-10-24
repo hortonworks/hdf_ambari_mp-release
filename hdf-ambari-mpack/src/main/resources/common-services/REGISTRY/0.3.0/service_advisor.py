@@ -41,40 +41,36 @@ except Exception as e:
   print "Failed to load parent"
 
 
-class RegistryServiceAdvisor(service_advisor.ServiceAdvisor):
+class REGISTRY030ServiceAdvisor(service_advisor.ServiceAdvisor):
 
   def __init__(self, *args, **kwargs):
-    self.as_super = super(RegistryServiceAdvisor, self)
+    self.as_super = super(REGISTRY030ServiceAdvisor, self)
     self.as_super.__init__(*args, **kwargs)
+    Logger.initialize_logger()
 
   def getServiceConfigurationRecommenderDict(self):
     """
     Recommend configurations to set. Registry does not have any recommendations in this version.
     """
-    Logger.info("Class: %s, Method: %s. Recommending Service Configurations." %
-                (self.__class__.__name__, inspect.stack()[0][3]))
-
+    Logger.info("Class: %s, Method: %s. Recommending Service Configurations." % (self.__class__.__name__, inspect.stack()[0][3]))
     return self.as_super.getServiceConfigurationRecommenderDict()
 
   def getServiceConfigurationValidators(self):
     """
     Get a list of errors. Registry does not have any validations in this version.
     """
-    Logger.info("Class: %s, Method: %s. Validating Service Component Layout." %
-                (self.__class__.__name__, inspect.stack()[0][3]))
+    Logger.info("Class: %s, Method: %s. Validating Service Component Layout." % (self.__class__.__name__, inspect.stack()[0][3]))
     return self.as_super.getServiceConfigurationValidators()
-
 
   def recommendConfigurations(self, configurations, clusterData, services, hosts):
     """
     Recommend configurations for this service.
     """
-    Logger.info("Class: %s, Method: %s. Recommending Service Configurations." %
-                (self.__class__.__name__, inspect.stack()[0][3]))
-
+    Logger.info("Class: %s, Method: %s. Recommending Service Configurations." % (self.__class__.__name__, inspect.stack()[0][3]))
     pass
 
   def getServiceConfigurationRecommendations(self, configurations, clusterData, services, hosts):
+    Logger.info("Class: %s, Method: %s. get Service Configurations Recommendations. " % (self.__class__.__name__, inspect.stack()[0][3]))
     properties = get_ambari_properties()
     ambari_version = get_ambari_version(properties)
     if not(ambari_version) or not(ambari_version.startswith('2.5')):
@@ -87,12 +83,26 @@ class RegistryServiceAdvisor(service_advisor.ServiceAdvisor):
     """
     Validate configurations for the service. Return a list of errors.
     """
-    Logger.info("Class: %s, Method: %s. Validating Configurations." %
-                (self.__class__.__name__, inspect.stack()[0][3]))
-
+    Logger.info("Class: %s, Method: %s. Validating Service Configuration Items." % (self.__class__.__name__, inspect.stack()[0][3]))
     items = []
 
     return items
 
   def getCardinalitiesDict(self, hosts):
-      return {'REGISTRY_SERVER': {"min": 1}}
+    return {'REGISTRY_SERVER': {"min": 1}}
+
+  def putPropertyAttribute(self, config, configType):
+    if configType not in config:
+      config[configType] = {}
+
+    def appendPropertyAttribute(key, attribute, attributeValue):
+      if "property_attributes" not in config[configType]:
+        if "property_attributes" not in config[configType]:
+          config[configType]["property_attributes"] = {}
+      if key not in config[configType]["property_attributes"]:
+        config[configType]["property_attributes"][key] = {}
+      config[configType]["property_attributes"][key][attribute] = attributeValue if isinstance(attributeValue,
+                                                                                               list) else str(
+        attributeValue)
+
+    return appendPropertyAttribute
