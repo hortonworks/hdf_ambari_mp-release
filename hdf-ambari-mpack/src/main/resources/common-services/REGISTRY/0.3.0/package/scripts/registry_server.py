@@ -29,10 +29,11 @@ from resource_management.libraries.functions.check_process_status import check_p
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions.show_logs import show_logs
+from resource_management.libraries.functions.stack_features import get_stack_feature_version
+
 import os, time
 from registry import ensure_base_directories
 from registry import registry
-
 
 class RegistryServer(Script):
 
@@ -42,38 +43,45 @@ class RegistryServer(Script):
       return None
     return "registry"
 
+  def execute_bootstrap(self, params):
+    try:
+      Execute(params.bootstrap_storage_run_cmd + ' create',
+              user="root")
+    except:
+      show_logs(params.registry_log_dir, params.registry_user)
+      raise
+
+
   def install(self, env):
+
+    import params
+    env.set_params(params)
     self.install_packages(env)
+    self.configure(env)
+    self.execute_bootstrap(params)
 
   def configure(self, env, upgrade_type=None):
+
     import params
     env.set_params(params)
     registry(env, upgrade_type=None)
 
   def pre_upgrade_restart(self, env, upgrade_type=None):
+
     import params
     env.set_params(params)
+    self.execute_bootstrap(params)
 
   def start(self, env, upgrade_type=None):
+
     import params
     import status_params
     env.set_params(params)
     self.configure(env)
 
-    if not os.path.isfile(params.bootstrap_storage_file):
-        try:
-          Execute(params.bootstrap_storage_run_cmd,
-                  user="root")
-          File(params.bootstrap_storage_file,
-               owner=params.registry_user,
-               group=params.user_group,
-               mode=0644)
-        except:
-          show_logs(params.registry_log_dir, params.registry_user)
-          raise
-
     daemon_cmd = format('source {params.conf_dir}/registry-env.sh ; {params.registry_bin} start')
     no_op_test = format('ls {status_params.registry_pid_file} >/dev/null 2>&1 && ps -p `cat {status_params.registry_pid_file}` >/dev/null 2>&1')
+
     try:
       Execute(daemon_cmd,
               user="root",
@@ -84,6 +92,7 @@ class RegistryServer(Script):
       raise
 
   def stop(self, env, upgrade_type=None):
+
     import params
     import status_params
     env.set_params(params)

@@ -121,7 +121,6 @@ registry_storage_connector_connectorURI = config['configurations']['registry-com
 registry_storage_connector_user = config['configurations']['registry-common']['registry.storage.connector.user']
 registry_storage_connector_password = config['configurations']['registry-common']['registry.storage.connector.password']
 registry_storage_query_timeout = config['configurations']['registry-common']['registry.storage.query.timeout']
-registry_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 jar_storage_type = config['configurations']['registry-common']['jar.storage.type']
 jar_storage_hdfs_url = config['configurations']['registry-common']['jar.storage.hdfs.url']
@@ -134,9 +133,12 @@ if jar_storage_type != None and jar_storage_type == "hdfs":
   jar_storage_class = "com.hortonworks.registries.common.util.HdfsFileStorage"
   jar_remote_storage_enabled = True
 
-
 if registry_storage_type == "postgresql":
   registry_storage_java_class = "org.postgresql.ds.PGSimpleDataSource"
+elif registry_storage_type == "oracle":
+  registry_storage_java_class = "oracle.jdbc.pool.OracleDataSource"
+else:
+  registry_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 
 registry_port = config['configurations']['registry-common']['port']
@@ -146,8 +148,9 @@ registry_schema_cache_size = config['configurations']['registry-common']['regist
 registry_schema_cache_expiry_interval = config['configurations']['registry-common']['registry.schema.cache.expiry.interval']
 
 
-# mysql jar
+# database jar
 jdk_location = config['hostLevelParams']['jdk_location']
+
 if 'mysql' == registry_storage_type:
   jdbc_driver_jar = default("/hostLevelParams/custom_mysql_jdbc_name", None)
   if jdbc_driver_jar == None:
@@ -156,18 +159,24 @@ if 'mysql' == registry_storage_type:
     Logger.info("yum install mysql-connector-java*")
     Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar")
 
-  connector_curl_source = format("{jdk_location}/{jdbc_driver_jar}")
-  connector_download_dir=format("{registry_home}/libs")
-  connector_bootstrap_download_dir=format("{registry_home}/bootstrap/lib")
-  downloaded_custom_connector = format("{tmp_dir}/{jdbc_driver_jar}")
-  
+if 'oracle' == registry_storage_type:
+  jdbc_driver_jar = default("/hostLevelParams/custom_oracle_jdbc_name", None)
+  if jdbc_driver_jar == None:
+    Logger.error("Failed to find ojdbc jar. Please download and sure you followed the steps to register oracle driver")
+    Logger.info("Users should register the oracle java driver jar.")
+    Logger.info("Create a symlink e.g. ln -s /usr/share/java/ojdbc6.jar /usr/share/java/ojdbc.jar")
+    Logger.info("sudo ambari-server setup --jdbc-db=oracle --jdbc-driver=/usr/share/java/ojdbc.jar")
+
+connector_curl_source = format("{jdk_location}/{jdbc_driver_jar}")
+connector_download_dir=format("{registry_home}/libs")
+connector_bootstrap_download_dir=format("{registry_home}/bootstrap/lib")
+downloaded_custom_connector = format("{tmp_dir}/{jdbc_driver_jar}")
 
 check_db_connection_jar_name = "DBConnectionVerification.jar"
 check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar_name}")
 
 # bootstrap commands
-
+jdk64_home=config['hostLevelParams']['java_home']
 bootstrap_storage_command = os.path.join(registry_home, "bootstrap", "bootstrap-storage.sh")
-bootstrap_storage_run_cmd = format('source {conf_dir}/registry-env.sh ; {bootstrap_storage_command}')
-bootstrap_storage_file = "/var/lib/ambari-agent/data/registry/bootstrap_storage_done"
+bootstrap_storage_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/registry-env.sh ; {bootstrap_storage_command}')
 registry_agent_dir = "/var/lib/ambari-agent/data/registry"

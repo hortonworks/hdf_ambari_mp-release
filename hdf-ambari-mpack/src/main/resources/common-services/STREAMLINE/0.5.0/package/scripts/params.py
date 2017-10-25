@@ -160,11 +160,13 @@ streamline_storage_connector_connectorURI = config['configurations']['streamline
 streamline_storage_connector_user = config['configurations']['streamline-common']['streamline.storage.connector.user']
 streamline_storage_connector_password = config['configurations']['streamline-common']['streamline.storage.connector.password']
 streamline_storage_query_timeout = config['configurations']['streamline-common']['streamline.storage.query.timeout']
-streamline_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 if streamline_storage_type == "postgresql":
   streamline_storage_java_class = "org.postgresql.ds.PGSimpleDataSource"
-
+elif streamline_storage_type == "oracle":
+  streamline_storage_java_class = "oracle.jdbc.pool.OracleDataSource"
+else:
+  streamline_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 streamline_port = config['configurations']['streamline-common']['port']
 streamline_admin_port = config['configurations']['streamline-common']['adminPort']
@@ -187,8 +189,9 @@ else:
 
 streamline_catalog_root_url = 'http://{0}:{1}/api/v1/catalog'.format(hostname,streamline_port)
 
-# mysql jar
+# database jar
 jdk_location = config['hostLevelParams']['jdk_location']
+
 if 'mysql' == streamline_storage_type:
   jdbc_driver_jar = default("/hostLevelParams/custom_mysql_jdbc_name", None)
   if jdbc_driver_jar == None:
@@ -197,23 +200,28 @@ if 'mysql' == streamline_storage_type:
     Logger.info("yum install mysql-connector-java*")
     Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar")
 
-  connector_curl_source = format("{jdk_location}/{jdbc_driver_jar}")
-  connector_download_dir=format("{streamline_home}/libs")
-  connector_bootstrap_download_dir=format("{streamline_home}/bootstrap/lib")
-  downloaded_custom_connector = format("{tmp_dir}/{jdbc_driver_jar}")
-  
+if 'oracle' == streamline_storage_type:
+  jdbc_driver_jar = default("/hostLevelParams/custom_oracle_jdbc_name", None)
+  if jdbc_driver_jar == None:
+    Logger.error("Failed to find ojdbc jar. Please download and make sure you followed the steps to register oracle driver")
+    Logger.info("Users should register the oracle ojdbc driver jar.")
+    Logger.info("Create a symlink e.g. ln -s /usr/share/java/ojdbc6.jar /usr/share/java/ojdbc.jar")
+    Logger.info("sudo ambari-server setup --jdbc-db=oracle --jdbc-driver=/usr/share/java/ojdbc.jar")
+
+connector_curl_source = format("{jdk_location}/{jdbc_driver_jar}")
+connector_download_dir=format("{streamline_home}/libs")
+connector_bootstrap_download_dir=format("{streamline_home}/bootstrap/lib")
+downloaded_custom_connector = format("{tmp_dir}/{jdbc_driver_jar}")
 
 check_db_connection_jar_name = "DBConnectionVerification.jar"
 check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar_name}")
 
 # bootstrap commands
-
+jdk64_home=config['hostLevelParams']['java_home']
 bootstrap_storage_command = os.path.join(streamline_home, "bootstrap", "bootstrap-storage.sh")
-bootstrap_storage_run_cmd = format('source {conf_dir}/streamline-env.sh ; {bootstrap_storage_command}')
+bootstrap_storage_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/streamline-env.sh ; {bootstrap_storage_command}')
 
 bootstrap_command = os.path.join(streamline_home, "bootstrap", "bootstrap.sh")
-bootstrap_run_cmd = format('source {conf_dir}/streamline-env.sh ; {bootstrap_command}')
-
-bootstrap_storage_file = "/var/lib/ambari-agent/data/streamline/bootstrap_storage_done"
+bootstrap_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/streamline-env.sh ; {bootstrap_command}')
 bootstrap_file = "/var/lib/ambari-agent/data/streamline/bootstrap_done"
 streamline_agent_dir = "/var/lib/ambari-agent/data/streamline"

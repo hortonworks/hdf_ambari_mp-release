@@ -17,6 +17,8 @@ limitations under the License.
 
 """
 from resource_management import *
+from resource_management import Script
+from resource_management.core import shell, sudo
 from resource_management.core.logger import Logger
 from resource_management.core.resources.system import Execute, File, Directory
 from resource_management.libraries.functions import conf_select
@@ -29,10 +31,12 @@ from resource_management.libraries.functions.check_process_status import check_p
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions.show_logs import show_logs
+from resource_management.libraries.functions.stack_features import check_stack_feature
+from resource_management.libraries.functions.stack_features import get_stack_feature_version
+
 import os, time
 from streamline import ensure_base_directories
 from streamline import streamline, wait_until_server_starts
-
 
 class StreamlineServer(Script):
 
@@ -42,8 +46,19 @@ class StreamlineServer(Script):
       return None
     return "streamline"
 
+  def execute_bootstrap(self, params):
+    try:
+      Execute(params.bootstrap_storage_run_cmd + ' create',
+              user="root")
+    except:
+      show_logs(params.streamline_log_dir, params.streamline_user)
+      raise
+
   def install(self, env):
+    import params
     self.install_packages(env)
+    self.configure(env)
+    self.execute_bootstrap(params)
 
   def configure(self, env, upgrade_type=None):
     import params
@@ -53,24 +68,13 @@ class StreamlineServer(Script):
   def pre_upgrade_restart(self, env, upgrade_type=None):
     import params
     env.set_params(params)
+    self.execute_bootstrap(params)
 
   def start(self, env, upgrade_type=None):
     import params
     import status_params
     env.set_params(params)
     self.configure(env)
-
-    if not os.path.isfile(params.bootstrap_storage_file):
-        try:
-          Execute(params.bootstrap_storage_run_cmd,
-                  user="root")
-          File(params.bootstrap_storage_file,
-               owner=params.streamline_user,
-               group=params.user_group,
-               mode=0644)
-        except:
-          show_logs(params.streamline_log_dir, params.streamline_user)
-          raise
 
     daemon_cmd = format('source {params.conf_dir}/streamline-env.sh ; {params.streamline_bin} start')
     no_op_test = format('ls {status_params.streamline_pid_file} >/dev/null 2>&1 && ps -p `cat {status_params.streamline_pid_file}` >/dev/null 2>&1')
@@ -84,9 +88,11 @@ class StreamlineServer(Script):
       raise
 
     if not os.path.isfile(params.bootstrap_file):
+
       try:
         if params.security_enabled:
-          kinit_cmd = format("{kinit_path_local} -kt {params.streamline_keytab_path} {params.streamline_jaas_principal};")
+          kinit_cmd = format(
+            "{kinit_path_local} -kt {params.streamline_keytab_path} {params.streamline_jaas_principal};")
           return_code, out = shell.checked_call(kinit_cmd,
                                                 path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',
                                                 user=params.streamline_user)
@@ -94,9 +100,9 @@ class StreamlineServer(Script):
         Execute(params.bootstrap_run_cmd,
                 user=params.streamline_user)
         File(params.bootstrap_file,
-             owner=params.streamline_user,
-             group=params.user_group,
-             mode=0644)
+          owner = params.streamline_user,
+          group = params.user_group,
+          mode = 0644)
       except:
         show_logs(params.streamline_log_dir, params.streamline_user)
         raise
