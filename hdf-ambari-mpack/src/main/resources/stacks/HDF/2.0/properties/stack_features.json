@@ -337,6 +337,11 @@
         "name": "nifi_jaas_conf_create",
         "description": "Create NIFI jaas configuration when kerberos is enabled",
         "min_version": "3.0.0.0"
+      },
+      {
+        "name": "registry_remove_rootpath",
+        "description": "Registry remove root path setting",
+        "min_version": "3.0.2.0"
       }
     ]
   }

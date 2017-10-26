@@ -56,6 +56,9 @@ swagger:
 enableCors: true
 
 server:
+{% if not stack_support_remove_rootpath %}
+  rootPath: '/api/*'
+{% endif %}
   applicationConnectors:
     - type: http
       port: {{registry_port}}
@@ -63,8 +66,10 @@ server:
     - type: http
       port: {{registry_admin_port}}
 
-{% if security_enabled %}
+{% if security_enabled or stack_support_remove_rootpath %}
 servletFilters:
+{% endif %}
+{% if security_enabled %}
   - className: {{registry_servlet_filter}}
     params:
       type: "kerberos"
@@ -72,7 +77,15 @@ servletFilters:
       kerberos.keytab: "{{registry_ui_keytab_path}}"
       kerberos.name.rules: "{{registry_servlet_kerberos_name_rules}}"
       token.validity: "{{registry_servlet_token_validity}}"
-{%endif%}
+{% endif %}
+{% if stack_support_remove_rootpath %}
+  - className: "com.hortonworks.registries.schemaregistry.webservice.RewriteUriFilter"
+    params:
+      # value format is [<targetpath>,<paths-should-be-redirected-to>,*|]*
+      # below /subjects and /schemas/ids are forwarded to /api/v1/confluent
+      forwardPaths: "/api/v1/confluent,/subjects/*,/schemas/ids/*"
+      redirectPaths: "/ui/,/"
+{% endif %}
 
 logging:
   {{registry_log_template}}

@@ -64,6 +64,9 @@ smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 # get the correct version to use for checking stack features
 version_for_stack_feature_checks = get_stack_feature_version(config)
 
+stack_support_remove_rootpath = check_stack_feature('registry_remove_rootpath', version_for_stack_feature_checks)
+
+
 # When downgrading the 'version' and 'current_version' are both pointing to the downgrade-target version
 # downgrade_from_version provides the source-version the downgrade is happening from
 downgrade_from_version = default("/commandParams/downgrade_from_version", None)
