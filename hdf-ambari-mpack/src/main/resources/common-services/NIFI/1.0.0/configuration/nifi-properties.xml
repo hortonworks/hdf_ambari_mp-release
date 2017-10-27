@@ -311,7 +311,7 @@
   </property>
   <property>
     <name>nifi.content.viewer.url</name>
-    <value>/nifi-content-viewer/</value>
+    <value>../nifi-content-viewer/</value>
     <on-ambari-upgrade add="true"/>
     <description>The URL for a web-based content viewer if one is available.</description>
   </property>
