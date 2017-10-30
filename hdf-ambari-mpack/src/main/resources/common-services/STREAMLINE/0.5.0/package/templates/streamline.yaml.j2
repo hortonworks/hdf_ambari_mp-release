@@ -62,7 +62,7 @@ storageProviderConfiguration:
       dataSourceClassName: "{{streamline_storage_java_class}}"
     db.type: {{streamline_storage_type}}
     queryTimeoutInSecs: {{streamline_storage_query_timeout}}
-  providerClass: com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager
+  providerClass: "{{storage_provider_class}}"
 
 {% if streamline_truststore_path %}
 trustStorePath: "{{streamline_truststore_path}}"

@@ -352,6 +352,11 @@
         "name": "registry_rewriteuri_filter_support",
         "description": "Registry RewriteUri servlet filter",
         "min_version": "3.1.0.0"
+      },
+      {
+        "name": "sam_storage_core_in_registry",
+        "description": "Storage core module moved to registry",
+        "min_version": "3.1.0.0"
       }
     ]
   }

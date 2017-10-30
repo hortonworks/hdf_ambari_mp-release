@@ -65,7 +65,6 @@ kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executab
 # get the correct version to use for checking stack features
 version_for_stack_feature_checks = get_stack_feature_version(config)
 
-
 # When downgrading the 'version' and 'current_version' are both pointing to the downgrade-target version
 # downgrade_from_version provides the source-version the downgrade is happening from
 downgrade_from_version = default("/commandParams/downgrade_from_version", None)
@@ -228,3 +227,9 @@ bootstrap_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/st
 bootstrap_storage_file = "/var/lib/ambari-agent/data/streamline/bootstrap_storage_done"
 bootstrap_file = "/var/lib/ambari-agent/data/streamline/bootstrap_done"
 streamline_agent_dir = "/var/lib/ambari-agent/data/streamline"
+
+stack_support_sam_storage_core_in_registry = check_stack_feature('sam_storage_core_in_registry', version_for_stack_feature_checks)
+if stack_support_sam_storage_core_in_registry:
+  storage_provider_class = "com.hortonworks.registries.storage.impl.jdbc.JdbcStorageManager"
+else:
+  storage_provider_class = "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
