@@ -25,6 +25,7 @@ from resource_management.core.utils import PasswordString
 from resource_management.core.source import StaticFile
 from resource_management.core.logger import Logger
 from resource_management.libraries.functions import format
+from resource_management.libraries.functions.decorator import retry
 from subprocess import call
 
 script_dir = os.path.dirname(__file__)
@@ -366,6 +367,7 @@ def setup_keystore_truststore(is_starting, params, config_version_file):
   else:
     return params.nifi_properties
 
+@retry(times=20, sleep_time=5, max_sleep_time=20, backoff_factor=2, err_class=Fail)
 def run_toolkit_client(ca_client_dict, nifi_config_dir, jdk64_home, java_options, nifi_user,nifi_group,toolkit_tmp_dir, no_client_file=False):
   Logger.info("Generating NiFi Keystore and Truststore")
   ca_client_script = get_toolkit_script('tls-toolkit.sh',toolkit_tmp_dir)
