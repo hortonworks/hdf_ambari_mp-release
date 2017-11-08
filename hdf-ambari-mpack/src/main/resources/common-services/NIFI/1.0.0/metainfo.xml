@@ -58,6 +58,7 @@
                   <displayName>NiFi</displayName>
                   <category>MASTER</category>
                   <cardinality>1+</cardinality>
+                  <rollingRestartSupported>true</rollingRestartSupported>
                   <versionAdvertised>true</versionAdvertised>
                   <unlimitedKeyJCERequired>ALWAYS</unlimitedKeyJCERequired>
                   <timelineAppid>NIFI</timelineAppid>
