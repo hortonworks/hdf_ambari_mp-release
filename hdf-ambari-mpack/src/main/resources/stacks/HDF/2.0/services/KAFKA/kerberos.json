@@ -4,17 +4,18 @@
       "name": "KAFKA",
       "identities": [
         {
-          "name": "/smokeuser"
+          "name": "kafka_smokeuser",
+          "reference": "/smokeuser"
         }
       ],
       "configurations": [
         {
           "kafka-broker": {
-              "authorizer.class.name": "kafka.security.auth.SimpleAclAuthorizer",
-              "principal.to.local.class":"kafka.security.auth.KerberosPrincipalToLocal",
-              "super.users": "user:${kafka-env/kafka_user}",
-              "security.inter.broker.protocol": "PLAINTEXTSASL",
-              "zookeeper.set.acl": "true"
+            "authorizer.class.name": "kafka.security.auth.SimpleAclAuthorizer",
+            "principal.to.local.class":"kafka.security.auth.KerberosPrincipalToLocal",
+            "super.users": "user:${kafka-env/kafka_user}",
+            "security.inter.broker.protocol": "PLAINTEXTSASL",
+            "zookeeper.set.acl": "true"
           }
         },
         {
@@ -27,6 +28,9 @@
             "xasecure.audit.destination.solr.force.use.inmemory.jaas.config": "true"
           }
         }
+      ],
+      "auth_to_local_properties" : [
+        "kafka-broker/sasl.kerberos.principal.to.local.rules|comma"
       ],
       "components": [
         {
@@ -53,7 +57,8 @@
               }
             },
             {
-              "name": "/KAFKA/KAFKA_BROKER/kafka_broker",
+              "name": "kafka_kafka_broker_kafka_broker",
+              "reference": "/KAFKA/KAFKA_BROKER/kafka_broker",
               "principal": {
                 "configuration": "ranger-kafka-audit/xasecure.audit.jaas.Client.option.principal"
               },
