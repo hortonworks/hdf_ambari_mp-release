@@ -208,10 +208,11 @@ if 'oracle' == streamline_storage_type:
     Logger.info("Create a symlink e.g. ln -s /usr/share/java/ojdbc6.jar /usr/share/java/ojdbc.jar")
     Logger.info("sudo ambari-server setup --jdbc-db=oracle --jdbc-driver=/usr/share/java/ojdbc.jar")
 
-connector_curl_source = format("{jdk_location}/{jdbc_driver_jar}")
-connector_download_dir=format("{streamline_home}/libs")
-connector_bootstrap_download_dir=format("{streamline_home}/bootstrap/lib")
-downloaded_custom_connector = format("{tmp_dir}/{jdbc_driver_jar}")
+if 'mysql' == streamline_storage_type or 'oracle' == streamline_storage_type:
+  connector_curl_source = format("{jdk_location}/{jdbc_driver_jar}")
+  connector_download_dir=format("{streamline_home}/libs")
+  connector_bootstrap_download_dir=format("{streamline_home}/bootstrap/lib")
+  downloaded_custom_connector = format("{tmp_dir}/{jdbc_driver_jar}")
 
 check_db_connection_jar_name = "DBConnectionVerification.jar"
 check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar_name}")
