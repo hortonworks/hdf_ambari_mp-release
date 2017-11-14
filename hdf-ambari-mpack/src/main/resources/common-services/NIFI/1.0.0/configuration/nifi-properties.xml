@@ -589,12 +589,20 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
     <value>{{nifi_keystorePasswd}}</value>
     <on-ambari-upgrade add="true"/>
     <description>The keystore password. It is blank by default.</description>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+      <type>password</type>
+    </value-attributes>
   </property>
   <property>
     <name>nifi.security.keyPasswd</name>
     <value>{{nifi_keyPasswd}}</value>
     <on-ambari-upgrade add="true"/>
     <description>The key password. It is blank by default.</description>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+      <type>password</type>
+    </value-attributes>
   </property>
   <property>
     <name>nifi.security.truststore</name>
@@ -613,6 +621,10 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
     <value>{{nifi_truststorePasswd}}</value>
     <on-ambari-upgrade add="true"/>
     <description>The truststore password. It is blank by default.</description>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+      <type>password</type>
+    </value-attributes>
   </property>
   <property>
     <name>nifi.security.needClientAuth</name>
