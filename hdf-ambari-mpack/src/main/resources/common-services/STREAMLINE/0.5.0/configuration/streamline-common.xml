@@ -52,10 +52,14 @@
           <value>hdfs</value>
           <label>HDFS</label>
         </entry>
+        <entry>
+          <value>database</value>
+          <label>Database</label>
+        </entry>
       </entries>
     </value-attributes>
     <description>Type of the jar storage. 
-      In HA mode, make sure you select HDFS as the jar storage.
+      In HA mode, make sure you select HDFS or Database as the jar storage.
     </description>
     <on-ambari-upgrade add="false"/>
   </property>

@@ -41,14 +41,16 @@ modules:
 
 catalogRootUrl: {{streamline_catalog_root_url}}
 
-# Filesystem based jar storage
+# Jar storage configuration
 fileStorageConfiguration:
   className: {{jar_storage_class}}
+{% if not jar_db_storage_enabled %}
   properties:
     directory: {{jar_storage}}
   {% if jar_remote_storage_enabled %}
   fsUrl: {{jar_storage_hdfs_url}}
   {%endif%}
+{% endif %}
 
 dashboardConfiguration:
   url: "{{streamline_dashboard_url}}"

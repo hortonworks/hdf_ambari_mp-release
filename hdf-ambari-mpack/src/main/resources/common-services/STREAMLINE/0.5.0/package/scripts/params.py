@@ -138,14 +138,26 @@ maven_repo_url = config['configurations']['streamline-common']['maven.repo.url']
 jar_storage_type = config['configurations']['streamline-common']['jar.storage.type']
 jar_storage_hdfs_url = config['configurations']['streamline-common']['jar.storage.hdfs.url']
 jar_storage = config['configurations']['streamline-common']['jar.storage']
-jar_storage_class = "com.hortonworks.streamline.common.util.LocalFileSystemStorage"
 jar_remote_storage_enabled  = False
+jar_db_storage_enabled = False
 
+stack_support_sam_storage_core_in_registry = check_stack_feature('sam_storage_core_in_registry', version_for_stack_feature_checks)
+stack_support_sam_db_file_storage = check_stack_feature('sam_db_file_storage', version_for_stack_feature_checks)
 
-if jar_storage_type != None and jar_storage_type == "hdfs":
-  jar_storage_class = "com.hortonworks.streamline.common.util.HdfsFileStorage"
+if stack_support_sam_storage_core_in_registry:
+  jar_storage_class = "com.hortonworks.registries.common.util.LocalFileSystemStorage"
+else:
+  jar_storage_class = "com.hortonworks.streamline.common.util.LocalFileSystemStorage"
+
+if jar_storage_type is not None and jar_storage_type == "hdfs":
+  if stack_support_sam_storage_core_in_registry:
+    jar_storage_class = "com.hortonworks.registries.common.util.HdfsFileStorage"
+  else:
+    jar_storage_class = "com.hortonworks.streamline.common.util.HdfsFileStorage"
   jar_remote_storage_enabled = True
-
+elif jar_storage_type is not None and stack_support_sam_db_file_storage and jar_storage_type == "database":
+  jar_storage_class = "com.hortonworks.registries.storage.filestorage.DbFileStorage"
+  jar_db_storage_enabled = True
 
 if 'topology.test.results.dir' in config['configurations']['streamline-common']:
   topology_test_results = config['configurations']['streamline-common']['topology.test.results.dir']
@@ -228,7 +240,6 @@ bootstrap_storage_file = "/var/lib/ambari-agent/data/streamline/bootstrap_storag
 bootstrap_file = "/var/lib/ambari-agent/data/streamline/bootstrap_done"
 streamline_agent_dir = "/var/lib/ambari-agent/data/streamline"
 
-stack_support_sam_storage_core_in_registry = check_stack_feature('sam_storage_core_in_registry', version_for_stack_feature_checks)
 if stack_support_sam_storage_core_in_registry:
   storage_provider_class = "com.hortonworks.registries.storage.impl.jdbc.JdbcStorageManager"
 else:

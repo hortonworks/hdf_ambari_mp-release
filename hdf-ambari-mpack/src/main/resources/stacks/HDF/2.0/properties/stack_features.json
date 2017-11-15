@@ -357,6 +357,11 @@
         "name": "sam_storage_core_in_registry",
         "description": "Storage core module moved to registry",
         "min_version": "3.1.0.0"
+      },
+      {
+        "name": "sam_db_file_storage",
+        "description": "DB based file storage in SAM",
+        "min_version": "3.1.0.0"
       }
     ]
   }
