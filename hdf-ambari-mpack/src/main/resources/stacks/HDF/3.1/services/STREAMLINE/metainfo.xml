@@ -19,8 +19,9 @@
     <schemaVersion>2.0</schemaVersion>
     <services>
         <service>
-            <name>KAFKA</name>
-            <version>1.0.0.3.1</version>
+            <name>STREAMLINE</name>
+            <version>0.6.0</version>
+            <extends>common-services/STREAMLINE/0.5.0</extends>
         </service>
     </services>
 </metainfo>

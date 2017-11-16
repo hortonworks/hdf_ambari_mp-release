@@ -19,8 +19,9 @@
     <schemaVersion>2.0</schemaVersion>
     <services>
         <service>
-            <name>KAFKA</name>
-            <version>1.0.0.3.1</version>
+            <name>REGISTRY</name>
+            <version>0.4.0</version>
+            <extends>common-services/REGISTRY/0.3.0</extends>
         </service>
     </services>
 </metainfo>

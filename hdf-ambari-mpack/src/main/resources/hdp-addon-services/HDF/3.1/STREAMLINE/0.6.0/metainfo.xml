@@ -15,30 +15,25 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-
 <metainfo>
   <schemaVersion>2.0</schemaVersion>
   <services>
     <service>
-      <name>NIFI</name>
-      <extends>common-services/NIFI/1.4.0</extends>
+      <name>STREAMLINE</name>
+      <version>0.6.0</version>
+      <extends>common-services/STREAMLINE/0.5.0</extends>
       <components>
         <component>
-          <name>NIFI_CA</name>
-          <versionAdvertised>false</versionAdvertised>
-        </component>
-        <component>
-          <name>NIFI_MASTER</name>
+          <name>STREAMLINE_SERVER</name>
           <versionAdvertised>false</versionAdvertised>
         </component>
       </components>
-
       <osSpecifics>
         <osSpecific>
           <osFamily>redhat7,amazon2015,redhat6,suse11,suse12</osFamily>
           <packages>
             <package>
-              <name>nifi_3_1_*</name>
+              <name>streamline_3_1_*</name>
             </package>
           </packages>
         </osSpecific>
@@ -46,9 +41,9 @@
           <osFamily>debian7,ubuntu12,ubuntu14,ubuntu16</osFamily>
           <packages>
             <package>
-              <name>nifi-3_1_*</name>
+              <name>streamline-3_1_*</name>
             </package>
-           </packages>
+          </packages>
         </osSpecific>
       </osSpecifics>
     </service>

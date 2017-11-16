@@ -30,7 +30,7 @@ modules:
       # inmemory schema version cache entry expiry interval after access
       schemaCacheExpiryInterval: {{registry_schema_cache_expiry_interval}}
 
-{% if security_enabled or stack_support_rewrite_uri %}
+{% if security_enabled or stack_support_rewrite_uri or stack_support_remove_rootpath %}
 servletFilters:
 {% endif %}
 {% if security_enabled %}
@@ -45,7 +45,7 @@ servletFilters:
       allowed.resources: "401.html,back-default.png,favicon.ico"
 {% endif %}
 {%endif%}
-{% if stack_support_rewrite_uri %}
+{% if stack_support_rewrite_uri or stack_support_remove_rootpath %}
   - className: "com.hortonworks.registries.schemaregistry.webservice.RewriteUriFilter"
     params:
       # value format is [<targetpath>,<paths-should-be-redirected-to>,*|]*

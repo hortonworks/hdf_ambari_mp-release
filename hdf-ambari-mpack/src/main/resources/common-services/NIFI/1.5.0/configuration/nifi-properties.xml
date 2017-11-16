@@ -15,12 +15,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<metainfo>
-    <schemaVersion>2.0</schemaVersion>
-    <services>
-        <service>
-            <name>KAFKA</name>
-            <version>1.0.0.3.1</version>
-        </service>
-    </services>
-</metainfo>
+<configuration supports_final="false">
+
+    <property>
+        <name>nifi.version</name>
+        <value>1.5.0.{{stack_version_buildnum}}</value>
+        <on-ambari-upgrade add="true" update="true" delete="false"/>
+        <description>The version number of the current release.</description>
+    </property>
+
+</configuration>
