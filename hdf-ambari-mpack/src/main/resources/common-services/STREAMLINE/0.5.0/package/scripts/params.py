@@ -166,6 +166,25 @@ else:
 
 streamline_dashboard_url = config['configurations']['streamline-common']['streamline.dashboard.url']
 
+#Check if superset is installed. If yes, use superset webserver address and port number or use default values.
+try:
+  superset_server_hostname_list = config['clusterHostInfo']['superset_hosts']
+  superset_server_hostname = superset_server_hostname_list[0]
+  streamline_dashboard_url = streamline_dashboard_url.replace("{{superset_host}}", superset_server_hostname).replace("{{superset_port}}", config['configurations']['superset']['SUPERSET_WEBSERVER_PORT'])
+except Exception, e:
+  Logger.info("Superset is not installed")
+  streamline_dashboard_url = streamline_dashboard_url.replace("{{superset_host}}", "localhost").replace("{{superset_port}}", "9088")
+
+#Check if registry is installed. If yes, use registry hostname and port number or use default values.
+try:
+  registry_server_hostname_list = config['clusterHostInfo']['registry_server_hosts']
+  #In case of HA, for now, we would take first hostname
+  registry_server_hostname = registry_server_hostname_list[0]
+  registry_url = registry_url.replace("{{registry_host}}", registry_server_hostname).replace("{{registry_port}}" , config['configurations']['registry-common']['port'])
+except Exception, e:
+  Logger.info("Registry is not installed")
+  registry_url = registry_url.replace("{{registry_host}}", "localhost").replace("{{registry_port}}", "7788")
+
 streamline_storage_type = str(config['configurations']['streamline-common']['streamline.storage.type']).lower()
 streamline_storage_connector_connectorURI = config['configurations']['streamline-common']['streamline.storage.connector.connectURI']
 streamline_storage_connector_user = config['configurations']['streamline-common']['streamline.storage.connector.user']

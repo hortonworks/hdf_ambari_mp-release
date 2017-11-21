@@ -185,12 +185,12 @@
   </property>
   <property required-input="true">
     <name>streamline.dashboard.url</name>
-    <value>http://localhost:9088</value>
+    <value>http://{{superset_host}}:{{superset_port}}</value>
     <description> Provide URL for superset dashboard </description>
   </property>
   <property required-input="true">
     <name>registry.url</name>
-    <value>http://localhost:7788/api/v1</value>
+    <value>http://{{registry_host}}:{{registry_port}}/api/v1</value>
     <description> Provide URL for Schema Registry </description>
   </property>
   <property>
