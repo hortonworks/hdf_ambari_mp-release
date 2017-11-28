@@ -9,7 +9,7 @@
         "links": [
             {
                 "name": "registry_ui",
-                "label": "Registry UI",
+                "label": "Schema Registry UI",
                 "requires_user_name": "false",
                 "component_name": "REGISTRY_SERVER",
                 "url":"%@://%@:%@/",

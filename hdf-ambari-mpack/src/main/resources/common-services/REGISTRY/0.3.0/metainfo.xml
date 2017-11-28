@@ -20,13 +20,13 @@
   <services>
     <service>
       <name>REGISTRY</name>
-      <displayName>Registry</displayName>
+      <displayName>Schema Registry</displayName>
       <comment>Hortonworks Registry provides Schema Registry, ML Registry and framework to build versioned entities</comment>
       <version>0.3.0</version>
       <components>
         <component>
           <name>REGISTRY_SERVER</name>
-          <displayName>Registry</displayName>
+          <displayName>Schema Registry Server</displayName>
           <category>MASTER</category>
           <cardinality>1+</cardinality>
           <versionAdvertised>true</versionAdvertised>
