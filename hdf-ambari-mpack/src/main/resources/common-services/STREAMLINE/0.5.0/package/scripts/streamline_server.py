@@ -17,6 +17,8 @@ limitations under the License.
 
 """
 from resource_management import *
+from resource_management import Script
+from resource_management.core import shell, sudo
 from resource_management.core.logger import Logger
 from resource_management.core.resources.system import Execute, File, Directory
 from resource_management.libraries.functions import conf_select
@@ -43,23 +45,25 @@ class StreamlineServer(Script):
     return "streamline"
 
   def execute_bootstrap(self, params):
-    if not os.path.isfile(params.bootstrap_storage_file):
-      try:
+
+    # If Current version >= 3.1, migrate else create
+    try:
+      if params.stack_sam_support_schema_migrate:
         Execute(params.bootstrap_storage_run_cmd + ' migrate',
-                user="root")
-        File(params.bootstrap_storage_file,
-             owner=params.streamline_user,
-             group=params.user_group,
-             mode=0644)
-      except:
-        show_logs(params.streamline_log_dir, params.streamline_user)
-        raise
+              user="root")
+      else:
+        Execute(params.bootstrap_storage_run_cmd + ' create',
+              user="root")
+    except:
+      show_logs(params.streamline_log_dir, params.streamline_user)
+      raise
 
   def install(self, env):
     import params
     self.install_packages(env)
     self.configure(env)
-    self.execute_bootstrap(params)
+    if not params.stack_sam_support_schema_migrate:
+      self.execute_bootstrap(params)
 
   def configure(self, env, upgrade_type=None):
     import params
@@ -69,7 +73,20 @@ class StreamlineServer(Script):
   def pre_upgrade_restart(self, env, upgrade_type=None):
     import params
     env.set_params(params)
-    self.execute_bootstrap(params)
+    if not params.stack_sam_support_schema_migrate:
+      if params.upgrade_direction == Direction.UPGRADE:
+        Logger.info("Executing bootstrap_storage as it is upgrade")
+        self.execute_bootstrap(params)
+      else:
+        Logger.info("Not executing bootstrap_storage as it is downgrade")
+
+  def kerberos_server_start(self):
+    import params
+    if params.security_enabled:
+      kinit_cmd = format("{kinit_path_local} -kt {params.streamline_keytab_path} {params.streamline_jaas_principal};")
+      return_code, out = shell.checked_call(kinit_cmd,
+                                            path = '/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',
+                                            user = params.streamline_user)
 
   def start(self, env, upgrade_type=None):
     import params
@@ -77,8 +94,12 @@ class StreamlineServer(Script):
     env.set_params(params)
     self.configure(env)
 
+    if params.stack_sam_support_schema_migrate:
+      self.execute_bootstrap(params)
+
     daemon_cmd = format('source {params.conf_dir}/streamline-env.sh ; {params.streamline_bin} start')
     no_op_test = format('ls {status_params.streamline_pid_file} >/dev/null 2>&1 && ps -p `cat {status_params.streamline_pid_file}` >/dev/null 2>&1')
+
     try:
       Execute(daemon_cmd,
               user="root",
@@ -88,23 +109,24 @@ class StreamlineServer(Script):
       show_logs(params.streamline_log_dir, params.streamline_user)
       raise
 
-    if not os.path.isfile(params.bootstrap_file):
-      try:
-        if params.security_enabled:
-          kinit_cmd = format("{kinit_path_local} -kt {params.streamline_keytab_path} {params.streamline_jaas_principal};")
-          return_code, out = shell.checked_call(kinit_cmd,
-                                                path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',
-                                                user=params.streamline_user)
-        wait_until_server_starts()
-        Execute(params.bootstrap_run_cmd,
-                user=params.streamline_user)
-        File(params.bootstrap_file,
-             owner=params.streamline_user,
-             group=params.user_group,
-             mode=0644)
-      except:
-        show_logs(params.streamline_log_dir, params.streamline_user)
-        raise
+    wait_until_server_starts()
+    #Check to see if bootstrap_done file exists or not.
+    try:
+      if os.path.isfile(params.bootstrap_file):
+        if params.stack_sam_support_schema_migrate:
+          Execute(params.bootstrap_run_cmd + ' migrate', user="root")
+          File(params.bootstrap_file, owner=params.streamline_user, group=params.user_group, mode=0644)
+      else:
+        self.kerberos_server_start()
+        if params.stack_sam_support_schema_migrate:
+          Execute(params.bootstrap_run_cmd + ' migrate', user="root")
+          File(params.bootstrap_file, owner=params.streamline_user, group=params.user_group, mode=0644)
+        else:
+          Execute(params.bootstrap_run_cmd, user=params.streamline_user)
+          File(params.bootstrap_file, owner=params.streamline_user, group=params.user_group, mode=0644)
+    except:
+      show_logs(params.streamline_log_dir, params.streamline_user)
+      raise
 
   def stop(self, env, upgrade_type=None):
     import params

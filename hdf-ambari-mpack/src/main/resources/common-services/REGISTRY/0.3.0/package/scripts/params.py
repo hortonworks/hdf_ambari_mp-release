@@ -33,6 +33,7 @@ from resource_management.libraries.functions import stack_select
 from resource_management.libraries.functions import conf_select
 from resource_management.libraries.functions import get_kinit_path
 from resource_management.core.logger import Logger
+from resource_management.core.exceptions import Fail
 import ambari_simplejson as json # simplejson is much faster comparing to Python 2.6 json module and has the same functions set
 
 # server configurations
@@ -68,6 +69,7 @@ version_for_stack_feature_checks = get_stack_feature_version(config)
 stack_support_rewrite_uri = check_stack_feature('registry_rewriteuri_filter_support', version_for_stack_feature_checks)
 stack_support_allowed_resources = check_stack_feature('registry_allowed_resources_support', version_for_stack_feature_checks)
 stack_support_remove_rootpath = check_stack_feature('registry_remove_rootpath', version_for_stack_feature_checks)
+stack_registry_support_schema_migrate = check_stack_feature('registry_support_schema_migrate', version_for_stack_feature_checks)
 
 
 # When downgrading the 'version' and 'current_version' are both pointing to the downgrade-target version
@@ -143,6 +145,10 @@ if jar_storage_type != None and jar_storage_type == "hdfs":
 
 if registry_storage_type == "postgresql":
   registry_storage_java_class = "org.postgresql.ds.PGSimpleDataSource"
+elif registry_storage_type == "oracle":
+  registry_storage_java_class = "oracle.jdbc.pool.OracleDataSource"
+else:
+  registry_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 
 registry_port = config['configurations']['registry-common']['port']
@@ -161,13 +167,23 @@ if 'mysql' == registry_storage_type:
     Logger.info("Users should register the mysql java driver jar.")
     Logger.info("yum install mysql-connector-java*")
     Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar")
+    raise Fail('Unable to establish jdbc connection to your ' + registry_storage_type + ' instance.')
 
+if 'oracle' == registry_storage_type:
+  jdbc_driver_jar = default("/hostLevelParams/custom_oracle_jdbc_name", None)
+  if jdbc_driver_jar == None:
+    Logger.error("Failed to find ojdbc jar. Please download and sure you followed the steps to register oracle driver")
+    Logger.info("Users should register the oracle java driver jar.")
+    Logger.info("Create a symlink e.g. ln -s /usr/share/java/ojdbc6.jar /usr/share/java/ojdbc.jar")
+    Logger.info("sudo ambari-server setup --jdbc-db=oracle --jdbc-driver=/usr/share/java/ojdbc.jar")
+    raise Fail('Unable to establish jdbc connection to your ' + registry_storage_type + ' instance.')
+
+if 'mysql' == registry_storage_type or 'oracle' == registry_storage_type:
   connector_curl_source = format("{jdk_location}/{jdbc_driver_jar}")
   connector_download_dir=format("{registry_home}/libs")
   connector_bootstrap_download_dir=format("{registry_home}/bootstrap/lib")
   downloaded_custom_connector = format("{tmp_dir}/{jdbc_driver_jar}")
   
-
 check_db_connection_jar_name = "DBConnectionVerification.jar"
 check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar_name}")
 
@@ -175,5 +191,4 @@ check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar
 jdk64_home=config['hostLevelParams']['java_home']
 bootstrap_storage_command = os.path.join(registry_home, "bootstrap", "bootstrap-storage.sh")
 bootstrap_storage_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/registry-env.sh ; {bootstrap_storage_command}')
-bootstrap_storage_file = "/var/lib/ambari-agent/data/registry/bootstrap_storage_done"
 registry_agent_dir = "/var/lib/ambari-agent/data/registry"

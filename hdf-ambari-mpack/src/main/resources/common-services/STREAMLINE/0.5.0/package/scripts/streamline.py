@@ -32,6 +32,7 @@ from resource_management.libraries.functions import Direction
 from resource_management.libraries.functions.get_user_call_output import get_user_call_output
 from resource_management.core.exceptions import ExecutionFailed
 from resource_management.core.logger import Logger
+from resource_management.core.exceptions import Fail
 
 import urllib2, time, json
 
@@ -128,15 +129,23 @@ def download_database_connector_if_needed():
   Downloads the database connector to use when connecting to the metadata storage
   """
   import params
-  if params.streamline_storage_type != 'mysql':
+  if params.streamline_storage_type != 'mysql' and params.streamline_storage_type != 'oracle':
+      # In any other case than oracle and mysql, e.g. postgres, just return.
       return
 
   if params.jdbc_driver_jar == None:
-      Logger.error("Failed to find mysql-java-connector jar. Make sure you followed the steps to register mysql driver")
-      Logger.info("Users should register the mysql java driver jar.")
-      Logger.info("yum install mysql-connector-java*")
-      Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar")
-      return
+      if "mysql" in params.streamline_storage_type:
+          Logger.error("Failed to find mysql-java-connector jar. Make sure you followed the steps to register mysql driver")
+          Logger.info("Users should register the mysql java driver jar.")
+          Logger.info("yum install mysql-connector-java*")
+          Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar")
+          raise Fail('Unable to establish jdbc connection to your ' + params.streamline_storage_type + ' instance.')
+      if "oracle" in params.streamline_storage_type:
+          Logger.error("Failed to find ojdbc jar. Please download and make sure you followed the steps to register oracle jdbc driver")
+          Logger.info("Users should register the oracle ojdbc driver jar.")
+          Logger.info("Create a symlink e.g. ln -s /usr/share/java/ojdbc6.jar /usr/share/java/ojdbc.jar")
+          Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/ojdbc.jar")
+          raise Fail('Unable to establish jdbc connection to your ' + params.streamline_storage_type + ' instance.')
 
   File(params.check_db_connection_jar,
        content = DownloadSource(format("{jdk_location}{check_db_connection_jar_name}")))

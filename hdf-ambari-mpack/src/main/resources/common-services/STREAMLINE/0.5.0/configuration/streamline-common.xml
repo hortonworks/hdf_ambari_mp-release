@@ -153,6 +153,10 @@
           <value>postgresql</value>
           <label>POSTGRESQL</label>
         </entry>
+        <entry>
+          <value>oracle</value>
+          <label>ORACLE</label>
+        </entry>
       </entries>
     </value-attributes>
     <description>Type of the storage. 

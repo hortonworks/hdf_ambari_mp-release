@@ -36,6 +36,7 @@ from resource_management.libraries.functions.get_not_managed_resources import ge
 from resource_management.libraries.functions.setup_ranger_plugin_xml import get_audit_configs
 from resource_management.core.source import InlineTemplate
 from resource_management.core.logger import Logger
+from resource_management.core.exceptions import Fail
 from utils import get_bare_principal
 import ambari_simplejson as json # simplejson is much faster comparing to Python 2.6 json module and has the same functions set
 
@@ -194,6 +195,10 @@ streamline_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 if streamline_storage_type == "postgresql":
   streamline_storage_java_class = "org.postgresql.ds.PGSimpleDataSource"
+elif streamline_storage_type == "oracle":
+  streamline_storage_java_class = "oracle.jdbc.pool.OracleDataSource"
+else:
+  streamline_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 
 streamline_port = config['configurations']['streamline-common']['port']
@@ -237,12 +242,23 @@ if 'mysql' == streamline_storage_type:
     Logger.info("Users should register the mysql java driver jar.")
     Logger.info("yum install mysql-connector-java*")
     Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar")
+    raise Fail('Unable to establish jdbc connection to your ' + streamline_storage_type + ' instance.')
 
+if 'oracle' == streamline_storage_type:
+  jdbc_driver_jar = default("/hostLevelParams/custom_oracle_jdbc_name", None)
+  if jdbc_driver_jar == None:
+    Logger.error("Failed to find ojdbc jar. Please download and make sure you followed the steps to register oracle driver")
+    Logger.info("Users should register the oracle ojdbc driver jar.")
+    Logger.info("Create a symlink e.g. ln -s /usr/share/java/ojdbc6.jar /usr/share/java/ojdbc.jar")
+    Logger.info("sudo ambari-server setup --jdbc-db=oracle --jdbc-driver=/usr/share/java/ojdbc.jar")
+    raise Fail('Unable to establish jdbc connection to your ' + streamline_storage_type + ' instance.')
+
+if 'mysql' == streamline_storage_type or 'oracle' == streamline_storage_type:
   connector_curl_source = format("{jdk_location}/{jdbc_driver_jar}")
   connector_download_dir=format("{streamline_home}/libs")
   connector_bootstrap_download_dir=format("{streamline_home}/bootstrap/lib")
   downloaded_custom_connector = format("{tmp_dir}/{jdbc_driver_jar}")
-  
+
 
 check_db_connection_jar_name = "DBConnectionVerification.jar"
 check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar_name}")
@@ -255,9 +271,11 @@ bootstrap_storage_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf
 bootstrap_command = os.path.join(streamline_home, "bootstrap", "bootstrap.sh")
 bootstrap_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/streamline-env.sh ; {bootstrap_command}')
 
-bootstrap_storage_file = "/var/lib/ambari-agent/data/streamline/bootstrap_storage_done"
 bootstrap_file = "/var/lib/ambari-agent/data/streamline/bootstrap_done"
 streamline_agent_dir = "/var/lib/ambari-agent/data/streamline"
+
+stack_support_sam_storage_core_in_registry = check_stack_feature('sam_storage_core_in_registry', version_for_stack_feature_checks)
+stack_sam_support_schema_migrate = check_stack_feature('sam_support_schema_migrate', version_for_stack_feature_checks)
 
 if stack_support_sam_storage_core_in_registry:
   storage_provider_class = "com.hortonworks.registries.storage.impl.jdbc.JdbcStorageManager"
