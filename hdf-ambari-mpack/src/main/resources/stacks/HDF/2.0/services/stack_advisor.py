@@ -82,8 +82,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
 
   def getServiceConfigurationRecommenderDict(self):
     return {
-      "KAFKA": self.recommendKAFKAConfigurations,
-      "STORM": self.recommendStormConfigurations,
       "AMBARI_METRICS": self.recommendAmsConfigurations,
       "RANGER": self.recommendRangerConfigurations,
       "LOGSEARCH" : self.recommendLogsearchConfigurations
@@ -127,85 +125,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
         config[configType]["property_attributes"][key] = {}
       config[configType]["property_attributes"][key][attribute] = attributeValue if isinstance(attributeValue, list) else str(attributeValue)
     return appendPropertyAttribute
-
-  def recommendKAFKAConfigurations(self, configurations, clusterData, services, hosts):
-    kafka_broker = getServicesSiteProperties(services, "kafka-broker")
-
-    # kerberos security for kafka is decided from `security.inter.broker.protocol` property value
-    security_enabled = (kafka_broker is not None and 'security.inter.broker.protocol' in  kafka_broker
-                        and 'SASL' in kafka_broker['security.inter.broker.protocol'])
-    putKafkaBrokerProperty = self.putProperty(configurations, "kafka-broker", services)
-    putKafkaLog4jProperty = self.putProperty(configurations, "kafka-log4j", services)
-    putKafkaBrokerAttributes = self.putPropertyAttribute(configurations, "kafka-broker")
-
-    #If AMS is part of Services, use the KafkaTimelineMetricsReporter for metric reporting. Default is ''.
-    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
-    if "AMBARI_METRICS" in servicesList:
-      putKafkaBrokerProperty('kafka.metrics.reporters', 'org.apache.hadoop.metrics2.sink.kafka.KafkaTimelineMetricsReporter')
-
-    if "ranger-env" in services["configurations"] and "ranger-kafka-plugin-properties" in services["configurations"] and \
-            "ranger-kafka-plugin-enabled" in services["configurations"]["ranger-env"]["properties"]:
-      putKafkaRangerPluginProperty = self.putProperty(configurations, "ranger-kafka-plugin-properties", services)
-      rangerEnvKafkaPluginProperty = services["configurations"]["ranger-env"]["properties"]["ranger-kafka-plugin-enabled"]
-      putKafkaRangerPluginProperty("ranger-kafka-plugin-enabled", rangerEnvKafkaPluginProperty)
-
-    if 'ranger-kafka-plugin-properties' in services['configurations'] and ('ranger-kafka-plugin-enabled' in services['configurations']['ranger-kafka-plugin-properties']['properties']):
-      kafkaLog4jRangerLines = [{
-        "name": "log4j.appender.rangerAppender",
-        "value": "org.apache.log4j.DailyRollingFileAppender"
-      },
-        {
-          "name": "log4j.appender.rangerAppender.DatePattern",
-          "value": "'.'yyyy-MM-dd-HH"
-        },
-        {
-          "name": "log4j.appender.rangerAppender.File",
-          "value": "${kafka.logs.dir}/ranger_kafka.log"
-        },
-        {
-          "name": "log4j.appender.rangerAppender.layout",
-          "value": "org.apache.log4j.PatternLayout"
-        },
-        {
-          "name": "log4j.appender.rangerAppender.layout.ConversionPattern",
-          "value": "%d{ISO8601} %p [%t] %C{6} (%F:%L) - %m%n"
-        },
-        {
-          "name": "log4j.logger.org.apache.ranger",
-          "value": "INFO, rangerAppender"
-        }]
-
-      rangerPluginEnabled=''
-      if 'ranger-kafka-plugin-properties' in configurations and 'ranger-kafka-plugin-enabled' in  configurations['ranger-kafka-plugin-properties']['properties']:
-        rangerPluginEnabled = configurations['ranger-kafka-plugin-properties']['properties']['ranger-kafka-plugin-enabled']
-      elif 'ranger-kafka-plugin-properties' in services['configurations'] and 'ranger-kafka-plugin-enabled' in services['configurations']['ranger-kafka-plugin-properties']['properties']:
-        rangerPluginEnabled = services['configurations']['ranger-kafka-plugin-properties']['properties']['ranger-kafka-plugin-enabled']
-
-      if  rangerPluginEnabled and rangerPluginEnabled.lower() == "Yes".lower():
-        # recommend authorizer.class.name
-        putKafkaBrokerProperty("authorizer.class.name", 'org.apache.ranger.authorization.kafka.authorizer.RangerKafkaAuthorizer')
-        # change kafka-log4j when ranger plugin is installed
-
-        if 'kafka-log4j' in services['configurations'] and 'content' in services['configurations']['kafka-log4j']['properties']:
-          kafkaLog4jContent = services['configurations']['kafka-log4j']['properties']['content']
-          for item in range(len(kafkaLog4jRangerLines)):
-            if kafkaLog4jRangerLines[item]["name"] not in kafkaLog4jContent:
-              kafkaLog4jContent+= '\n' + kafkaLog4jRangerLines[item]["name"] + '=' + kafkaLog4jRangerLines[item]["value"]
-          putKafkaLog4jProperty("content",kafkaLog4jContent)
-
-
-      else:
-        # Kerberized Cluster with Ranger plugin disabled
-        if security_enabled and 'kafka-broker' in services['configurations'] and 'authorizer.class.name' in services['configurations']['kafka-broker']['properties'] and \
-                services['configurations']['kafka-broker']['properties']['authorizer.class.name'] == 'org.apache.ranger.authorization.kafka.authorizer.RangerKafkaAuthorizer':
-          putKafkaBrokerProperty("authorizer.class.name", 'kafka.security.auth.SimpleAclAuthorizer')
-        # Non-kerberos Cluster with Ranger plugin disabled
-        else:
-          putKafkaBrokerAttributes('authorizer.class.name', 'delete', 'true')
-
-    # Non-Kerberos Cluster without Ranger
-    elif not security_enabled:
-      putKafkaBrokerAttributes('authorizer.class.name', 'delete', 'true')
 
   def getOracleDBConnectionHostPort(self, db_type, db_host, rangerDbName):
     connection_string = self.getDBConnectionHostPort(db_type, db_host)
@@ -516,77 +435,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     collector_heapsize = int(hbase_heapsize/4 if hbase_heapsize > 2048 else 512)
 
     return round_to_n(collector_heapsize), round_to_n(hbase_heapsize), total_sinks_count
-
-  def recommendStormConfigurations(self, configurations, clusterData, services, hosts):
-    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
-    putStormSiteProperty = self.putProperty(configurations, "storm-site", services)
-    putStormStartupProperty = self.putProperty(configurations, "storm-site", services)
-    putStormSiteAttributes = self.putPropertyAttribute(configurations, "storm-site")
-
-    # Storm AMS integration
-    if 'AMBARI_METRICS' in servicesList:
-      putStormSiteProperty('metrics.reporter.register', 'org.apache.hadoop.metrics2.sink.storm.StormTimelineMetricsReporter')
-
-    storm_site = getServicesSiteProperties(services, "storm-site")
-    security_enabled = (storm_site is not None and "storm.zookeeper.superACL" in storm_site)
-    if "ranger-env" in services["configurations"] and "ranger-storm-plugin-properties" in services["configurations"] and \
-            "ranger-storm-plugin-enabled" in services["configurations"]["ranger-env"]["properties"]:
-      putStormRangerPluginProperty = self.putProperty(configurations, "ranger-storm-plugin-properties", services)
-      rangerEnvStormPluginProperty = services["configurations"]["ranger-env"]["properties"]["ranger-storm-plugin-enabled"]
-      putStormRangerPluginProperty("ranger-storm-plugin-enabled", rangerEnvStormPluginProperty)
-
-    rangerPluginEnabled = ''
-    if 'ranger-storm-plugin-properties' in configurations and 'ranger-storm-plugin-enabled' in  configurations['ranger-storm-plugin-properties']['properties']:
-      rangerPluginEnabled = configurations['ranger-storm-plugin-properties']['properties']['ranger-storm-plugin-enabled']
-    elif 'ranger-storm-plugin-properties' in services['configurations'] and 'ranger-storm-plugin-enabled' in services['configurations']['ranger-storm-plugin-properties']['properties']:
-      rangerPluginEnabled = services['configurations']['ranger-storm-plugin-properties']['properties']['ranger-storm-plugin-enabled']
-
-    nonRangerClass = 'org.apache.storm.security.auth.authorizer.SimpleACLAuthorizer'
-    rangerServiceVersion=''
-    if 'RANGER' in servicesList:
-      rangerServiceVersion = [service['StackServices']['service_version'] for service in services["services"] if service['StackServices']['service_name'] == 'RANGER'][0]
-
-    if rangerServiceVersion and rangerServiceVersion == '0.4.0':
-      rangerClass = 'com.xasecure.authorization.storm.authorizer.XaSecureStormAuthorizer'
-    else:
-      rangerClass = 'org.apache.ranger.authorization.storm.authorizer.RangerStormAuthorizer'
-    # Cluster is kerberized
-    if security_enabled:
-      if rangerPluginEnabled and (rangerPluginEnabled.lower() == 'Yes'.lower()):
-        putStormSiteProperty('nimbus.authorizer',rangerClass)
-      elif (services["configurations"]["storm-site"]["properties"]["nimbus.authorizer"] == rangerClass):
-        putStormSiteProperty('nimbus.authorizer', nonRangerClass)
-    else:
-      putStormSiteAttributes('nimbus.authorizer', 'delete', 'true')
-
-    if "storm-site" in services["configurations"]:
-      # atlas
-      notifier_plugin_property = "storm.topology.submission.notifier.plugin.class"
-      if notifier_plugin_property in services["configurations"]["storm-site"]["properties"]:
-        notifier_plugin_value = services["configurations"]["storm-site"]["properties"][notifier_plugin_property]
-        if notifier_plugin_value is None:
-          notifier_plugin_value = " "
-      else:
-        notifier_plugin_value = " "
-
-      include_atlas = "ATLAS" in servicesList
-      atlas_hook_class = "org.apache.atlas.storm.hook.StormAtlasHook"
-      if include_atlas and atlas_hook_class not in notifier_plugin_value:
-        if notifier_plugin_value == " ":
-          notifier_plugin_value = atlas_hook_class
-        else:
-          notifier_plugin_value = notifier_plugin_value + "," + atlas_hook_class
-      if not include_atlas and atlas_hook_class in notifier_plugin_value:
-        application_classes = []
-        for application_class in notifier_plugin_value.split(","):
-          if application_class != atlas_hook_class and application_class != " ":
-            application_classes.append(application_class)
-        if application_classes:
-          notifier_plugin_value = ",".join(application_classes)
-        else:
-          notifier_plugin_value = " "
-      if notifier_plugin_value != " ":
-        putStormStartupProperty(notifier_plugin_property, notifier_plugin_value)
 
   def recommendAmsConfigurations(self, configurations, clusterData, services, hosts):
     putAmsEnvProperty = self.putProperty(configurations, "ams-env", services)
@@ -953,10 +801,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
 
   def getServiceConfigurationValidators(self):
     return {
-      "KAFKA": {"ranger-kafka-plugin-properties": self.validateKafkaRangerPluginConfigurations,
-                "kafka-broker": self.validateKAFKAConfigurations},
-      "STORM": {"storm-site": self.validateStormConfigurations,
-                "ranger-storm-plugin-properties": self.validateStormRangerPluginConfigurations},
       "AMBARI_METRICS": {"ams-hbase-site": self.validateAmsHbaseSiteConfigurations,
               "ams-hbase-env": self.validateAmsHbaseEnvConfigurations,
               "ams-site": self.validateAmsSiteConfigurations},
@@ -1143,58 +987,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
 
     return self.toConfigurationValidationProblems(validationItems, "ams-hbase-site")
 
-  def validateStormConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
-    validationItems = []
-    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
-    # Storm AMS integration
-    if 'AMBARI_METRICS' in servicesList and "metrics.reporter.register" in properties and \
-      "org.apache.hadoop.metrics2.sink.storm.StormTimelineMetricsReporter" not in properties.get("metrics.reporter.register"):
-
-      validationItems.append({"config-name": 'metrics.reporter.register',
-                              "item": self.getWarnItem(
-                                "Should be set to org.apache.hadoop.metrics2.sink.storm.StormTimelineMetricsReporter to report the metrics to Ambari Metrics service.")})
-
-    return self.toConfigurationValidationProblems(validationItems, "storm-site")
-
-  def validateStormRangerPluginConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
-    validationItems = []
-    ranger_plugin_properties = getSiteProperties(configurations, "ranger-storm-plugin-properties")
-    ranger_plugin_enabled = ranger_plugin_properties['ranger-storm-plugin-enabled'] if ranger_plugin_properties else 'No'
-    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
-    if ranger_plugin_enabled.lower() == 'yes':
-      # ranger-storm-plugin must be enabled in ranger-env
-      ranger_env = getServicesSiteProperties(services, 'ranger-env')
-      if not ranger_env or not 'ranger-storm-plugin-enabled' in ranger_env or \
-              ranger_env['ranger-storm-plugin-enabled'].lower() != 'yes':
-        validationItems.append({"config-name": 'ranger-storm-plugin-enabled',
-                                "item": self.getWarnItem(
-                                    "ranger-storm-plugin-properties/ranger-storm-plugin-enabled must correspond ranger-env/ranger-storm-plugin-enabled")})
-    if ("RANGER" in servicesList) and (ranger_plugin_enabled.lower() == 'Yes'.lower()) and not 'KERBEROS' in servicesList:
-      validationItems.append({"config-name": "ranger-storm-plugin-enabled",
-                              "item": self.getWarnItem(
-                                "Ranger Storm plugin should not be enabled in non-kerberos environment.")})
-    return self.toConfigurationValidationProblems(validationItems, "ranger-storm-plugin-properties")
-
-  def validateKafkaRangerPluginConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
-    validationItems = []
-    ranger_plugin_properties = getSiteProperties(configurations, "ranger-kafka-plugin-properties")
-    ranger_plugin_enabled = ranger_plugin_properties['ranger-kafka-plugin-enabled'] if ranger_plugin_properties else 'No'
-    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
-    if ranger_plugin_enabled.lower() == 'yes':
-      # ranger-kafka-plugin must be enabled in ranger-env
-      ranger_env = getServicesSiteProperties(services, 'ranger-env')
-      if not ranger_env or not 'ranger-kafka-plugin-enabled' in ranger_env or \
-              ranger_env['ranger-kafka-plugin-enabled'].lower() != 'yes':
-        validationItems.append({"config-name": 'ranger-kafka-plugin-enabled',
-                                "item": self.getWarnItem(
-                                    "ranger-kafka-plugin-properties/ranger-kafka-plugin-enabled must correspond ranger-env/ranger-kafka-plugin-enabled")})
-
-    if ("RANGER" in servicesList) and (ranger_plugin_enabled.lower() == 'yes') and not 'KERBEROS' in servicesList:
-      validationItems.append({"config-name": "ranger-kafka-plugin-enabled",
-                              "item": self.getWarnItem(
-                              "Ranger Kafka plugin should not be enabled in non-kerberos environment.")})
-
-    return self.toConfigurationValidationProblems(validationItems, "ranger-kafka-plugin-properties")
 
   def validateRangerAdminConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
     ranger_site = properties
@@ -1380,26 +1172,6 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
       pass
 
     return self.toConfigurationValidationProblems(validationItems, "ams-hbase-env")
-
-  def validateKAFKAConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
-    kafka_broker = properties
-    validationItems = []
-
-    #Adding Ranger Plugin logic here
-    ranger_plugin_properties = getSiteProperties(configurations, "ranger-kafka-plugin-properties")
-    ranger_plugin_enabled = ranger_plugin_properties['ranger-kafka-plugin-enabled'] if ranger_plugin_properties else 'No'
-    prop_name = 'authorizer.class.name'
-    prop_val = "org.apache.ranger.authorization.kafka.authorizer.RangerKafkaAuthorizer"
-    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
-    if ("RANGER" in servicesList) and (ranger_plugin_enabled.lower() == 'Yes'.lower()):
-      if kafka_broker[prop_name] != prop_val:
-        validationItems.append({"config-name": prop_name,
-                                "item": self.getWarnItem(
-                                    "If Ranger Kafka Plugin is enabled." \
-                                    "{0} needs to be set to {1}".format(prop_name,prop_val))})
-
-    return self.toConfigurationValidationProblems(validationItems, "kafka-broker")
-
 
   def validateServiceConfigurations(self, serviceName):
     return self.getServiceConfigurationValidators().get(serviceName, None)
