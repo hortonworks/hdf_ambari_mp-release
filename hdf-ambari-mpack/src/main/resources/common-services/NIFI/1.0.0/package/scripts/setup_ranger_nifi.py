@@ -26,6 +26,12 @@ def setup_ranger_nifi(upgrade_type=None):
 
     if params.has_ranger_admin and params.enable_ranger_nifi:
         stack_version = params.stack_version_buildnum
+        File(format('{stack_root}/{stack_version}/{service_name}/ext/ranger/scripts/ranger_credential_helper.py'),
+             owner=params.nifi_user,
+             group=params.nifi_group,
+             mode=0750
+             )
+
         cred_lib_prefix_path = format('{stack_root}/{stack_version}/{service_name}/ext/ranger/install/lib/*')
         cred_setup_prefix_path = (format('{stack_root}/{stack_version}/{service_name}/ext/ranger/scripts/ranger_credential_helper.py'), '-l', cred_lib_prefix_path)
 
