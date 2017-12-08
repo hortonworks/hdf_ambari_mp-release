@@ -109,15 +109,16 @@ class StreamlineServer(Script):
       show_logs(params.streamline_log_dir, params.streamline_user)
       raise
 
-    wait_until_server_starts()
-    #Check to see if bootstrap_done file exists or not.
     try:
+      self.kerberos_server_start()
+      wait_until_server_starts()
+
+      #Check to see if bootstrap_done file exists or not.
       if os.path.isfile(params.bootstrap_file):
         if params.stack_sam_support_schema_migrate:
           Execute(params.bootstrap_run_cmd + ' migrate', user="root")
           File(params.bootstrap_file, owner=params.streamline_user, group=params.user_group, mode=0644)
       else:
-        self.kerberos_server_start()
         if params.stack_sam_support_schema_migrate:
           Execute(params.bootstrap_run_cmd + ' migrate', user="root")
           File(params.bootstrap_file, owner=params.streamline_user, group=params.user_group, mode=0644)
