@@ -43,7 +43,7 @@ def dump(config_json, config_dict, nifi_user, nifi_group):
   File(config_json,
     owner=nifi_user,
     group=nifi_group,
-    mode=0600,
+    mode=0644,
     content=PasswordString(json.dumps(config_dict, sort_keys=True, indent=4))
   )
 
