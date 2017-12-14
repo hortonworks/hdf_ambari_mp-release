@@ -86,8 +86,7 @@ class STREAMLINE050ServiceAdvisor(service_advisor.ServiceAdvisor):
 
         if _streamline_principal_name is not None and storm_nimbus_impersonation_acl is not None:
           streamline_bare_principal = get_bare_principal(_streamline_principal_name)
-          storm_nimbus_impersonation_acl = storm_nimbus_impersonation_acl.replace('{{storm_bare_jaas_principal}}',
-                                                                                  streamline_bare_principal)
+          storm_nimbus_impersonation_acl = "{ " + streamline_bare_principal + " : {hosts: ['*'], groups: ['*']}, {{storm_bare_jaas_principal}} : {hosts: ['*'], groups: ['*']}}"
           putStormSiteProperty('nimbus.impersonation.acl', storm_nimbus_impersonation_acl)
 
         storm_nimbus_autocred_plugin_classes = storm_site["nimbus.autocredential.plugins.classes"] if "nimbus.autocredential.plugins.classes" in storm_site else None
