@@ -153,6 +153,19 @@ class HDF20KAFKAServiceAdvisor(service_advisor.ServiceAdvisor):
                                             "If Ranger Kafka Plugin is enabled." \
                                             "{0} needs to be set to {1}".format(prop_name,prop_val))})
 
+        kafka_broker_properties = self.getSiteProperties(configurations, "kafka-broker")
+        # Find number of services installed, get them all and find kafka service json obj in them.
+        number_services = len(services['services'])
+        for each_service in range(0, number_services):
+            if services['services'][each_service]['components'][0]['StackServiceComponents']['service_name'] == 'KAFKA':
+                num_kakfa_brokers = len(services['services'][each_service]['components'][0]['StackServiceComponents']['hostnames'])
+                if int(kafka_broker_properties['offsets.topic.replication.factor']) > num_kakfa_brokers:
+                    validationItems.append({"config-name": 'offsets.topic.replication.factor',
+                        "item": self.getWarnItem(
+                        "offsets.topic.replication.factor={0} is less than number of kafka brokers={1}. " \
+                        "It is recommended to decrease it or increase number of kafka borkers." \
+                        .format(kafka_broker_properties['offsets.topic.replication.factor'], num_kakfa_brokers))})
+
         return self.toConfigurationValidationProblems(validationItems, "kafka-broker")
 
     def validateKafkaRangerPluginConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
