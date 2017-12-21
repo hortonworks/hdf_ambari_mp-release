@@ -80,6 +80,11 @@ class StreamlineServer(Script):
       else:
         Logger.info("Not executing bootstrap_storage as it is downgrade")
 
+    if params.version and check_stack_feature(StackFeature.ROLLING_UPGRADE, format_stack_version(params.version)):
+      stack_select.select("streamline", params.version)
+    if params.version and check_stack_feature(StackFeature.CONFIG_VERSIONING, params.version):
+      conf_select.select(params.stack_name, "streamline", params.version)
+
   def kerberos_server_start(self):
     import params
     if params.security_enabled:

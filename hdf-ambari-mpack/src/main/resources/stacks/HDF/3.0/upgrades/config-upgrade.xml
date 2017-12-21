@@ -1,23 +1,150 @@
 <upgrade-config-changes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="upgrade-config.xsd">
+
     <services>
-        <service name="NIFI">
-            <component name="NIFI_MASTER">
-                <changes>
 
-                    <!-- Update these configs in nifi-properties. -->
-                    <definition xsi:type="configure" id="hdf_3_0_0_0_update_nifi_properties_configs">
-                        <type>nifi-properties</type>
-                        <set key="nifi.version" value="1.2.0.{{stack_version_buildnum}}"/>
-                    </definition>
-
-                    <definition xsi:type="configure" id="hdf_3_1_0_0_update_nifi_properties_configs">
-                        <type>nifi-properties</type>
-                        <set key="nifi.version" value="1.5.0.{{stack_version_buildnum}}"/>
-                    </definition>
-
-                </changes>
-            </component>
+        <service name="KAFKA">
+          <component name="KAFKA_BROKER">
+            <changes>
+              <definition xsi:type="configure" id="kafka_log4j_parameterize" summary="Parameterizing Kafka Log4J Properties">
+                <type>kafka-log4j</type>
+                <set key="kafka_log_maxfilesize" value="256"/>
+                <set key="kafka_log_maxbackupindex" value="20"/>
+                <set key="controller_log_maxfilesize" value="256"/>
+                <set key="controller_log_maxbackupindex" value="20"/>
+                <replace key="content" find="log4j.appender.kafkaAppender=org.apache.log4j.DailyRollingFileAppender" replace-with="log4j.appender.kafkaAppender=org.apache.log4j.DailyRollingFileAppender&#xA;log4j.appender.kafkaAppender.MaxFileSize = {{kafka_log_maxfilesize}}MB"/>
+                <replace key="content" find="log4j.appender.kafkaAppender=org.apache.log4j.DailyRollingFileAppender" replace-with="log4j.appender.kafkaAppender=org.apache.log4j.DailyRollingFileAppender&#xA;log4j.appender.kafkaAppender.MaxBackupIndex = {{kafka_log_maxbackupindex}}"/>
+                <replace key="content" find="log4j.appender.controllerAppender=org.apache.log4j.DailyRollingFileAppender" replace-with="log4j.appender.controllerAppender=org.apache.log4j.DailyRollingFileAppender&#xA;log4j.appender.controllerAppender.MaxFileSize = {{controller_log_maxfilesize}}MB"/>
+                <replace key="content" find="log4j.appender.controllerAppender=org.apache.log4j.DailyRollingFileAppender" replace-with="log4j.appender.controllerAppender=org.apache.log4j.DailyRollingFileAppender&#xA;log4j.appender.controllerAppender.MaxBackupIndex = {{controller_log_maxbackupindex}}"/>
+              </definition>
+              <definition xsi:type="configure" id="add_inter_broker_protocol_version">
+                <type>kafka-broker</type>
+                  <set key="inter.broker.protocol.version" value="1.0" />
+              </definition>
+              <definition xsi:type="configure" id="add_skip_log_message_format_version">
+                <type>kafka-broker</type>
+                <set key="log.message.format.version" value="1.0" if-key="log.message.format.version" if-key-state="absent"/>
+              </definition>
+            </changes>
+          </component>
         </service>
+
+        <service name="STORM">
+          <component name="NIMBUS">
+            <changes>
+              <definition xsi:type="configure" id="storm_nimbus_autocred_config" summary="Update Storm's Nimbus AutoCred config">
+                <type>storm-site</type>
+                <set key="nimbus.autocredential.plugins.classes" value="['org.apache.storm.hdfs.security.AutoHDFS', 'org.apache.storm.hbase.security.AutoHBase', 'org.apache.storm.hive.security.AutoHive']" if-type="streamline-common" if-key="authorizer.class.name" if-key-state="present"/>
+                <set key="nimbus.credential.renewers.classes" value="['org.apache.storm.hdfs.security.AutoHDFS', 'org.apache.storm.hbase.security.AutoHBase', 'org.apache.storm.hive.security.AutoHive']" if-type="streamline-common" if-key="authorizer.class.name" if-key-state="present"/>
+                <set key="nimbus.credential.renewers.freq.secs" value="82800" if-type="streamline-common" if-key="authorizer.class.name" if-key-state="present"/>
+              </definition>
+              <definition xsi:type="configure" id="storm_remove_jmxetric" summary="Removing jmxetric from childopts.">
+                <type>storm-site</type>
+                <regex-replace key="nimbus.childopts" find=" -javaagent:(.*)JVM" replace-with=""/>
+                <regex-replace key="supervisor.childopts" find=" -javaagent:(.*)JVM" replace-with=""/>
+                <regex-replace key="worker.childopts" find=" -javaagent:(.*)JVM" replace-with=""/>
+              </definition>
+              <definition xsi:type="configure" id="storm_worker_log4j_parameterize" summary="Parameterizing Storm Worker Log4J Properties">
+                <type>storm-worker-log4j</type>
+                <set key="storm_wrkr_a1_maxfilesize" value="100"/>
+                <set key="storm_wrkr_a1_maxbackupindex" value="9"/>
+                <set key="storm_wrkr_out_maxfilesize" value="100"/>
+                <set key="storm_wrkr_out_maxbackupindex" value="4"/>
+                <set key="storm_wrkr_err_maxfilesize" value="100"/>
+                <set key="storm_wrkr_err_maxbackupindex" value="4"/>
+                <regex-replace key="content" find="}.%i.gz&quot;&gt;&#xA;        &lt;PatternLayout&gt;&#xA;            &lt;pattern&gt;\$\{pattern}&lt;/pattern&gt;&#xA;        &lt;/PatternLayout&gt;&#xA;        &lt;Policies&gt;&#xA;            &lt;SizeBasedTriggeringPolicy size=&quot;(?:[0-9]+) MB&quot;/&gt; &lt;!-- Or every 100 MB --&gt;&#xA;        &lt;/Policies&gt;&#xA;        &lt;DefaultRolloverStrategy max=&quot;([0-9]+)"
+                                             replace-with="}.%i.gz&quot;&gt;&#xA;        &lt;PatternLayout&gt;&#xA;            &lt;pattern&gt;${pattern}&lt;/pattern&gt;&#xA;        &lt;/PatternLayout&gt;&#xA;        &lt;Policies&gt;&#xA;            &lt;SizeBasedTriggeringPolicy size=&quot;{{storm_wrkr_a1_maxfilesize}} MB&quot;/&gt; &lt;!-- Or every 100 MB --&gt;&#xA;        &lt;/Policies&gt;&#xA;        &lt;DefaultRolloverStrategy max=&quot;{{storm_wrkr_a1_maxbackupindex}}"/>
+                <regex-replace key="content" find="}.out.%i.gz&quot;&gt;&#xA;        &lt;PatternLayout&gt;&#xA;            &lt;pattern&gt;\$\{patternNoTime}&lt;/pattern&gt;&#xA;        &lt;/PatternLayout&gt;&#xA;        &lt;Policies&gt;&#xA;            &lt;SizeBasedTriggeringPolicy size=&quot;(?:[0-9]+) MB&quot;/&gt; &lt;!-- Or every 100 MB --&gt;&#xA;        &lt;/Policies&gt;&#xA;        &lt;DefaultRolloverStrategy max=&quot;([0-9]+)"
+                                             replace-with="}.out.%i.gz&quot;&gt;&#xA;        &lt;PatternLayout&gt;&#xA;            &lt;pattern&gt;${patternNoTime}&lt;/pattern&gt;&#xA;        &lt;/PatternLayout&gt;&#xA;        &lt;Policies&gt;&#xA;            &lt;SizeBasedTriggeringPolicy size=&quot;{{storm_wrkr_out_maxfilesize}} MB&quot;/&gt; &lt;!-- Or every 100 MB --&gt;&#xA;        &lt;/Policies&gt;&#xA;        &lt;DefaultRolloverStrategy max=&quot;{{storm_wrkr_out_maxbackupindex}}"/>
+                <regex-replace key="content" find="}.err.%i.gz&quot;&gt;&#xA;        &lt;PatternLayout&gt;&#xA;            &lt;pattern&gt;\$\{patternNoTime}&lt;/pattern&gt;&#xA;        &lt;/PatternLayout&gt;&#xA;        &lt;Policies&gt;&#xA;            &lt;SizeBasedTriggeringPolicy size=&quot;(?:[0-9]+) MB&quot;/&gt; &lt;!-- Or every 100 MB --&gt;&#xA;        &lt;/Policies&gt;&#xA;        &lt;DefaultRolloverStrategy max=&quot;([0-9]+)"
+                                             replace-with="}.err.%i.gz&quot;&gt;&#xA;        &lt;PatternLayout&gt;&#xA;            &lt;pattern&gt;${patternNoTime}&lt;/pattern&gt;&#xA;        &lt;/PatternLayout&gt;&#xA;        &lt;Policies&gt;&#xA;            &lt;SizeBasedTriggeringPolicy size=&quot;{{storm_wrkr_err_maxfilesize}} MB&quot;/&gt; &lt;!-- Or every 100 MB --&gt;&#xA;        &lt;/Policies&gt;&#xA;        &lt;DefaultRolloverStrategy max=&quot;{{storm_wrkr_err_maxbackupindex}}"/>
+              </definition>
+              <definition xsi:type="configure" id="storm_cluster_log4j_parameterize" summary="Parameterizing Storm Cluster Log4J Properties">
+                <type>storm-cluster-log4j</type>
+                <set key="storm_a1_maxfilesize" value="100"/>
+                <set key="storm_a1_maxbackupindex" value="9"/>
+                <regex-replace key="content" find="A1&quot; immediateFlush=&quot;false&quot;&#xA;                 fileName=&quot;\$\{sys:storm.log.dir}/\$\{sys:logfile.name}&quot;&#xA;                 filePattern=&quot;\$\{sys:storm.log.dir}/\$\{sys:logfile.name}.%i.gz&quot;&gt;&#xA;        &lt;PatternLayout&gt;&#xA;            &lt;pattern&gt;\$\{pattern}&lt;/pattern&gt;&#xA;        &lt;/PatternLayout&gt;&#xA;        &lt;Policies&gt;&#xA;            &lt;SizeBasedTriggeringPolicy size=&quot;(?:[0-9]+) MB&quot;/&gt; &lt;!-- Or every 100 MB --&gt;&#xA;        &lt;/Policies&gt;&#xA;        &lt;DefaultRolloverStrategy max=&quot;([0-9]+)"
+                                             replace-with="A1&quot; immediateFlush=&quot;false&quot;&#xA;                 fileName=&quot;${sys:storm.log.dir}/${sys:logfile.name}&quot;&#xA;                 filePattern=&quot;${sys:storm.log.dir}/${sys:logfile.name}.%i.gz&quot;&gt;&#xA;        &lt;PatternLayout&gt;&#xA;            &lt;pattern&gt;${pattern}&lt;/pattern&gt;&#xA;        &lt;/PatternLayout&gt;&#xA;        &lt;Policies&gt;&#xA;            &lt;SizeBasedTriggeringPolicy size=&quot;{{storm_a1_maxfilesize}} MB&quot;/&gt; &lt;!-- Or every 100 MB --&gt;&#xA;        &lt;/Policies&gt;&#xA;        &lt;DefaultRolloverStrategy max=&quot;{{storm_a1_maxbackupindex}}"/>
+              </definition>
+            </changes>
+          </component>
+        </service>
+
+        <service name="ZOOKEEPER">
+          <component name="ZOOKEEPER_SERVER">
+            <changes>
+              <!-- Zookeeper Rolling properties for log4j need to be parameterized. -->
+              <definition xsi:type="configure" id="zookeeper_log4j_parameterize" summary="Parameterizing ZooKeeper Log4J Properties">
+                <type>zookeeper-log4j</type>
+                <set key="zookeeper_log_max_backup_size" value="10"/>
+                <set key="zookeeper_log_number_of_backup_files" value="10"/>
+                <regex-replace  key="content" find="^log4j.appender.ROLLINGFILE.MaxFileSize=([0-9]+)MB" replace-with="log4j.appender.ROLLINGFILE.MaxFileSize={{zookeeper_log_max_backup_size}}MB"/>
+                <regex-replace key="content" find="^#log4j.appender.ROLLINGFILE.MaxBackupIndex=([0-9]+)" replace-with="#log4j.appender.ROLLINGFILE.MaxBackupIndex={{zookeeper_log_number_of_backup_files}}"/>
+              </definition>
+            </changes>
+          </component>
+        </service>
+
+        <service name="RANGER">
+          <component name="RANGER_ADMIN">
+            <changes>
+              <definition xsi:type="configure" id="hdf_3_1_0_remove_bind_anonymous">
+                <type>ranger-env</type>
+                <transfer operation="delete" delete-key="bind_anonymous" />
+              </definition>
+              <definition xsi:type="configure" id="admin_log4j_parameterize" summary="Parameterizing Ranger Log4J Properties">
+                <type>admin-log4j</type>
+                <set key="ranger_xa_log_maxfilesize" value="256"/>
+                <set key="ranger_xa_log_maxbackupindex" value="20"/>
+                <replace key="content" find="log4j.appender.xa_log_appender=org.apache.log4j.DailyRollingFileAppender" replace-with="log4j.appender.xa_log_appender=org.apache.log4j.DailyRollingFileAppender&#xA;log4j.appender.xa_log_appender.MaxFileSize={{ranger_xa_log_maxfilesize}}MB"/>
+              </definition>
+            </changes>
+          </component>
+          <component name="RANGER_USERSYNC">
+            <changes>
+              <definition xsi:type="configure" id="usersync_log4j_parameterize" summary="Parameterizing Ranger Usersync Log4J Properties">
+                <type>usersync-log4j</type>
+                <set key="ranger_usersync_log_maxfilesize" value="256"/>
+                <set key="ranger_usersync_log_maxbackupindex" value="20"/>
+                <replace key="content" find="log4j.appender.logFile=org.apache.log4j.DailyRollingFileAppender" replace-with="log4j.appender.logFile=org.apache.log4j.DailyRollingFileAppender&#xA;log4j.appender.logFile.MaxFileSize={{ranger_usersync_log_maxfilesize}}MB"/>
+              </definition>
+
+              <definition xsi:type="configure" id="hdf_3_1_0_disable_delta_sync_during_upgrade">
+                <type>ranger-ugsync-site</type>
+                <set key="ranger.usersync.ldap.deltasync" value="false"
+                  if-type="ranger-ugsync-site" if-key="ranger.usersync.source.impl.class" if-value="org.apache.ranger.ldapusersync.process.LdapUserGroupBuilder"/>
+              </definition>
+            </changes>
+          </component>
+          <component name="RANGER_TAGSYNC">
+            <changes>
+              <definition xsi:type="configure" id="tagsync_log4j_parameterize" summary="Parameterizing Ranger Tagsync Log4J Properties">
+                <type>tagsync-log4j</type>
+                <set key="ranger_tagsync_log_maxfilesize" value="256"/>
+                <set key="ranger_tagsync_log_number_of_backup_files" value="20"/>
+                <replace key="content" find="log4j.appender.logFile=org.apache.log4j.DailyRollingFileAppender" replace-with="log4j.appender.logFile=org.apache.log4j.DailyRollingFileAppender&#xA;log4j.appender.logFile.MaxFileSize={{ranger_tagsync_log_maxfilesize}}MB"/>
+              </definition>
+            </changes>
+          </component>
+        </service>
+
+    <service name="NIFI">
+        <component name="NIFI_MASTER">
+            <changes>
+
+                <!-- Update these configs in nifi-properties. -->
+                <definition xsi:type="configure" id="hdf_3_0_0_0_update_nifi_properties_configs">
+                    <type>nifi-properties</type>
+                    <set key="nifi.version" value="1.2.0.{{stack_version_buildnum}}"/>
+                </definition>
+
+                <definition xsi:type="configure" id="hdf_3_1_0_0_update_nifi_properties_configs">
+                    <type>nifi-properties</type>
+                    <set key="nifi.version" value="1.5.0.{{stack_version_buildnum}}"/>
+                </definition>
+
+            </changes>
+        </component>
+    </service>
+
     </services>
 </upgrade-config-changes>
-

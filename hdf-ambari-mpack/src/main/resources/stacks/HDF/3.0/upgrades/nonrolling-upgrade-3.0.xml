@@ -19,7 +19,7 @@
 <upgrade xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="upgrade-pack.xsd">
     <target>3.0.*.*</target>
     <target-stack>HDF-3.0</target-stack>
-    <downgrade-allowed>false</downgrade-allowed>
+    <downgrade-allowed>true</downgrade-allowed>
     <type>NON_ROLLING</type>
     <prerequisite-checks/>
 

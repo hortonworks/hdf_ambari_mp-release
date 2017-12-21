@@ -77,6 +77,11 @@ class RegistryServer(Script):
       else:
         Logger.info("Not executing bootstrap_storage as it is downgrade")
 
+    if params.version and check_stack_feature(StackFeature.ROLLING_UPGRADE, format_stack_version(params.version)):
+      stack_select.select("registry", params.version)
+    if params.version and check_stack_feature(StackFeature.CONFIG_VERSIONING, params.version):
+      conf_select.select(params.stack_name, "registry", params.version)
+
   def start(self, env, upgrade_type=None):
     import params
     import status_params
