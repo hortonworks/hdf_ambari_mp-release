@@ -155,6 +155,10 @@
                     <message>Please pause the upgrade, update password property "nifi.security.encrypt.configuration.password", and confirm settings in nifi-bootstrap-env, nifi-bootstrap-notification-services-env, nifi-node-logback-env, nifi-state-management-env, and nifi-login-identity-providers-env properties. In nifi-bootstrap-env ensure that the new system properties, "java.arg.0=-Djava.security.auth.login.config=" and "java.arg.9999=-Djava.security.egd=file:/dev/urandom", have unique arg values. Then resume the upgrade.</message>
                 </task>
             </execute-stage>
+            <!-- STORM -->
+            <execute-stage service="STORM" component="NIMBUS" title="Removing jmxetric from childopts">
+                <task xsi:type="configure" id="storm_remove_jmxetric"/>
+            </execute-stage>
         </group>
 
         <!--

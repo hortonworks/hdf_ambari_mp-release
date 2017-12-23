@@ -91,5 +91,17 @@
                 </changes>
             </component>
         </service>
+        <service name="STORM">
+            <component name="NIMBUS">
+                <changes>
+                    <definition xsi:type="configure" id="storm_remove_jmxetric" summary="Removing jmxetric from childopts.">
+                        <type>storm-site</type>
+                        <regex-replace key="nimbus.childopts" find=" -javaagent:(.*)JVM" replace-with=""/>
+                        <regex-replace key="supervisor.childopts" find=" -javaagent:(.*)JVM" replace-with=""/>
+                        <regex-replace key="worker.childopts" find=" -javaagent:(.*)JVM" replace-with=""/>
+                    </definition>
+                </changes>
+            </component>
+        </service>
     </services>
 </upgrade-config-changes>
