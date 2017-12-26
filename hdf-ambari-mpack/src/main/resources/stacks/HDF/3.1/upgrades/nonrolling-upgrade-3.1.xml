@@ -172,6 +172,25 @@
         <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
             <direction>UPGRADE</direction>
             <skippable>true</skippable>
+
+            <!-- STORM -->
+            <execute-stage service="STORM" component="NIMBUS" title="Apply config changes for Ranger Storm plugin">
+                <task xsi:type="configure" id="hdf_3_1_maint_ranger_storm_plugin_cluster_name"/>
+            </execute-stage>
+
+            <execute-stage service="STORM" component="NIMBUS" title="Apply config changes for Storm AutoCreds">
+                <task xsi:type="configure" id="storm_nimbus_autocred_config"/>
+            </execute-stage>
+
+            <execute-stage service="STORM" component="NIMBUS" title="Removing jmxetric from childopts">
+                <task xsi:type="configure" id="storm_remove_jmxetric" supports-patch="true"/>
+            </execute-stage>
+
+            <!-- KAFKA -->
+            <execute-stage service="KAFKA" component="KAFKA_BROKER" title="Apply config changes for Ranger Kafka plugin">
+                <task xsi:type="configure" id="hdf_3_1_maint_ranger_kafka_plugin_cluster_name"/>
+            </execute-stage>
+
             <!-- NIFI -->
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
                 <task xsi:type="configure" id="hdf_3_1_0_0_update_nifi_properties_configs"/>

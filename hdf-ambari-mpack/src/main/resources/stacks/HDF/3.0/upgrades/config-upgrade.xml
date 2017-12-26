@@ -31,6 +31,15 @@
         <service name="STORM">
           <component name="NIMBUS">
             <changes>
+              <definition xsi:type="configure" id="hdf_3_1_0_0_remove_empty_storm_topology_submission_notifier_plugin_class" summary="Removing empty storm.topology.submission.notifier.plugin.class property">
+                <type>storm-site</type>
+                <transfer operation="delete" delete-key="storm.topology.submission.notifier.plugin.class" if-key="storm.topology.submission.notifier.plugin.class" if-type="storm-site" if-value=" "/>
+              </definition>
+              <definition xsi:type="configure" id="increase_storm_zookeeper_timeouts" summary="Increase storm.zookeeper.session.timeout and storm.zookeeper.connection.timeout property">
+                <type>storm-site</type>
+                <set key="storm.zookeeper.session.timeout" value="30000" if-key="storm.zookeeper.session.timeout" if-type="storm-site" if-value="20000" />
+                <set key="storm.zookeeper.connection.timeout" value="30000" if-key="storm.zookeeper.connection.timeout" if-type="storm-site" if-value="15000" />
+              </definition>
               <definition xsi:type="configure" id="storm_nimbus_autocred_config" summary="Update Storm's Nimbus AutoCred config">
                 <type>storm-site</type>
                 <set key="nimbus.autocredential.plugins.classes" value="['org.apache.storm.hdfs.security.AutoHDFS', 'org.apache.storm.hbase.security.AutoHBase', 'org.apache.storm.hive.security.AutoHive']" if-type="streamline-common" if-key="authorizer.class.name" if-key-state="present"/>

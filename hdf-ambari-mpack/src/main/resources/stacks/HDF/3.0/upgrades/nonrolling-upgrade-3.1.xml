@@ -173,12 +173,85 @@
         <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
             <direction>UPGRADE</direction>
             <skippable>true</skippable>
+
+            <!--ZOOKEEPER-->
+            <execute-stage service="ZOOKEEPER" component="ZOOKEEPER_SERVER" title="Parameterizing Zookeeper Log4J Properties">
+                <task xsi:type="configure" id="zookeeper_log4j_parameterize">
+                    <summary>Updating the Zookeeper Log4J properties to include parameterizations</summary>
+                </task>
+            </execute-stage>
+
+            <!-- STORM -->
+            <execute-stage service="STORM" component="NIMBUS" title="Apply config changes for Nimbus">
+                <task xsi:type="configure" id="increase_storm_zookeeper_timeouts"/>
+            </execute-stage>
+
+            <execute-stage service="STORM" component="NIMBUS" title="Parameterizing Storm worker Log4J Properties">
+                <task xsi:type="configure" id="storm_worker_log4j_parameterize">
+                    <summary>Updating the Storm worker Log4J properties to include parameterizations</summary>
+                </task>
+            </execute-stage>
+            <execute-stage service="STORM" component="NIMBUS" title="Parameterizing Storm cluster Log4J Properties">
+                <task xsi:type="configure" id="storm_cluster_log4j_parameterize">
+                    <summary>Updating the Storm cluster Log4J properties to include parameterizations</summary>
+                </task>
+            </execute-stage>
+            <execute-stage service="STORM" component="NIMBUS" title="Removing jmxetric from childopts">
+                <task xsi:type="configure" id="storm_remove_jmxetric"/>
+            </execute-stage>
+
+            <!--KAFKA-->
+            <execute-stage service="KAFKA" component="KAFKA_BROKER" title="Parameterizing Kafka Log4J Properties">
+                <task xsi:type="configure" id="kafka_log4j_parameterize">
+                    <summary>Updating the Kafka Log4J properties to include parameterizations</summary>
+                </task>
+            </execute-stage>
+
+            <execute-stage service="KAFKA" component="KAFKA_BROKER" title="Add interbroker protocol version">
+                <task xsi:type="configure" id="add_inter_broker_protocol_version">
+                    <summary>Update kafka server properties to add inter.broker.protocol.version</summary>
+                </task>
+            </execute-stage>
+
+            <execute-stage service="KAFKA" component="KAFKA_BROKER" title="Add log message format version">
+                <task xsi:type="configure" id="add_skip_log_message_format_version">
+                    <summary>Update kafka server properties to add log.message.format.version if not present. </summary>
+                </task>
+            </execute-stage>
+
             <!-- NIFI -->
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
                 <task xsi:type="configure" id="hdf_3_1_0_0_update_nifi_properties_configs"/>
             </execute-stage>
-            <execute-stage service="STORM" component="NIMBUS" title="Removing jmxetric from childopts">
-                <task xsi:type="configure" id="storm_remove_jmxetric"/>
+
+           <!--RANGER-->
+
+            <execute-stage service="RANGER" component="RANGER_ADMIN" title="Apply config changes for Ranger Admin">
+                <task xsi:type="configure" id="hdf_3_1_0_remove_bind_anonymous"/>
+            </execute-stage>
+
+            <execute-stage service="STORM" component="NIMBUS" title="Apply config changes for Storm AutoCreds">
+                <task xsi:type="configure" id="storm_nimbus_autocred_config"/>
+            </execute-stage>
+
+            <execute-stage service="RANGER" component="RANGER_ADMIN" title="Parameterizing Ranger Admin Log4J Properties">
+                <task xsi:type="configure" id="admin_log4j_parameterize">
+                    <summary>Updating the Ranger admin Log4J properties to include parameterizations</summary>
+                </task>
+            </execute-stage>
+
+            <execute-stage service="RANGER" component="RANGER_USERSYNC" title="Parameterizing Ranger Usersync Log4J Properties">
+                <task xsi:type="configure" id="usersync_log4j_parameterize">
+                    <summary>Updating the Ranger usersync Log4J properties to include parameterizations</summary>
+                </task>
+            </execute-stage>
+            <execute-stage service="RANGER" component="RANGER_TAGSYNC" title="Parameterizing Ranger Tagsync Log4J Properties">
+                <task xsi:type="configure" id="tagsync_log4j_parameterize">
+                    <summary>Updating the Ranger tagsync Log4J properties to include parameterizations</summary>
+                </task>
+            </execute-stage>
+            <execute-stage service="RANGER" component="RANGER_USERSYNC" title="Apply config changes for Ranger Usersync">
+                <task xsi:type="configure" id="hdf_3_1_0_disable_delta_sync_during_upgrade"/>
             </execute-stage>
         </group>
 

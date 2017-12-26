@@ -172,6 +172,16 @@
         <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
             <direction>UPGRADE</direction>
             <skippable>true</skippable>
+
+            <!-- STORM -->
+            <execute-stage service="STORM" component="NIMBUS" title="Apply config changes for Storm">
+                <task xsi:type="configure" id="hdf_3_1_0_0_remove_empty_storm_topology_submission_notifier_plugin_class"/>
+            </execute-stage>
+
+            <execute-stage service="STORM" component="NIMBUS" title="Apply config changes for Nimbus">
+                <task xsi:type="configure" id="increase_storm_zookeeper_timeouts"/>
+            </execute-stage>
+
             <!-- NIFI -->
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
                 <task xsi:type="configure" id="hdf_3_0_0_0_update_nifi_properties_configs"/>
