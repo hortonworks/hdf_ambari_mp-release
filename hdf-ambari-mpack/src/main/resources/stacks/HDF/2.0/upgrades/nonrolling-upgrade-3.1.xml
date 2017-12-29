@@ -122,9 +122,13 @@
 
 
         <!-- After processing this group, update NiFi Service configurations -->
-        <group xsi:type="cluster" name="Upgrade NIFI service configs" title="Upgrade NIFI service configs">
+        <group xsi:type="cluster" name="Upgrade Service Configs" title="Upgrade Service Configs">
             <direction>UPGRADE</direction>
             <skippable>true</skippable>
+            <!-- STORM -->
+            <execute-stage service="STORM" component="NIMBUS" title="Update config changes for Storm">
+                <task xsi:type="configure" id="hdf_3_1_0_0_update_storm_env_ext_classpath"/>
+            </execute-stage>
             <!-- NIFI -->
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
                 <task xsi:type="configure" id="hdf_2_1_0_0_add_nifi_properties_configs"/>

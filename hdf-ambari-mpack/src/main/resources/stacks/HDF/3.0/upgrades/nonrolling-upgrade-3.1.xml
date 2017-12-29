@@ -170,7 +170,7 @@
         </group>
 
 
-        <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
+        <group xsi:type="cluster" name="Upgrade Service Configs" title="Upgrade Service Configs">
             <direction>UPGRADE</direction>
             <skippable>true</skippable>
 
@@ -182,6 +182,10 @@
             </execute-stage>
 
             <!-- STORM -->
+            <execute-stage service="STORM" component="NIMBUS" title="Update config changes for Storm">
+                <task xsi:type="configure" id="hdf_3_1_0_0_update_storm_env_ext_classpath"/>
+            </execute-stage>
+
             <execute-stage service="STORM" component="NIMBUS" title="Apply config changes for Nimbus">
                 <task xsi:type="configure" id="increase_storm_zookeeper_timeouts"/>
             </execute-stage>

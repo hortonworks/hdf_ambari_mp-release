@@ -1,5 +1,15 @@
 <upgrade-config-changes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="upgrade-config.xsd">
   <services>
+    <service name="STORM">
+      <component name="NIMBUS">
+        <changes>
+          <definition xsi:type="configure" id="hdf_3_1_0_0_update_storm_env_ext_classpath" summary="Change classpath to use wildcard">
+            <type>storm-env</type>
+            <replace key="content" find="export STORM_EXT_CLASSPATH=$STORM_AUTOCREDS_LIB_DIR" replace-with="export STORM_EXT_CLASSPATH=&quot;$STORM_AUTOCREDS_LIB_DIR/*&quot;"/>
+          </definition>
+        </changes>
+      </component>
+    </service>
     <service name="NIFI">
       <component name="NIFI_MASTER">
         <changes>
