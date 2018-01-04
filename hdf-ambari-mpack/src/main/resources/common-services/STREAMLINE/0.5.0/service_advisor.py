@@ -76,7 +76,8 @@ class STREAMLINE050ServiceAdvisor(service_advisor.ServiceAdvisor):
     security_enabled = self.isSecurityEnabled(services)
     if 'STORM' in servicesList and security_enabled:
       storm_site = self.getServicesSiteProperties(services, "storm-site")
-      if storm_site is not None:
+      streamline_env = self.getServicesSiteProperties(services, "streamline-env")
+      if storm_site is not None and streamline_env is not None:
         putStormSiteProperty = self.putProperty(configurations, "storm-site", services)
         putStormSiteAttributes = self.putPropertyAttribute(configurations, "storm-site")
         storm_env = self.getServicesSiteProperties(services, "storm-env")
