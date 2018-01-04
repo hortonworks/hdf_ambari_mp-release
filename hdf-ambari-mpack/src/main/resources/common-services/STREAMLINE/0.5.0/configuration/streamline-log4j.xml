@@ -55,7 +55,7 @@
  appenders:
    - type: file
      threshold: DEBUG
-     logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
+     logFormat: "%-6level [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
      currentLogFilename: {{streamline_log_dir}}/streamline.log
      archivedLogFilenamePattern: {{streamline_log_dir}}/streamline-%d{yyyy-MM-dd}-%i.log.gz
      archivedFileCount: {{streamline_log_maxbackupindex}}

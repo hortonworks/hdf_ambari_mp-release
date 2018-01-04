@@ -159,5 +159,29 @@
         </component>
     </service>
 
+      <service name="STREAMLINE">
+        <component name="STREAMLINE_SERVER">
+          <changes>
+            <!-- Update these configs in streamline  -->
+            <definition xsi:type="configure" id="hdf_3_1_0_0_update_streamline_log4j">
+              <type>streamline-log4j</type>
+              <replace key="content" find="logFormat: &quot;%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n&quot;" replace-with="logFormat: &quot;%-6level [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n&quot;"/>
+            </definition>
+          </changes>
+        </component>
+      </service>
+
+      <service name="REGISTRY">
+        <component name="REGISTRY_SERVER">
+          <changes>
+            <!-- Update these configs in streamline  -->
+            <definition xsi:type="configure" id="hdf_3_1_0_0_update_registry_log4j">
+              <type>registry-log4j</type>
+              <replace key="content" find="logFormat: &quot;%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n&quot;" replace-with="logFormat: &quot;%-6level [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n&quot;"/>
+            </definition>
+          </changes>
+        </component>
+      </service>
+
     </services>
 </upgrade-config-changes>

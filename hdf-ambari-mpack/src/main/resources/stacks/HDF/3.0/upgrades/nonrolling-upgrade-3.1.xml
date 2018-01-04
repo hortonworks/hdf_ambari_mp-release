@@ -257,6 +257,18 @@
             <execute-stage service="RANGER" component="RANGER_USERSYNC" title="Apply config changes for Ranger Usersync">
                 <task xsi:type="configure" id="hdf_3_1_0_disable_delta_sync_during_upgrade"/>
             </execute-stage>
+
+            <!--STREAMLINE-->
+            <execute-stage service="STREAMLINE" component="STREAMLINE_SERVER" title="Apply config changes for SAM log4j">
+                <task xsi:type="configure" id="hdf_3_1_0_0_update_streamline_log4j"/>
+            </execute-stage>
+
+            <!--REGISTRY-->
+            <execute-stage service="REGISTRY" component="REGISTRY_SERVER" title="Apply config changes for Registry log4j">
+                <task xsi:type="configure" id="hdf_3_1_0_0_update_registry_log4j"/>
+            </execute-stage>
+
+
         </group>
 
         <!--

@@ -347,7 +347,9 @@
 
     <service name="REGISTRY">
       <component name="REGISTRY_SERVER">
-        <pre-upgrade/>
+        <pre-upgrade>
+            <task xsi:type="configure" id="hdf_3_1_0_0_update_registry_log4j"/>
+        </pre-upgrade>
         <pre-downgrade>
            <task xsi:type="execute" hosts="all">
                 <summary>Stop Registry Server</summary>
@@ -366,7 +368,9 @@
 
     <service name="STREAMLINE">
       <component name="STREAMLINE_SERVER">
-        <pre-upgrade/>
+        <pre-upgrade>
+          <task xsi:type="configure" id="hdf_3_1_0_0_update_streamline_log4j"/>
+        </pre-upgrade>
         <pre-downgrade>
            <task xsi:type="execute" hosts="all">
                 <summary>Stop Streamline Server</summary>
