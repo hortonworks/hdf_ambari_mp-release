@@ -293,9 +293,9 @@
   </property>
   <property>
     <name>nifi.content.claim.max.appendable.size</name>
-    <value>10 MB</value>
+    <value>1 MB</value>
     <on-ambari-upgrade add="true"/>
-    <description>The maximum size for a content claim. The default value is 10 MB.</description>
+    <description>The maximum size for a content claim. The default value is 1 MB.</description>
   </property>
   <property>
     <name>nifi.content.repository.directory.default</name>

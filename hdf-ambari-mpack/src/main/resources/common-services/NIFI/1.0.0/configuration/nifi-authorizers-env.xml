@@ -73,7 +73,6 @@
         &lt;property name=&quot;Ranger Security Config Path&quot;&gt;{{nifi_config_dir}}/ranger-nifi-security.xml&lt;/property&gt;
         &lt;property name=&quot;Ranger Service Type&quot;&gt;nifi&lt;/property&gt;
         &lt;property name=&quot;Ranger Application Id&quot;&gt;nifi&lt;/property&gt;
-        &lt;property name=&quot;Allow Anonymous&quot;&gt;true&lt;/property&gt;
         &lt;property name=&quot;Ranger Admin Identity&quot;&gt;{{ranger_admin_identity}}&lt;/property&gt;
         {% if security_enabled %}
         &lt;property name=&quot;Ranger Kerberos Enabled&quot;&gt;true&lt;/property&gt;
