@@ -370,6 +370,7 @@
       <component name="STREAMLINE_SERVER">
         <pre-upgrade>
           <task xsi:type="configure" id="hdf_3_1_0_0_update_streamline_log4j"/>
+          <task xsi:type="configure" id="hdf_3_1_0_0_update_streamline_jaas_config"/>
         </pre-upgrade>
         <pre-downgrade>
            <task xsi:type="execute" hosts="all">

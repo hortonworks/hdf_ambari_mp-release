@@ -167,6 +167,13 @@
               <type>streamline-log4j</type>
               <replace key="content" find="logFormat: &quot;%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n&quot;" replace-with="logFormat: &quot;%-6level [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n&quot;"/>
             </definition>
+
+            <!-- Update bootstrap config-->
+            <definition xsi:type="configure" id="hdf_3_1_0_0_update_streamline_jaas_config">
+              <type>streamline_jaas_conf</type>
+              <insert key="content" value="Client { &#xA;com.sun.security.auth.module.Krb5LoginModule required&#xA;useKeyTab=true&#xA;keyTab=&quot;{{streamline_keytab_path}}&quot;&#xA;storeKey=true&#xA;useTicketCache=true&#xA;debug=true&#xA;principal=&quot;{{streamline_jaas_principal}}&quot;;&#xA;};" insert-type="append" newline-before="true" newline-after="true"/>
+            </definition>
+
           </changes>
         </component>
       </service>

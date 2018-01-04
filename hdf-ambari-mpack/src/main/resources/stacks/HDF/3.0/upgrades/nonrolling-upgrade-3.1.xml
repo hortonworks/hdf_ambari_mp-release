@@ -263,6 +263,10 @@
                 <task xsi:type="configure" id="hdf_3_1_0_0_update_streamline_log4j"/>
             </execute-stage>
 
+            <execute-stage service="STREAMLINE" component="STREAMLINE_SERVER" title="Apply config changes for SAM jaas">
+                <task xsi:type="configure" id="hdf_3_1_0_0_update_streamline_jaas_config"/>
+            </execute-stage>
+
             <!--REGISTRY-->
             <execute-stage service="REGISTRY" component="REGISTRY_SERVER" title="Apply config changes for Registry log4j">
                 <task xsi:type="configure" id="hdf_3_1_0_0_update_registry_log4j"/>
