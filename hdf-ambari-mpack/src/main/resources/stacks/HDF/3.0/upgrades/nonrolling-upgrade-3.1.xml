@@ -29,6 +29,12 @@
             <skippable>true</skippable>
             <supports-auto-skip-failure>false</supports-auto-skip-failure>
 
+            <execute-stage service="STREAMLINE" component="STREAMLINE_SERVER" title="Confirm Required Components Are Installed">
+                <task xsi:type="manual">
+                    <message>Streaming Analytics Manager requires Ambari Infra and Logsearch to be installed. If these components are not installed please use the Downgrade option, install both components, and return to upgrade.</message>
+                </task>
+            </execute-stage>
+
             <execute-stage service="STORM" component="NIMBUS" title="Stop Storm Topologies">
                 <task xsi:type="manual">
                     <message>Before continuing, please deactivate and kill any currently running topologies.</message>

@@ -22,6 +22,10 @@
             <name>STREAMLINE</name>
             <version>0.6.0</version>
             <extends>common-services/STREAMLINE/0.6.0</extends>
+            <requiredServices>
+                <service>AMBARI_INFRA</service>
+                <service>LOGSEARCH</service>
+            </requiredServices>
         </service>
     </services>
 </metainfo>

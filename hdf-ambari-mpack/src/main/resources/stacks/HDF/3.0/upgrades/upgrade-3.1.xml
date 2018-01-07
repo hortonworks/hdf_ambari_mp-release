@@ -31,6 +31,12 @@
       <skippable>true</skippable>
       <supports-auto-skip-failure>false</supports-auto-skip-failure>
 
+      <execute-stage service="STREAMLINE" component="STREAMLINE_SERVER" title="Confirm Required Components Are Installed">
+        <task xsi:type="manual">
+          <message>Streaming Analytics Manager requires Ambari Infra and Logsearch to be installed. If these components are not installed please use the Downgrade option, install both components, and return to upgrade.</message>
+        </task>
+      </execute-stage>
+
       <execute-stage service="RANGER" component="RANGER_ADMIN" title="Pre Upgrade Ranger Admin Backup">
         <task xsi:type="manual">
           <message>Before continuing, please backup the Ranger Admin database on the following host(s): {{hosts.all}}.</message>
