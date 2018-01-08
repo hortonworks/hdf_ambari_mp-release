@@ -377,6 +377,11 @@
         "name": "kafka_extended_sasl_support",
         "description": "Support SASL PLAIN and GSSAPI",
         "min_version": "3.1.0.0"
+      },
+      {
+        "name": "nifi_encrypted_authorizers_config",
+        "description": "Support encrypted authorizers.xml configuration for version 3.1 onwards",
+        "min_version": "3.1.0.0"
       }
     ]
   }

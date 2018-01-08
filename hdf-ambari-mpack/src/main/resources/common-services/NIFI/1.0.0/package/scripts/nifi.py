@@ -118,7 +118,8 @@ class Master(Script):
                                         params.nifi_config_dir,params.jdk64_home,
                                         params.nifi_toolkit_java_options,params.nifi_user,
                                         params.nifi_group,params.nifi_security_encrypt_configuration_password,
-                                        params.nifi_flow_config_dir, params.nifi_sensitive_props_key, is_starting, params.toolkit_tmp_dir)
+                                        params.nifi_flow_config_dir, params.nifi_sensitive_props_key, is_starting, params.toolkit_tmp_dir,
+                                        params.stack_support_encrypt_authorizers)
 
     # if this is not an additional node being added to an existing cluster write out flow.xml.gz to internal dir only if AMS installed (must be writable by Nifi)
     #  and only during first install. It is used to automate setup of Ambari metrics reporting task in Nifi
@@ -206,7 +207,7 @@ class Master(Script):
 
     #write out authorizers file
     authorizers_content=InlineTemplate(params.nifi_authorizers_content)
-    File(format("{params.nifi_config_dir}/authorizers.xml"), content=authorizers_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
+    File(format("{params.nifi_config_dir}/authorizers.xml"), content=authorizers_content, owner=params.nifi_user, group=params.nifi_group, mode=0600)
 
     #write out login-identity-providers.xml
     login_identity_providers_content=InlineTemplate(params.nifi_login_identity_providers_content)

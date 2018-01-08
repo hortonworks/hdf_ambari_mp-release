@@ -307,6 +307,7 @@ stack_support_encrypt_config = check_stack_feature('nifi_encrypt_config', versio
 stack_support_toolkit_update = check_stack_feature('toolkit_config_update', version_for_stack_feature_checks)
 stack_support_admin_toolkit = check_stack_feature('admin_toolkit_support', version_for_stack_feature_checks)
 stack_support_nifi_jaas = check_stack_feature('nifi_jaas_conf_create', version_for_stack_feature_checks)
+stack_support_encrypt_authorizers = check_stack_feature('nifi_encrypted_authorizers_config', version_for_stack_feature_checks)
 
 if security_enabled:
   _hostname_lowercase = nifi_host_name.lower()

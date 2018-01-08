@@ -272,15 +272,15 @@ def get_last_sensitive_props_key(config_version_file,nifi_properties):
   else:
     return nifi_properties['nifi.sensitive.props.key']
 
-def contains_providers(login_provider_file):
+def contains_providers(provider_file, tag):
   from xml.dom.minidom import parseString
   import xml.dom.minidom
 
-  if sudo.path_isfile(login_provider_file):
-    content = sudo.read_file(login_provider_file)
+  if sudo.path_isfile(provider_file):
+    content = sudo.read_file(provider_file)
     dom = xml.dom.minidom.parseString(content)
     collection = dom.documentElement
-    if collection.getElementsByTagName("provider"):
+    if collection.getElementsByTagName(tag):
       return True
     else:
       return False
@@ -410,7 +410,8 @@ def cleanup_toolkit_client_files(params,config_version_file):
 
   return params.nifi_properties
 
-def encrypt_sensitive_properties(config_version_file,current_version,nifi_config_dir,jdk64_home,java_options,nifi_user,nifi_group,master_key_password,nifi_flow_config_dir,nifi_sensitive_props_key,is_starting,toolkit_tmp_dir):
+def encrypt_sensitive_properties(config_version_file,current_version,nifi_config_dir,jdk64_home,java_options,nifi_user,nifi_group,master_key_password,nifi_flow_config_dir,nifi_sensitive_props_key,
+                                 is_starting,toolkit_tmp_dir,support_encrypt_authorizers):
   Logger.info("Encrypting NiFi sensitive configuration properties")
   encrypt_config_script = get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir)
 
@@ -428,8 +429,11 @@ def encrypt_sensitive_properties(config_version_file,current_version,nifi_config
             and len(sudo.read_file(nifi_flow_config_dir + '/flow.xml.gz')) > 0):
       encrypt_config_command += ('-f', nifi_flow_config_dir + '/flow.xml.gz', '-s', PasswordString(nifi_sensitive_props_key))
 
-    if contains_providers(nifi_config_dir+'/login-identity-providers.xml'):
+    if contains_providers(nifi_config_dir+'/login-identity-providers.xml', "provider"):
       encrypt_config_command += ('-l', nifi_config_dir + '/login-identity-providers.xml')
+
+    if support_encrypt_authorizers and contains_providers(nifi_config_dir+'/authorizers.xml', "authorizer"):
+      encrypt_config_command += ('-a', nifi_config_dir + '/authorizers.xml')
 
     if last_config_version:
       last_config = get_config_by_version('/var/lib/ambari-agent/data', 'nifi-ambari-config', last_config_version)
