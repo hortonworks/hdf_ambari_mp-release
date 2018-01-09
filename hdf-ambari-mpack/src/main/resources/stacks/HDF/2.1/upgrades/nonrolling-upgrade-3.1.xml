@@ -155,6 +155,9 @@
             <execute-stage service="STORM" component="NIMBUS" title="Removing jmxetric from childopts">
                 <task xsi:type="configure" id="storm_remove_jmxetric"/>
             </execute-stage>
+            <execute-stage service="STORM" component="NIMBUS" title="Updating storm logsearch config">
+                <task xsi:type="configure" id="hdf_3_1_0_0_storm_logsearch_conf"/>
+            </execute-stage>
 
         </group>
 

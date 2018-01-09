@@ -328,6 +328,7 @@
           <task xsi:type="configure" id="storm_nimbus_autocred_config" />
           <task xsi:type="configure" id="storm_remove_jmxetric"/>
           <task xsi:type="configure" id="hdf_3_1_0_0_update_storm_env_ext_classpath"/>
+          <task xsi:type="configure" id="hdf_3_1_0_0_storm_logsearch_conf"/>
         </pre-upgrade>
         <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
         <upgrade>
