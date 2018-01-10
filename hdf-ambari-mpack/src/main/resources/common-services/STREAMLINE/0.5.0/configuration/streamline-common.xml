@@ -39,7 +39,7 @@
   <property require-input="true">
     <name>jar.storage.type</name>
     <display-name>Jar Storage Type</display-name>
-    <value>local</value>
+    <value>database</value>
     <value-attributes>
       <overridable>false</overridable>
       <type>value-list</type>
