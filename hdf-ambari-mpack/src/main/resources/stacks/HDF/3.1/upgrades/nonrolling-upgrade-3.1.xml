@@ -41,6 +41,13 @@
                 </task>
             </execute-stage>
 
+            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Review NiFi Registry Integrations">
+                <task xsi:type="manual">
+                    <message>Please determine if you need to stop any currently running process that are using NiFi Registry.
+                    </message>
+                </task>
+            </execute-stage>
+
             <execute-stage service="REGISTRY" component="REGISTRY_SERVER" title="Review Registry Integrations">
                 <task xsi:type="manual">
                     <message>Please determine if you need to stop any currently running process thats using Registry server to lookup schemas.
@@ -65,6 +72,10 @@
 
             <service name="NIFI">
                 <component>NIFI_MASTER</component>
+            </service>
+
+            <service name="NIFI_REGISTRY">
+                <component>NIFI_REGISTRY_SERVER</component>
             </service>
 
             <service name="REGISTRY">
@@ -103,6 +114,12 @@
                     <message>Before continuing, please backup the Registry database.</message>
                 </task>
             </execute-stage>
+
+            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Backup NiFi Registry Database">
+                <task xsi:type="manual">
+                    <message>Before continuing, please backup the NiFi Registry database.</message>
+                </task>
+            </execute-stage>
         </group>
 
         <group xsi:type="stop" name="STOP_LOW_LEVEL_SERVICE_COMPONENTS" title="Stop Components for Core Services">
@@ -133,6 +150,10 @@
                 <component>STREAMLINE_SERVER</component>
             </service>
 
+            <service name="NIFI_REGISTRY">
+                <component>NIFI_REGISTRY_MASTER</component>
+            </service>
+
         </group>
 
         <group xsi:type="cluster" name="Restore Backups" title="Restore Backups">
@@ -157,6 +178,12 @@
             <execute-stage service="REGISTRY" component="REGISTRY_SERVER" title="Restore Registry Database">
                 <task xsi:type="manual">
                     <message>Before continuing, please restore the Registry database on the following host(s): {{hosts.all}}.</message>
+                </task>
+            </execute-stage>
+
+            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Restore NiFi Registry Database">
+                <task xsi:type="manual">
+                    <message>Before continuing, please restore the NiFi Registry database on the following host(s): {{hosts.all}}.</message>
                 </task>
             </execute-stage>
 
@@ -289,6 +316,15 @@
             </service>
         </group>
 
+        <group xsi:type="restart" name="NIFI_REGISTRY" title="NiFi Registry">
+            <service-check>false</service-check>
+            <skippable>true</skippable>
+            <parallel-scheduler/>
+            <service name="NIFI_REGISTRY">
+                <component>NIFI_REGISTRY_MASTER</component>
+            </service>
+        </group>
+
         <group xsi:type="restart" name="REGISTRY" title="Registry">
             <service-check>false</service-check>
             <skippable>true</skippable>
@@ -313,6 +349,7 @@
             <priority>
                 <service>STORM</service>
                 <service>NIFI</service>
+                <service>NIFI_REGISTRY</service>
                 <service>REGISTRY</service>
                 <service>STREAMLINE</service>
             </priority>
@@ -440,6 +477,14 @@
 
         <service name="NIFI">
             <component name="NIFI_MASTER">
+                <upgrade>
+                    <task xsi:type="restart-task"/>
+                </upgrade>
+            </component>
+        </service>
+
+        <service name="NIFI_REGISTRY">
+            <component name="NIFI_REGISTRY_MASTER">
                 <upgrade>
                     <task xsi:type="restart-task"/>
                 </upgrade>

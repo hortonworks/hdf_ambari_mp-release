@@ -161,6 +161,20 @@
           ]
         }
        },
+      "NIFI_REGISTRY": {
+        "NIFI_REGISTRY_MASTER": {
+          "STACK-SELECT-PACKAGE": "nifi-registry",
+          "INSTALL": [
+            "nifi-registry"
+          ],
+          "PATCH": [
+            "nifi-registry"
+          ],
+          "STANDARD": [
+            "nifi-registry"
+          ]
+        }
+      },
        "REGISTRY": {
         "REGISTRY_SERVER": {
           "STACK-SELECT-PACKAGE": "registry",

@@ -62,6 +62,10 @@
       <directory>${project.build.directory}/nifi-toolkit</directory>
       <outputDirectory>common-services/NIFI/1.0.0/package/files</outputDirectory>
     </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/nifi-toolkit</directory>
+      <outputDirectory>common-services/NIFI_REGISTRY/0.1.0/package/files</outputDirectory>
+    </fileSet>
   </fileSets>
   <!-- Single files. Syntax:
 	  <files>
@@ -109,6 +113,10 @@
     <file>
       <source>src/main/resources/stacks/HDF/3.1/repos/repoinfo.xml</source>
       <outputDirectory>hdp-addon-services/HDF/3.1/NIFI/1.5.0/repos</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/resources/stacks/HDF/3.1/repos/repoinfo.xml</source>
+      <outputDirectory>hdp-addon-services/HDF/3.1/NIFI_REGISTRY/0.1.0/repos</outputDirectory>
     </file>
     <file>
       <source>src/main/resources/stacks/HDF/3.1/repos/repoinfo.xml</source>

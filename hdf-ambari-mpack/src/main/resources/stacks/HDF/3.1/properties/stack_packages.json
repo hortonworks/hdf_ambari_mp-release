@@ -161,6 +161,20 @@
           ]
         }
        },
+      "NIFI_REGISTRY": {
+        "NIFI_REGISTRY_MASTER": {
+          "STACK-SELECT-PACKAGE": "nifi-registry",
+          "INSTALL": [
+            "nifi-registry"
+          ],
+          "PATCH": [
+            "nifi-registry"
+          ],
+          "STANDARD": [
+            "nifi-registry"
+          ]
+        }
+      },
        "REGISTRY": {
         "REGISTRY_SERVER": {
           "STACK-SELECT-PACKAGE": "registry",
@@ -201,6 +215,12 @@
         {
           "conf_dir": "/etc/nifi/conf",
           "current_dir": "{0}/current/nifi/conf"
+        }
+      ],
+      "nifi-registry": [
+        {
+          "conf_dir": "/etc/nifi-registry/conf",
+          "current_dir": "{0}/current/nifi-registry/conf"
         }
       ],
       "streamline": [

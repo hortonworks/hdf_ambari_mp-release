@@ -21,7 +21,7 @@
   <groupId>org.apache.ambari</groupId>
   <artifactId>hdf-ambari-mpack</artifactId>
   <packaging>pom</packaging>
-  <version>3.1.0.0-442</version>
+  <version>3.1.0.0-474</version>
   <name>HDF Ambari Management Pack</name>
   <url>http://ambari.apache.org/</url>
   <properties>
