@@ -60,6 +60,13 @@
             <message>Before continuing, please backup the Registry database.</message>
         </task>
       </execute-stage>
+
+      <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Backup NiFi Registry Database">
+        <task xsi:type="manual">
+          <message>Before continuing, please backup the NiFi Registry database.</message>
+        </task>
+      </execute-stage>
+
     </group>
 
     <group name="ZOOKEEPER" title="ZooKeeper">
@@ -151,11 +158,12 @@
         <service>AMBARI_INFRA</service>
         <service>LOGSEARCH</service>
         <service>NIFI</service>
+        <service>NIFI_REGISTRY</service>
         <service>RANGER</service>
       </exclude>
     </group>
 
-    <group xsi:type="stop" name="STOP_LOW_LEVEL_SERVICE_COMPONENTS_NIFI" title="Stop Components for Nifi Services">
+    <group xsi:type="stop" name="STOP_LOW_LEVEL_SERVICE_COMPONENTS_NIFI" title="Stop Components for Nifi and NiFi Registry">
       <service-check>false</service-check>
       <skippable>true</skippable>
       <supports-auto-skip-failure>false</supports-auto-skip-failure>
@@ -164,6 +172,11 @@
       <service name="NIFI">
         <component>NIFI_MASTER</component>
       </service>
+
+      <service name="NIFI_REGISTRY">
+        <component>NIFI_REGISTRY_MASTER</component>
+      </service>
+
     </group>
 
 
@@ -174,6 +187,15 @@
       <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
           <task xsi:type="configure" id="hdf_3_1_0_0_update_nifi_properties_configs"/>
       </execute-stage>
+    </group>
+
+    <group xsi:type="restart" name="NIFI_REGISTRY" title="NIFI_REGISTRY">
+      <service-check>false</service-check>
+      <skippable>true</skippable>
+      <parallel-scheduler/>
+      <service name="NIFI_REGISTRY">
+        <component>NIFI_REGISTRY_MASTER</component>
+      </service>
     </group>
 
     <group xsi:type="restart" name="NIFI" title="NIFI">
@@ -283,9 +305,7 @@
   <processing>
     <service name="ZOOKEEPER">
       <component name="ZOOKEEPER_SERVER">
-        <pre-upgrade>
-          <task xsi:type="configure" id="zookeeper_log4j_parameterize" />
-        </pre-upgrade>
+        <pre-upgrade/>
         <pre-downgrade />
         <upgrade>
           <task xsi:type="restart-task" />
@@ -343,7 +363,16 @@
     <service name="REGISTRY">
       <component name="REGISTRY_SERVER">
         <pre-upgrade/>
-        <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
+        <pre-downgrade>
+          <task xsi:type="execute" hosts="all">
+            <summary>Stop Registry Server</summary>
+            <script>scripts/registry_server.py</script>
+            <function>stop</function>
+          </task>
+          <task xsi:type="manual">
+            <message>Please restore Schema Registry database.</message>
+          </task>
+        </pre-downgrade>
         <upgrade>
           <task xsi:type="restart-task" />
         </upgrade>
@@ -353,7 +382,16 @@
     <service name="STREAMLINE">
       <component name="STREAMLINE_SERVER">
         <pre-upgrade/>
-        <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
+        <pre-downgrade>
+          <task xsi:type="execute" hosts="all">
+            <summary>Stop Streamline Server</summary>
+            <script>scripts/streamline_server.py</script>
+            <function>stop</function>
+          </task>
+          <task xsi:type="manual">
+            <message>Please restore Streamline Analytics Manager database.</message>
+          </task>
+        </pre-downgrade>
         <upgrade>
           <task xsi:type="restart-task" />
         </upgrade>
@@ -364,6 +402,25 @@
       <component name="NIFI_MASTER">
         <pre-upgrade/>
         <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
+        <upgrade>
+          <task xsi:type="restart-task" />
+        </upgrade>
+      </component>
+    </service>
+
+    <service name="NIFI_REGISTRY">
+      <component name="NIFI_REGISTRY_MASTER">
+        <pre-upgrade/>
+        <pre-downgrade>
+          <task xsi:type="execute" hosts="all">
+            <summary>Stop NiFi Registry Server</summary>
+            <script>scripts/nifi_registry.py</script>
+            <function>stop</function>
+          </task>
+          <task xsi:type="manual">
+            <message>Please restore NiFi Registry database.</message>
+          </task>
+        </pre-downgrade>
         <upgrade>
           <task xsi:type="restart-task" />
         </upgrade>
