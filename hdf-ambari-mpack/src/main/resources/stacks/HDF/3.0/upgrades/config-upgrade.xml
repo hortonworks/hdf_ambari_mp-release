@@ -172,7 +172,7 @@
                 <definition xsi:type="configure" id="hdf_3_1_0_0_update_nifi_properties_configs">
                     <type>nifi-properties</type>
                     <set key="nifi.version" value="1.5.0.{{stack_version_buildnum}}"/>
-                    <replace key="nifi.content.viewer.url" find="/nifi-content-viewer/" replace-with="../nifi-content-viewer/"/>
+                    <regex-replace key="nifi.content.viewer.url" find="(^\/nifi-content-viewer\/)" replace-with="../nifi-content-viewer/"/>
                     <replace key="nifi.content.claim.max.appendable.size" find="10 MB" replace-with="1 MB"/>
                 </definition>
 
