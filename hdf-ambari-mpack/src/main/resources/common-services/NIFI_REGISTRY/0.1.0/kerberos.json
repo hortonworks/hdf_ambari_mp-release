@@ -22,6 +22,11 @@
                 "nifi.registry.kerberos.krb5.file": "${krb5-conf/conf_dir}/krb5.conf",
                 "nifi.registry.security.identity.provider": "kerberos-identity-provider"
               }
+            },
+            {
+              "nifi-registry-ambari-ssl-config": {
+                "nifi.registry.security.needClientAuth" : "false"
+              }
             }
           ]
         }
