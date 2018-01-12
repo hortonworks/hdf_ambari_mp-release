@@ -91,13 +91,15 @@ class StreamlineServer(Script):
       kinit_cmd = format("{kinit_path_local} -kt {params.streamline_keytab_path} {params.streamline_jaas_principal};")
       return_code, out = shell.checked_call(kinit_cmd,
                                             path = '/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',
-                                            user = params.streamline_user)
+                                            user = 'root')
 
   def start(self, env, upgrade_type=None):
     import params
     import status_params
     env.set_params(params)
     self.configure(env)
+
+    self.kerberos_server_start()
 
     if params.stack_sam_support_schema_migrate:
       self.execute_bootstrap(params)
@@ -115,7 +117,6 @@ class StreamlineServer(Script):
       raise
 
     try:
-      self.kerberos_server_start()
       wait_until_server_starts()
 
       #Check to see if bootstrap_done file exists or not.
