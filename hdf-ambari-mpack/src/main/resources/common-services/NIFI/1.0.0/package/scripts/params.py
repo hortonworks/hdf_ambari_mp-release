@@ -38,16 +38,24 @@ import ambari_simplejson as json # simplejson is much faster comparing to Python
 # server configurations
 config = Script.get_config()
 stack_root = Script.get_stack_root()
+zk_root = Script.get_stack_root();
 tmp_dir = Script.get_tmp_dir()
 stack_name = default("/hostLevelParams/stack_name", None)
 stack_version_buildnum = default("/commandParams/version", None)
+zk_stack_version_buildnum = default("/commandParams/version", None)
+
 if stack_name == "HDP":
   # Override HDP stack root
   stack_root = "/usr/hdf"
+  # # When installing on HDP, ZK will be in /usr/hdp
+  zk_root = "/usr/hdp"
   # Override HDP stack version
   stack_version_buildnum = get_component_version_with_stack_selector("/usr/bin/hdf-select", "nifi")
+  # When installing on HDP, ZK will come from HDP so use hdp-select instead of hdf-select
+  zk_stack_version_buildnum = get_component_version_with_stack_selector("/usr/bin/hdp-select", "zookeeper-client")
 elif not stack_version_buildnum and stack_name:
   stack_version_buildnum = get_component_version_from_symlink(stack_name, "nifi")
+  zk_stack_version_buildnum = get_component_version_from_symlink(stack_name, "zookeeper")
 
 service_name = 'nifi'
 version_for_stack_feature_checks = get_stack_feature_version(config)

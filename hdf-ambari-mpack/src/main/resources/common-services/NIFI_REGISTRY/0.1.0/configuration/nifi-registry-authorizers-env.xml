@@ -116,6 +116,10 @@
         'User Group Name Attribute' - Attribute to use to define group membership (i.e. memberof). Optional. If not set
             group membership will not be calculated through the users. Will rely on group membership being defined
             through 'Group Member Attribute' if set.
+        'User Group Name Attribute - Referenced Group Attribute' - If blank, the value of the attribute defined in 'User Group Name Attribute'
+            is expected to be the full dn of the group. If not blank, this property will define the attribute of the group ldap entry that
+            the value of the attribute defined in 'User Group Name Attribute' is referencing (i.e. name). Use of this property requires that
+            'Group Search Base' is also configured.
 
         'Group Search Base' - Base DN for searching for groups (i.e. ou=groups,o=nifi). Required to search groups.
         'Group Object Class' - Object class for identifying groups (i.e. groupOfNames). Required if searching groups.
@@ -125,6 +129,10 @@
         'Group Member Attribute' - Attribute to use to define group membership (i.e. member). Optional. If not set
             group membership will not be calculated through the groups. Will rely on group member being defined
             through 'User Group Name Attribute' if set.
+        'Group Member Attribute - Referenced User Attribute' - If blank, the value of the attribute defined in 'Group Member Attribute'
+            is expected to be the full dn of the user. If not blank, this property will define the attribute of the user ldap entry that
+            the value of the attribute defined in 'Group Member Attribute' is referencing (i.e. uid). Use of this property requires that
+            'User Search Base' is also configured. (i.e. member: cn=User 1,ou=users,o=nifi-registry vs. memberUid: user1)
 
         NOTE: Any identity mapping rules specified in nifi.properties will also be applied to the user identities.
             Group names are not mapped.
@@ -162,6 +170,7 @@
         &lt;property name="User Search Filter"&gt;&lt;/property&gt;
         &lt;property name="User Identity Attribute"&gt;&lt;/property&gt;
         &lt;property name="User Group Name Attribute"&gt;&lt;/property&gt;
+        &lt;property name="User Group Name Attribute - Referenced Group Attribute"&gt;&lt;/property&gt;
 
         &lt;property name="Group Search Base"&gt;&lt;/property&gt;
         &lt;property name="Group Object Class"&gt;group&lt;/property&gt;
@@ -169,6 +178,7 @@
         &lt;property name="Group Search Filter"&gt;&lt;/property&gt;
         &lt;property name="Group Name Attribute"&gt;&lt;/property&gt;
         &lt;property name="Group Member Attribute"&gt;&lt;/property&gt;
+        &lt;property name="Group Member Attribute - Referenced User Attribute"&gt;&lt;/property&gt;
     &lt;/userGroupProvider&gt;
     To enable the ldap-user-group-provider remove 2 lines. This is 2 of 2. --&gt;
 

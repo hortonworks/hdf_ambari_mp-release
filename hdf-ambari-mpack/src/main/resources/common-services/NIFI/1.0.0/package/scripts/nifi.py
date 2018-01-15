@@ -202,6 +202,7 @@ class Master(Script):
     #if this is an additional node being added to an existing cluster do not include the node identity information
     if params.is_additional_node:
       Logger.info("Excluding initial admin and node identity section from authorizers due to existing cluster")
+      params.nifi_authorizers_content = params.nifi_authorizers_content.replace('{{nifi_ssl_config_content | replace("Node","Initial User")}}','')
       params.nifi_authorizers_content = params.nifi_authorizers_content.replace('{{nifi_ssl_config_content}}','')
       params.nifi_authorizers_content = params.nifi_authorizers_content.replace('{{nifi_initial_admin_id}}','')
 

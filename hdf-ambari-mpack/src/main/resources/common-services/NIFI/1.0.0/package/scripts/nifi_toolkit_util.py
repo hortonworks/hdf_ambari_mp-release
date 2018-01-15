@@ -306,10 +306,11 @@ def existing_cluster(params):
   for zookeeper_server in zookeeper_server_list:
 
     # Determine where the zkCli.sh shell script is
-    zk_command_location = os.path.join(params.stack_root, "current", "zookeeper-client", "bin", "zkCli.sh")
+    # When we are on HDP the stack_root will be /usr/hdf, but ZK will be in /usr/hdp, so use zk_root and not stack_root
+    zk_command_location = os.path.join(params.zk_root, "current", "zookeeper-client", "bin", "zkCli.sh")
 
     if params.stack_version_buildnum is not None:
-      zk_command_location = os.path.join(params.stack_root, params.stack_version_buildnum, "zookeeper", "bin", "zkCli.sh")
+      zk_command_location = os.path.join(params.zk_root, params.zk_stack_version_buildnum, "zookeeper", "bin", "zkCli.sh")
 
     # create the ZooKeeper query command e.g.
     command = "{0} -server {1}:{2} ls {3}".format(zk_command_location, zookeeper_server, params.zookeeper_port, params.nifi_znode)
