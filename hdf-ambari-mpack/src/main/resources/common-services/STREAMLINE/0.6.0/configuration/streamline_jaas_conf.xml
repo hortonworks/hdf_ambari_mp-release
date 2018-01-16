@@ -56,7 +56,7 @@ com.sun.security.auth.module.Krb5LoginModule required
 useKeyTab=true
 keyTab="{{streamline_keytab_path}}"
 storeKey=true
-useTicketCache=true
+useTicketCache=false
 debug=true
 principal="{{streamline_jaas_principal}}";
 };
