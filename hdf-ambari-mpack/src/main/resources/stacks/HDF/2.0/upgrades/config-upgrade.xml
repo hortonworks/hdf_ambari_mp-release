@@ -57,12 +57,21 @@
                     </definition>
 
                     <!-- Update bootstrap config -->
+                    <definition xsi:type="configure" id="hdf_2_1_0_0_update_nifi_bootstrap_env_configs">
+                        <type>nifi-bootstrap-env</type>
+                        <insert key="content" value="# Requires JAAS to use only the provided JAAS configuration to authenticate a Subject, without using any &quot;fallback&quot; methods (such as prompting for username/password)&#xA;
+# Please see https://docs.oracle.com/javase/8/docs/technotes/guides/security/jgss/single-signon.html, section &quot;EXCEPTIONS TO THE MODEL&quot;&#xA;
+java.arg.10000=-Djavax.security.auth.useSubjectCredsOnly=true" insert-type="append" newline-before="true" newline-after="true"/>
+                    </definition>
+
                     <definition xsi:type="configure" id="hdf_3_0_0_0_update_nifi_bootstrap_env_configs">
                         <type>nifi-bootstrap-env</type>
                         <insert key="content" value="{% if security_enabled %}" insert-type="append" newline-before="true" newline-after="true"/>
                         <insert key="content" value="java.arg.0=-Djava.security.auth.login.config={{nifi_jaas_conf}}" insert-type="append" newline-after="true"/>
                         <insert key="content" value="{% endif %}" insert-type="append" newline-after="true"/>
                         <insert key="content" value="java.arg.9999=-Djava.security.egd=file:/dev/urandom" insert-type="append" newline-after="true"/>
+                        <insert key="content" value="# Requires JAAS to use only the provided JAAS configuration to authenticate a Subject, without using any &quot;fallback&quot; methods (such as prompting for username/password)&#xA;# Please see https://docs.oracle.com/javase/8/docs/technotes/guides/security/jgss/single-signon.html, section &quot;EXCEPTIONS TO THE MODEL&quot;&#xA;java.arg.10000=-Djavax.security.auth.useSubjectCredsOnly=true"
+                                insert-type="append" newline-before="true" newline-after="true"/>
                     </definition>
 
                     <!-- Update state management -->

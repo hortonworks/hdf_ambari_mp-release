@@ -176,6 +176,12 @@
                     <replace key="nifi.content.claim.max.appendable.size" find="10 MB" replace-with="1 MB"/>
                 </definition>
 
+                <!-- Update bootstrap config-->
+                <definition xsi:type="configure" id="hdf_3_0_0_0_update_nifi_bootstrap_env_configs">
+                    <type>nifi-bootstrap-env</type>
+                    <insert key="content" value="# Requires JAAS to use only the provided JAAS configuration to authenticate a Subject, without using any &quot;fallback&quot; methods (such as prompting for username/password)&#xA;# Please see https://docs.oracle.com/javase/8/docs/technotes/guides/security/jgss/single-signon.html, section &quot;EXCEPTIONS TO THE MODEL&quot;&#xA;java.arg.10000=-Djavax.security.auth.useSubjectCredsOnly=true"
+                            insert-type="append" newline-before="true" newline-after="true"/>
+                </definition>
             </changes>
         </component>
     </service>

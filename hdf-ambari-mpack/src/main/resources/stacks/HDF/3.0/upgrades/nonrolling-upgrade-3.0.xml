@@ -186,6 +186,9 @@
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
                 <task xsi:type="configure" id="hdf_3_0_0_0_update_nifi_properties_configs"/>
             </execute-stage>
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
+                <task xsi:type="configure" id="hdf_3_0_0_0_update_nifi_bootstrap_env_configs"/>
+            </execute-stage>
         </group>
 
         <!--

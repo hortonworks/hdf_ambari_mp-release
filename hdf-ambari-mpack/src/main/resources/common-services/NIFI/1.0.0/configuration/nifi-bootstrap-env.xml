@@ -83,6 +83,9 @@ java.arg.15=-Dambari.metrics.collector.url=http://{{metrics_collector_host}}:{{m
 #Application ID - used in flow.xml - passed into flow.xml for AmbariReportingTask 
 java.arg.16=-Dambari.application.id=nifi
 
+# Requires JAAS to use only the provided JAAS configuration to authenticate a Subject, without using any "fallback" methods (such as prompting for username/password)
+# Please see https://docs.oracle.com/javase/8/docs/technotes/guides/security/jgss/single-signon.html, section "EXCEPTIONS TO THE MODEL"
+java.arg.17=-Djavax.security.auth.useSubjectCredsOnly=true
 
 ###
 # Notification Services for notifying interested parties when NiFi is stopped, started, dies

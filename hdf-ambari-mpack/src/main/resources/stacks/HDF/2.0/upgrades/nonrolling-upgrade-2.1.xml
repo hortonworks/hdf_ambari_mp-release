@@ -132,9 +132,12 @@
       <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
         <task xsi:type="configure" id="hdf_2_1_0_0_update_nifi_properties_configs"/>
       </execute-stage>
+      <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
+        <task xsi:type="configure" id="hdf_2_1_0_0_update_nifi_bootstrap_env_configs"/>
+      </execute-stage>
       <execute-stage service="NIFI" component="NIFI_MASTER" title="Apply config changes for Nifi Master">
         <task xsi:type="manual">
-          <message>Please pause the upgrade, update password property "nifi.security.encrypt.configuration.password" and then resume the upgrade.</message>
+          <message>Please pause the upgrade, update password property "nifi.security.encrypt.configuration.password", and confirm in nifi-bootstrap-env that the new system property, "java.arg.10000=-Djavax.security.auth.useSubjectCredsOnly=true", has a unique arg value. Then resume the upgrade.</message>
         </task>
       </execute-stage>
     </group>
