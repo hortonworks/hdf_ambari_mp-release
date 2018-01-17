@@ -84,6 +84,7 @@ def copy_toolkit_scripts(toolkit_files_dir, toolkit_tmp_dir, user, group, upgrad
   if not sudo.path_isdir(nifiToolkitDirTmpPath) or not (upgrade_type is None):
     os.system("\cp -r " + nifiToolkitDirFilesPath+ " " + toolkit_tmp_dir)
     Directory(nifiToolkitDirTmpPath, owner=user, group=group, create_parents=False, recursive_ownership=True, cd_access="a", mode=0755)
+    os.system("\chmod -R 755 " + nifiToolkitDirTmpPath)
 
 def update_nifi_properties(client_dict, nifi_properties):
   nifi_properties[nifi_constants.NIFI_SECURITY_KEYSTORE_TYPE] = client_dict['keyStoreType']
