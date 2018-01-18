@@ -26,6 +26,27 @@
 
   <order>
 
+    <group xsi:type="cluster" name="PREPARE_CONFIG" title="Prepare Configs">
+      <direction>UPGRADE</direction>
+      <skippable>true</skippable>
+      <supports-auto-skip-failure>false</supports-auto-skip-failure>
+
+        <execute-stage service="REGISTRY" component="REGISTRY_SERVER" title="Creating SCHEMA REGISTRY's config dir">
+             <task xsi:type="execute" hosts="all">
+                <summary>Create Registry Config Version</summary>
+                <script>scripts/registry_server.py</script>
+                <function>create_30_config_version</function>
+             </task>
+       </execute-stage>
+       <execute-stage service="STREAMLINE" component="STREAMLINE_SERVER" title="Creating STREAMLINE ANALYTICS MANAGER's config dir">
+             <task xsi:type="execute" hosts="all">
+                <summary>Create Streamline Config Version</summary>
+                <script>scripts/streamline_server.py</script>
+                <function>create_30_config_version</function>
+            </task>
+       </execute-stage>
+    </group>
+
     <group xsi:type="cluster" name="PREPARE_BACKUPS" title="Prepare Backups">
       <direction>UPGRADE</direction>
       <skippable>true</skippable>

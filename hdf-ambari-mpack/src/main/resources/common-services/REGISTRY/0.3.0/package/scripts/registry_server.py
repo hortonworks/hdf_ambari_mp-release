@@ -142,5 +142,15 @@ class RegistryServer(Script):
       if package_name == 'registry':
         conf_select.convert_conf_directories_to_symlinks(package_name, params.current_version, directories)
 
+  def create_30_config_version(self, env):
+    package_name = 'registry'
+    stack_root = Script.get_stack_root()
+    current_dir = "{0}/current/registry/conf".format(stack_root)
+    directories = [{"conf_dir": "/etc/registry/conf","current_dir": current_dir}]
+    stack_version = stack_select.get_stack_version_before_install(package_name)
+    if stack_version:
+      conf_select.convert_conf_directories_to_symlinks(package_name, stack_version, directories)
+      os.system("\/var/lib/ambari-agent/ambari-sudo.sh cp -af /etc/registry/conf.backup/. /etc/registry/conf")
+
 if __name__ == "__main__":
   RegistryServer().execute()

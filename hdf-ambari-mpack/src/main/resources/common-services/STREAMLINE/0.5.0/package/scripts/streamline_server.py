@@ -175,5 +175,15 @@ class StreamlineServer(Script):
       if package_name == 'streamline':
         conf_select.convert_conf_directories_to_symlinks(package_name, params.current_version, directories)
 
+  def create_30_config_version(self, env):
+    package_name = 'streamline'
+    stack_root = Script.get_stack_root()
+    current_dir = "{0}/current/streamline/conf".format(stack_root)
+    directories = [{"conf_dir": "/etc/streamline/conf","current_dir": current_dir}]
+    stack_version = stack_select.get_stack_version_before_install(package_name)
+    if stack_version:
+      conf_select.convert_conf_directories_to_symlinks(package_name, stack_version, directories)
+      os.system("\/var/lib/ambari-agent/ambari-sudo.sh cp -af /etc/streamline/conf.backup/. /etc/streamline/conf")
+
 if __name__ == "__main__":
   StreamlineServer().execute()
