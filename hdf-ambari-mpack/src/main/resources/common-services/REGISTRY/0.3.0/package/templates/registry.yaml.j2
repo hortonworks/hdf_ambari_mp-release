@@ -42,7 +42,7 @@ servletFilters:
       kerberos.name.rules: "{{registry_servlet_kerberos_name_rules}}"
       token.validity: "{{registry_servlet_token_validity}}"
 {% if stack_support_allowed_resources %}
-      allowed.resources: "401.html,back-default.png,favicon.ico"
+      allowed.resources: "401.html,back-default.png,favicon.ico,/invalidate,/node/debut"
 {% endif %}
 {%endif%}
 {% if stack_support_rewrite_uri or stack_support_remove_rootpath %}
