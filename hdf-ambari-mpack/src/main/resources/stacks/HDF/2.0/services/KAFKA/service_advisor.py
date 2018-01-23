@@ -162,8 +162,8 @@ class HDF20KAFKAServiceAdvisor(service_advisor.ServiceAdvisor):
                 if int(kafka_broker_properties['offsets.topic.replication.factor']) > num_kakfa_brokers:
                     validationItems.append({"config-name": 'offsets.topic.replication.factor',
                         "item": self.getWarnItem(
-                        "offsets.topic.replication.factor={0} is less than number of kafka brokers={1}. " \
-                        "It is recommended to decrease it or increase number of kafka borkers." \
+                        "offsets.topic.replication.factor={0} is greater than the number of kafka brokers={1}. " \
+                        "It is recommended to decrease it or increase the number of kafka brokers." \
                         .format(kafka_broker_properties['offsets.topic.replication.factor'], num_kakfa_brokers))})
 
         return self.toConfigurationValidationProblems(validationItems, "kafka-broker")
