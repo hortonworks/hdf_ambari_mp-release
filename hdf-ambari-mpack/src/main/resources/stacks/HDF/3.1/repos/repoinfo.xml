@@ -16,22 +16,22 @@
    limitations under the License.
 -->
 <reposinfo>
-    <latest>http://s3.amazonaws.com/dev.hortonworks.com/HDF/hdf_urlinfo.json</latest>
+    <latest>http://public-repo-1.hortonworks.com/HDF/hdf_urlinfo.json</latest>
     <os family="redhat6">
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDF/centos6/3.x/updates/3.1.0.0</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/centos6/3.x/updates/3.1.0.0</baseurl>
             <repoid>HDF-3.1</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDP-UTILS-1.1.0.21/repos/centos6</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/centos6</baseurl>
             <repoid>HDP-UTILS-1.1.0.21</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
     <os family="redhat-ppc7">
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDF/centos7/3.x/updates/3.1.0.0</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/centos7/3.x/updates/3.1.0.0</baseurl>
             <repoid>HDF-3.1</repoid>
             <reponame>HDF</reponame>
         </repo>
@@ -43,72 +43,72 @@
     </os>
     <os family="redhat7">
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDF/centos7/3.x/updates/3.1.0.0</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/centos7/3.x/updates/3.1.0.0</baseurl>
             <repoid>HDF-3.1</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDP-UTILS-1.1.0.21/repos/centos7</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/centos7</baseurl>
             <repoid>HDP-UTILS-1.1.0.21</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
     <os family="suse11">
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDF/suse11sp3/3.x/updates/3.1.0.0</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/suse11sp3/3.x/updates/3.1.0.0</baseurl>
             <repoid>HDF-3.1</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDP-UTILS-1.1.0.21/repos/suse11sp3</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/suse11sp3</baseurl>
             <repoid>HDP-UTILS-1.1.0.21</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
     <os family="suse12">
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDF/suse11sp3/3.x/updates/3.1.0.0</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/suse11sp3/3.x/updates/3.1.0.0</baseurl>
             <repoid>HDF-3.1</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDP-UTILS-1.1.0.21/repos/suse11sp3</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/suse11sp3</baseurl>
             <repoid>HDP-UTILS-1.1.0.21</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
     <os family="debian7">
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDF/debian7/3.x/updates/3.1.0.0</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/debian7/3.x/updates/3.1.0.0</baseurl>
             <repoid>HDF-3.1</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDP-UTILS-1.1.0.21/repos/debian7</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/debian7</baseurl>
             <repoid>HDP-UTILS-1.1.0.21</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
     <os family="ubuntu14">
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDF/ubuntu14/3.x/updates/3.1.0.0</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/ubuntu14/3.x/updates/3.1.0.0</baseurl>
             <repoid>HDF-3.1</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu14</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu14</baseurl>
             <repoid>HDP-UTILS-1.1.0.21</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
     <os family="ubuntu16">
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDF/ubuntu16/3.x/updates/3.1.0.0</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/ubuntu16/3.x/updates/3.1.0.0</baseurl>
             <repoid>HDF-3.1</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://s3.amazonaws.com/dev.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu16</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu16</baseurl>
             <repoid>HDP-UTILS-1.1.0.21</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
