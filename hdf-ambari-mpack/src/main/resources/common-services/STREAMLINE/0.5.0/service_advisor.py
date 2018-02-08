@@ -130,12 +130,52 @@ class STREAMLINE050ServiceAdvisor(service_advisor.ServiceAdvisor):
       putStreamlineLogSearchConfAttribute('content', 'visible', 'false')
     pass
 
+  def validateSTREAMLINEConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+    streamline_common = properties
+    validationItems = []
+    warning_message = ""
+
+    #Find number of services installed, get them all and find streamline service json obj in them.
+    number_services = len(services['services'])
+    for each_service in range(0, number_services):
+      if services['services'][each_service]['components'][0]['StackServiceComponents']['service_name'] == 'STREAMLINE':
+        num_streamline_nodes = len(
+          services['services'][each_service]['components'][0]['StackServiceComponents']['hostnames'])
+        if int(num_streamline_nodes) > 1:
+          if streamline_common['jar.storage.type'] == "local":
+            warning_message += "You choose 'local' option. Please choose HDFS or Database option. " \
+                                "If your jar.storage.type=Database and if you choose MYSQL as Database, " \
+                                "please make sure to set value of MYSQL's property max_allowed_packet larger " \
+                                "than size of your udf or custom jar as it will be stored as blob in MYSQL."
+          if streamline_common['jar.storage.type'] == "database":
+            warning_message += "If choose 'Database' option. If you choose MYSQL as Database, " \
+                              "please make sure to set value of MYSQL's property max_allowed_packet larger " \
+                              "than size of your udf or custom jar as it will be stored as blob in MYSQL."
+
+          validationItems.append({"config-name": 'jar.storage.type', "item": self.getWarnItem(warning_message)})
+
+    return self.toConfigurationValidationProblems(validationItems, "streamline-common")
+
+  def validateConfigurationsForSite(self, configurations, recommendedDefaults, services, hosts, siteName, method):
+   properties = self.getSiteProperties(configurations, siteName)
+   if properties:
+        if siteName == 'streamline-common':
+                return method(properties, None, configurations, services, hosts)
+        else:
+                return super(STREAMLINE050ServiceAdvisor, self).validateConfigurationsForSite(configurations, recommendedDefaults, services, hosts, siteName, method)
+   else:
+        return []
+
   def getServiceConfigurationsValidationItems(self, configurations, recommendedDefaults, services, hosts):
     """
     Validate configurations for the service. Return a list of errors.
     """
-    Logger.info("Class: %s, Method: %s. Validating Service Configuration Items." % (self.__class__.__name__, inspect.stack()[0][3]))
-    items = []
+    Logger.info("Class: %s, Method: %s. Validating Service Configuration Items." % (
+      self.__class__.__name__, inspect.stack()[0][3]))
+
+    siteName = "streamline-common"
+    method = self.validateSTREAMLINEConfigurations
+    items = self.validateConfigurationsForSite(configurations, recommendedDefaults, services, hosts, siteName, method)
     return items
 
   def getCardinalitiesDict(self, hosts):
