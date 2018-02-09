@@ -29,7 +29,7 @@ from resource_management.libraries.functions.check_process_status import check_p
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions.show_logs import show_logs
-import os, time
+import os, time, shutil, glob
 from registry import ensure_base_directories
 from registry import registry
 
@@ -148,9 +148,23 @@ class RegistryServer(Script):
     current_dir = "{0}/current/registry/conf".format(stack_root)
     directories = [{"conf_dir": "/etc/registry/conf","current_dir": current_dir}]
     stack_version = stack_select.get_stack_version_before_install(package_name)
+    conf_dir = "/etc/registry/conf"
     if stack_version:
-      conf_select.convert_conf_directories_to_symlinks(package_name, stack_version, directories)
-      os.system("\/var/lib/ambari-agent/ambari-sudo.sh cp -af /etc/registry/conf.backup/. /etc/registry/conf")
+      try:
+        #Check if broken symbolic links issue exists
+        os.stat(conf_dir)
+        conf_select.convert_conf_directories_to_symlinks(package_name, stack_version, directories)
+        os.system("\/var/lib/ambari-agent/ambari-sudo.sh cp -af /etc/registry/conf.backup/. /etc/registry/conf")
+      except OSError as e:
+        print("Exception found : " + str(e) + ". Now Fixing it")
+        #removing symlink conf directory
+        os.unlink(conf_dir)
+        #make conf dir again
+        os.makedirs(conf_dir)
+        #copy all files
+        for files in glob.glob("/etc/registry/conf.backup/*"):
+          shutil.copy(files , conf_dir)
+        conf_select.convert_conf_directories_to_symlinks(package_name, stack_version, directories)
 
 if __name__ == "__main__":
   RegistryServer().execute()
