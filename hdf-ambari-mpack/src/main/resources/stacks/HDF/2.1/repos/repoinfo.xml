@@ -55,12 +55,12 @@
   </os>
   <os family="suse12">
     <repo>
-      <baseurl>http://public-repo-1.hortonworks.com/HDF/suse11sp3/2.x/updates/2.1.0.0</baseurl>
+      <baseurl>http://public-repo-1.hortonworks.com/HDF/sles12/2.x/updates/2.1.0.0</baseurl>
       <repoid>HDF-2.1</repoid>
       <reponame>HDF</reponame>
     </repo>
     <repo>
-      <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/suse11sp3</baseurl>
+      <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/sles12</baseurl>
       <repoid>HDP-UTILS-1.1.0.21</repoid>
       <reponame>HDP-UTILS</reponame>
     </repo>
