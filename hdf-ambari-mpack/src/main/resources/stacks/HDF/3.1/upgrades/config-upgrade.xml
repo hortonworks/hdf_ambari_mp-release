@@ -52,6 +52,20 @@
             </component>
         </service>
 
+        <service name="REGISTRY">
+            <component name="REGISTRY_SERVER">
+                <changes>
+                    <!-- Update these configs in registry  -->
+                    <definition xsi:type="configure" id="hdf_3_2_0_0_add_httpProxy_params">
+                    <type>registry-common</type>
+                        <set key="httpProxyServer" value=""/>
+                        <set key="httpProxyUsername" value=""/>
+                        <set key="httpProxyPassword" value=""/>
+                    </definition>
+                </changes>
+            </component>
+        </service>
+
     </services>
 
 </upgrade-config-changes>
