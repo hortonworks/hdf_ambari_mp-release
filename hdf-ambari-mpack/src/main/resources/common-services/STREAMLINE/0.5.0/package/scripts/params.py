@@ -204,20 +204,26 @@ else:
 streamline_port = config['configurations']['streamline-common']['port']
 streamline_admin_port = config['configurations']['streamline-common']['adminPort']
 
-#Http Proxy Configs
-if 'httpProxyServer' in config['configurations']['streamline-common']:
-  http_proxy_server = config['configurations']['streamline-common']['httpProxyServer']
+#Http Proxy Configs for HDF-3.2 onwards
+stack_sam_support_httpProxy = check_stack_feature('sam_support_httpProxy', version_for_stack_feature_checks)
+if stack_sam_support_httpProxy:
+  if 'httpProxyServer' in config['configurations']['streamline-common']:
+    http_proxy_server = config['configurations']['streamline-common']['httpProxyServer']
+  else:
+    http_proxy_server = None
+
+  if 'httpProxyUsername' in config['configurations']['streamline-common']:
+    http_proxy_username = config['configurations']['streamline-common']['httpProxyUsername']
+  else:
+    http_proxy_username = None
+
+  if 'httpProxyPassword' in config['configurations']['streamline-common']:
+    http_proxy_password = config['configurations']['streamline-common']['httpProxyPassword']
+  else:
+    http_proxy_password = None
 else:
   http_proxy_server = None
-
-if 'httpProxyUsername' in config['configurations']['streamline-common']:
-  http_proxy_username = config['configurations']['streamline-common']['httpProxyUsername']
-else:
   http_proxy_username = None
-
-if 'httpProxyPassword' in config['configurations']['streamline-common']:
-  http_proxy_password = config['configurations']['streamline-common']['httpProxyPassword']
-else:
   http_proxy_password = None
 
 # Custom Truststore

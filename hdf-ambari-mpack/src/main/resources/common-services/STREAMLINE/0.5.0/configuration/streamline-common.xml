@@ -202,7 +202,7 @@
     <displayName>HTTP Proxy Server</displayName>
     <value></value>
     <description>
-      URL for http proxy server to fetch maven artifacts
+      URL for http proxy server. Please enter it in format protocol_name://host_name:port_number
     </description>
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
@@ -214,7 +214,7 @@
     <displayName>Username For HTTP Proxy Server</displayName>
     <value></value>
     <description>
-      Username for http proxy server to fetch maven artifacts
+      Username for http proxy server.
     </description>
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
@@ -227,7 +227,7 @@
     <value></value>
     <property-type>PASSWORD</property-type>
     <description>
-      Password for http proxy server to fetch maven artifacts 
+      Password for http proxy server. Please don't enter password if you haven't entered httpProxyUsername.
     </description>
     <value-attributes>
       <type>password</type>
