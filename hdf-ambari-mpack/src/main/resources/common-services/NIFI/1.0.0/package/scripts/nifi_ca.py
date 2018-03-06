@@ -95,7 +95,7 @@ class CertificateAuthority(Script):
     if not os.path.isfile(status_params.nifi_ca_pid_file):
       raise Exception('Expected pid file to exist')
 
-  def stop(self, env):
+  def stop(self, env, upgrade_type=None):
     import status_params
 
     if path_isfile(status_params.nifi_ca_pid_file):

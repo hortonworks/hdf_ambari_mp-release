@@ -212,9 +212,6 @@ nifi_ca_client_config = {
 if stack_support_tls_toolkit_san:
   nifi_ca_client_config["domainAlternativeNames"] = nifi_node_host
 
-nifi_ambari_ssl_config_version = config['configurationTags']['nifi-ambari-ssl-config']['tag']
-nifi_ambari_config_version = config['configurationTags']['nifi-ambari-config']['tag']
-
 # params from nifi-env
 nifi_user = config['configurations']['nifi-env']['nifi_user']
 nifi_group = config['configurations']['nifi-env']['nifi_group']
