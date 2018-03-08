@@ -17,22 +17,10 @@
 -->
 <reposinfo>
     <latest>http://public-repo-1.hortonworks.com/HDF/hdf_urlinfo.json</latest>
-    <os family="redhat6">
-        <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/centos6/3.x/updates/3.2.0.0</baseurl>
-            <repoid>HDF-3.2</repoid>
-            <reponame>HDF</reponame>
-        </repo>
-        <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/centos6</baseurl>
-            <repoid>HDP-UTILS-1.1.0.21</repoid>
-            <reponame>HDP-UTILS</reponame>
-        </repo>
-    </os>
     <os family="redhat-ppc7">
         <repo>
             <baseurl>http://public-repo-1.hortonworks.com/HDF/centos7/3.x/updates/3.2.0.0</baseurl>
-            <repoid>HDF-3.</repoid>
+            <repoid>HDF-3.2</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -44,7 +32,7 @@
     <os family="redhat7">
         <repo>
             <baseurl>http://public-repo-1.hortonworks.com/HDF/centos7/3.x/updates/3.2.0.0</baseurl>
-            <repoid>HDF-3.1</repoid>
+            <repoid>HDF-3.2</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -56,7 +44,7 @@
     <os family="suse11">
         <repo>
             <baseurl>http://public-repo-1.hortonworks.com/HDF/suse11sp3/3.x/updates/3.2.0.0</baseurl>
-            <repoid>HDF-3.1</repoid>
+            <repoid>HDF-3.2</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -68,7 +56,7 @@
     <os family="suse12">
         <repo>
             <baseurl>http://public-repo-1.hortonworks.com/HDF/sles12/3.x/updates/3.2.0.0</baseurl>
-            <repoid>HDF-3.1</repoid>
+            <repoid>HDF-3.2</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -80,7 +68,7 @@
     <os family="debian7">
         <repo>
             <baseurl>http://public-repo-1.hortonworks.com/HDF/debian7/3.x/updates/3.2.0.0</baseurl>
-            <repoid>HDF-3.1</repoid>
+            <repoid>HDF-3.2</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -92,7 +80,7 @@
     <os family="ubuntu14">
         <repo>
             <baseurl>http://public-repo-1.hortonworks.com/HDF/ubuntu14/3.x/updates/3.2.0.0</baseurl>
-            <repoid>HDF-3.1</repoid>
+            <repoid>HDF-3.2</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -104,7 +92,7 @@
     <os family="ubuntu16">
         <repo>
             <baseurl>http://public-repo-1.hortonworks.com/HDF/ubuntu16/3.x/updates/3.2.0.0</baseurl>
-            <repoid>HDF-3.1</repoid>
+            <repoid>HDF-3.2</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
