@@ -15,6 +15,16 @@
 
 # Pluggable modules
 
+{% if http_proxy_server %}
+httpProxyUrl: "{{http_proxy_server}}"
+{%endif%}
+{% if http_proxy_username %}
+httpProxyUsername: "{{http_proxy_username}}"
+{%endif%}
+{% if http_proxy_password %}
+httpProxyPassword: "{{http_proxy_password}}"
+{%endif%}
+
 modules:
   - name: tag-registry
     className: com.hortonworks.streamline.registries.tag.service.TagRegistryModule
@@ -29,15 +39,6 @@ modules:
       schemaRegistryUrl: "{{registry_url}}"
       mavenRepoUrl: "{{maven_repo_url}}"
       topologyTestRunResultDir: "{{topology_test_results}}"
-{% if http_proxy_server %}
-      proxyUrl: "{{http_proxy_server}}"
-{%endif%}
-{% if http_proxy_username %}
-      proxyUsername: "{{http_proxy_username}}"
-{%endif%}
-{% if http_proxy_password %}
-      proxyPassword: "{{http_proxy_password}}"
-{%endif%}
 
 catalogRootUrl: {{streamline_catalog_root_url}}
 

@@ -15,6 +15,16 @@
 
 # Pluggable modules
 
+{% if http_proxy_server %}
+httpProxyUrl: "{{http_proxy_server}}"
+{%endif%}
+{% if http_proxy_username %}
+httpProxyUsername: "{{http_proxy_username}}"
+{%endif%}
+{% if http_proxy_password %}
+httpProxyPassword: "{{http_proxy_password}}"
+{%endif%}
+
 modules:
   - name: schema-registry
     className: com.hortonworks.registries.schemaregistry.webservice.SchemaRegistryModule

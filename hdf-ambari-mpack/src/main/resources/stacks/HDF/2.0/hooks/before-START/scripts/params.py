@@ -335,12 +335,13 @@ else:
  namenode_rpc = default('/configurations/hdfs-site/dfs.namenode.rpc-address', default_fs)
 
 # if HDFS is not installed in the cluster, then don't try to access namenode_rpc
-if "core-site" in config['configurations'] and namenode_rpc:
- port_str = namenode_rpc.split(':')[-1].strip()
- try:
-   nn_rpc_client_port = int(port_str)
- except ValueError:
-   nn_rpc_client_port = None
+if has_namenode and namenode_rpc:
+  if "core-site" in config['configurations'] and namenode_rpc:
+    port_str = namenode_rpc.split(':')[-1].strip()
+    try:
+      nn_rpc_client_port = int(port_str)
+    except ValueError:
+      nn_rpc_client_port = None
 
 if dfs_ha_enabled:
  dfs_service_rpc_address = default(format('/configurations/hdfs-site/dfs.namenode.servicerpc-address.{dfs_ha_nameservices}.{namenode_id}'), None)

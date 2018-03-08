@@ -174,9 +174,6 @@ if nifi_ca_host:
 # this comes from the registry side since regenerate is a separate operation for nifi and nifi-registry
 nifi_toolkit_tls_regenerate = config['configurations']['nifi-registry-ambari-ssl-config']['nifi.toolkit.tls.regenerate']
 
-nifi_registry_ambari_ssl_config_version = config['configurationTags']['nifi-registry-ambari-ssl-config']['tag']
-nifi_registry_ambari_config_version = config['configurationTags']['nifi-registry-ambari-config']['tag']
-
 # params from nifi-registry-env
 nifi_registry_user = config['configurations']['nifi-registry-env']['nifi_registry_user']
 nifi_registry_group = config['configurations']['nifi-registry-env']['nifi_registry_group']

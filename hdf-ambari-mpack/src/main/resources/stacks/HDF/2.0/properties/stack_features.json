@@ -382,6 +382,11 @@
         "name": "nifi_encrypted_authorizers_config",
         "description": "Support encrypted authorizers.xml configuration for version 3.1 onwards",
         "min_version": "3.1.0.0"
+      },
+      {
+        "name": "sam_support_httpProxy",
+        "description": "Support httpProxy params for version 3.2 onwards",
+        "min_version": "3.2.0.0"
       }
     ]
   }

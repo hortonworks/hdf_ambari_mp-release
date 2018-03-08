@@ -134,11 +134,15 @@ class STREAMLINE050ServiceAdvisor(service_advisor.ServiceAdvisor):
     streamline_common = properties
     validationItems = []
     warning_message = ""
+    url_error_message = ""
+    password_error_message = ""
 
     #Find number of services installed, get them all and find streamline service json obj in them.
     number_services = len(services['services'])
     for each_service in range(0, number_services):
       if services['services'][each_service]['components'][0]['StackServiceComponents']['service_name'] == 'STREAMLINE':
+
+        # Warnings related to streamine is in HA mode
         num_streamline_nodes = len(
           services['services'][each_service]['components'][0]['StackServiceComponents']['hostnames'])
         if int(num_streamline_nodes) > 1:
@@ -147,12 +151,51 @@ class STREAMLINE050ServiceAdvisor(service_advisor.ServiceAdvisor):
                                 "If your jar.storage.type=Database and if you choose MYSQL as Database, " \
                                 "please make sure to set value of MYSQL's property max_allowed_packet larger " \
                                 "than size of your udf or custom jar as it will be stored as blob in MYSQL."
+            validationItems.append({"config-name": 'jar.storage.type', "item": self.getWarnItem(warning_message)})
           if streamline_common['jar.storage.type'] == "database":
             warning_message += "If choose 'Database' option. If you choose MYSQL as Database, " \
                               "please make sure to set value of MYSQL's property max_allowed_packet larger " \
                               "than size of your udf or custom jar as it will be stored as blob in MYSQL."
+            validationItems.append({"config-name": 'jar.storage.type', "item": self.getWarnItem(warning_message)})
 
-          validationItems.append({"config-name": 'jar.storage.type', "item": self.getWarnItem(warning_message)})
+        # Errors related to httpProxyServer for streamline
+        http_proxy_server_url = streamline_common['httpProxyServer']
+        if http_proxy_server_url:
+          from urlparse import urlparse
+          url_list = urlparse(http_proxy_server_url)
+          # if missing protocol or hostname:port_number
+          if (not url_list[0] or not url_list[1]):
+            url_error_message += "Please enter httpProxyServer in following format : protocol_name://httpProxy_host_name:port_number"
+            validationItems.append({"config-name": 'httpProxyServer', "item": self.getErrorItem(url_error_message)})
+          else:
+            try:
+              httpProxy_hostname = url_list[1].split(":")[0]
+              httpProxy_port = url_list[1].split(":")[1]
+              # empty hostname or empty port_number
+              if len(httpProxy_hostname) < 1 or len(httpProxy_port) < 1:
+                url_error_message += "Please enter httpProxyServer in following format : protocol_name://httpProxy_host_name:port_number"
+                validationItems.append({"config-name": 'httpProxyServer', "item": self.getErrorItem(url_error_message)})
+            # only hostname or only port_number
+            except:
+              url_error_message += "Please enter httpProxyServer in following format : protocol_name://httpProxy_host_name:port_number"
+              validationItems.append({"config-name": 'httpProxyServer', "item": self.getErrorItem(url_error_message)})
+
+        # Errors related to absence of httpProxyServer and httpProxyPassword for streamline.
+        http_proxy_server_password = streamline_common['httpProxyPassword']
+        http_proxy_server_username = streamline_common['httpProxyUsername']
+        if http_proxy_server_url and not ((http_proxy_server_password and http_proxy_server_username) or (
+                  not http_proxy_server_password and not http_proxy_server_username)):
+          if not http_proxy_server_password:
+            password_error_message = "Please provide the httpProxyPassword"
+            validationItems.append(
+              {"config-name": 'httpProxyPassword', "item": self.getErrorItem(password_error_message)})
+          elif not http_proxy_server_username:
+            username_error_message = "Please provide the httpProxyUsername"
+            validationItems.append(
+              {"config-name": 'httpProxyUsername', "item": self.getErrorItem(username_error_message)})
+        elif not http_proxy_server_url and (http_proxy_server_password or http_proxy_server_username):
+          url_error_message += "Please enter httpProxyServer in following format : protocol_name://httpProxy_host_name:port_number"
+          validationItems.append({"config-name": 'httpProxyServer', "item": self.getErrorItem(url_error_message)})
 
     return self.toConfigurationValidationProblems(validationItems, "streamline-common")
 

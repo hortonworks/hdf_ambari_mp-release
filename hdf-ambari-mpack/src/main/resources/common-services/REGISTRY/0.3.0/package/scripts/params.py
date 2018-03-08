@@ -154,6 +154,23 @@ else:
 registry_port = config['configurations']['registry-common']['port']
 registry_admin_port = config['configurations']['registry-common']['adminPort']
 
+#Http Proxy Configs
+if 'httpProxyServer' in config['configurations']['registry-common']:
+  http_proxy_server = config['configurations']['registry-common']['httpProxyServer']
+else:
+  http_proxy_server = None
+
+if 'httpProxyUsername' in config['configurations']['registry-common']:
+  http_proxy_username = config['configurations']['registry-common']['httpProxyUsername']
+else:
+  http_proxy_username = None
+
+if 'httpProxyPassword' in config['configurations']['registry-common']:
+  http_proxy_password = config['configurations']['registry-common']['httpProxyPassword']
+else:
+  http_proxy_password = None
+
+
 registry_schema_cache_size = config['configurations']['registry-common']['registry.schema.cache.size']
 registry_schema_cache_expiry_interval = config['configurations']['registry-common']['registry.schema.cache.expiry.interval']
 

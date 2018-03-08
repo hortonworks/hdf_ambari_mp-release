@@ -165,6 +165,38 @@
           "name": "LOGSEARCH"
         }
       ]
+    },
+    {
+      "version": "2.0",
+      "baseVersion": "2.6",
+      "active": "true",
+      "family": "redhat6,amazon2015,redhat7,suse11",
+      "services": [
+        {
+          "name": "KERBEROS"
+        },
+        {
+          "name": "AMBARI_METRICS"
+        },
+        {
+          "name": "ZOOKEEPER"
+        },
+        {
+          "name": "KAFKA"
+        },
+        {
+          "name": "STORM"
+        },
+        {
+          "name": "RANGER"
+        },
+        {
+          "name": "LOGSEARCH"
+        },
+        {
+          "name": "KNOX"
+        }
+      ]
     }
   ]
 }

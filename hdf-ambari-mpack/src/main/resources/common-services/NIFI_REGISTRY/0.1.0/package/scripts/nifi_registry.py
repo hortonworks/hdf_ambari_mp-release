@@ -102,8 +102,7 @@ class Master(Script):
         #write configurations
         self.write_configurations(params)
 
-        nifi_toolkit_util.encrypt_sensitive_properties(config_version_file, params.nifi_registry_ambari_config_version,
-                                                        params.nifi_registry_config_dir, params.jdk64_home,
+        nifi_toolkit_util.encrypt_sensitive_properties(params.config, config_version_file, params.nifi_registry_config_dir, params.jdk64_home,
                                                         params.nifi_toolkit_java_options, params.nifi_registry_user,
                                                         params.nifi_registry_group, params.nifi_registry_security_encrypt_configuration_password,
                                                         is_starting, params.toolkit_tmp_dir)
@@ -161,8 +160,7 @@ class Master(Script):
 
             if not sudo.path_isfile(version_file):
                 Logger.info(format('Create config version file if it does not exist'))
-                version_num = params.config['configurationTags']['nifi-registry-ambari-ssl-config']['tag']
-                nifi_toolkit_util.save_config_version(version_file,'ssl',version_num,params.nifi_registry_user,params.nifi_registry_group)
+                nifi_toolkit_util.save_config_version(params.config, version_file, 'ssl', params.nifi_registry_user, params.nifi_registry_group)
 
             if sudo.path_isfile(client_json_file):
                 Logger.info(format('Remove client json file'))

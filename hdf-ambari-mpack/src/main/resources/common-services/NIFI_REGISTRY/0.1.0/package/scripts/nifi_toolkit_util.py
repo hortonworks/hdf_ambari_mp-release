@@ -132,15 +132,15 @@ def move_store(client_dict, key):
         sudo.copy(name, name + '.bak.' + str(num))
         sudo.unlink(name)
 
-def save_config_version(version_file,version_type,version_num,nifi_registry_user,nifi_registry_group):
+def save_config_version(config, version_file, version_type, nifi_registry_user, nifi_registry_group):
     version = {}
     if sudo.path_isfile(version_file):
         contents = sudo.read_file(version_file)
         version = json.loads(contents)
-        version[version_type] = version_num
+        version[version_type] = config
         sudo.unlink(version_file)
     else:
-        version[version_type] = version_num
+        version[version_type] = config
 
     File(version_file,
          owner=nifi_registry_user,
@@ -156,6 +156,8 @@ def get_config_version(version_file,version_type):
             return version[version_type]
         else:
             return None
+    else:
+        return None
 
 def remove_config_version(version_file,version_type, nifi_registry_user, nifi_registry_group):
     if sudo.path_isfile(version_file):
@@ -170,17 +172,6 @@ def remove_config_version(version_file,version_type, nifi_registry_user, nifi_re
              mode=0600,
              content=json.dumps(version))
 
-def get_config_by_version(config_path,config_name,version):
-    import fnmatch
-    if version is not None:
-        for file in os.listdir(config_path):
-            if fnmatch.fnmatch(file, 'command-*.json'):
-                contents = sudo.read_file(config_path+'/'+file)
-                version_config = json.loads(contents)
-                if config_name in version_config['configurationTags'] and version_config['configurationTags'][config_name]['tag'] == version:
-                    return version_config
-
-    return {}
 
 def convert_properties_to_dict(prop_file):
     dict = {}
@@ -221,7 +212,7 @@ def populate_ssl_properties(old_prop,new_prop,params):
 
 def get_nifi_ca_client_dict(config,params):
 
-    if len(config) == 0:
+    if not config or len(config) == 0:
         return {}
     else:
         nifi_registry_keystore = config['configurations']['nifi-registry-ambari-ssl-config']['nifi.registry.security.keystore']
@@ -265,9 +256,8 @@ def get_nifi_ca_client_dict(config,params):
         return nifi_ca_client_config
 
 def get_last_sensitive_props_key(config_version_file,nifi_properties):
-    last_encrypt_config_version = get_config_version(config_version_file,'encrypt')
-    if last_encrypt_config_version:
-        last_encrypt_config = get_config_by_version('/var/lib/ambari-agent/data','nifi-registry-ambari-config',last_encrypt_config_version)
+    last_encrypt_config = get_config_version(config_version_file,'encrypt')
+    if last_encrypt_config:
         return last_encrypt_config['configurations']['nifi-registry-ambari-config']['nifi.sensitive.props.key']
     else:
         return nifi_properties['nifi.sensitive.props.key']
@@ -291,8 +281,7 @@ def contains_providers(provider_file, tag):
 def setup_keystore_truststore(is_starting, params, config_version_file):
     if is_starting:
         #check against last version to determine if key/trust has changed
-        last_config_version = get_config_version(config_version_file,'ssl')
-        last_config = get_config_by_version('/var/lib/ambari-agent/data','nifi-registry-ambari-ssl-config',last_config_version)
+        last_config = get_config_version(config_version_file,'ssl')
         ca_client_dict = get_nifi_ca_client_dict(last_config, params)
         using_client_json = len(ca_client_dict) == 0 and sudo.path_isfile(params.nifi_registry_config_dir+ '/nifi-certificate-authority-client.json')
 
@@ -314,9 +303,9 @@ def setup_keystore_truststore(is_starting, params, config_version_file):
                                                     params.nifi_registry_user, params.nifi_registry_group,
                                                     params.toolkit_tmp_dir, params.stack_support_toolkit_update)
             update_nifi_registry_properties(updated_properties, params.nifi_registry_properties)
-            save_config_version(config_version_file,'ssl', params.nifi_registry_ambari_ssl_config_version, params.nifi_registry_user, params.nifi_registry_group)
+            save_config_version(params.config, config_version_file, 'ssl', params.nifi_registry_user, params.nifi_registry_group)
         elif using_client_json:
-            save_config_version(config_version_file,'ssl', params.nifi_registry_ambari_ssl_config_version, params.nifi_registry_user, params.nifi_registry_group)
+            save_config_version(params.config, config_version_file, 'ssl', params.nifi_registry_user, params.nifi_registry_group)
 
         old_nifi_registry_properties = convert_properties_to_dict(params.nifi_registry_config_dir + '/nifi-registry.properties')
         return populate_ssl_properties(old_nifi_registry_properties, params.nifi_registry_properties, params)
@@ -371,7 +360,7 @@ def cleanup_toolkit_client_files(params,config_version_file):
 
     return params.nifi_registry_properties
 
-def encrypt_sensitive_properties(config_version_file,current_version,nifi_registry_config_dir,jdk64_home,java_options,nifi_registry_user,nifi_registry_group,master_key_password,is_starting,toolkit_tmp_dir):
+def encrypt_sensitive_properties(config, config_version_file, nifi_registry_config_dir,jdk64_home,java_options,nifi_registry_user,nifi_registry_group,master_key_password,is_starting,toolkit_tmp_dir):
     Logger.info("Encrypting NiFi Registry sensitive configuration properties")
     encrypt_config_script = get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir)
 
@@ -381,7 +370,7 @@ def encrypt_sensitive_properties(config_version_file,current_version,nifi_regist
 
     if is_starting:
         last_master_key_password = None
-        last_config_version = get_config_version(config_version_file,'encrypt')
+        last_config = get_config_version(config_version_file,'encrypt')
         encrypt_config_command += ('--nifiRegistry', '-v', '-b', nifi_registry_config_dir + '/bootstrap.conf')
         encrypt_config_command += ('-r', nifi_registry_config_dir + '/nifi-registry.properties')
 
@@ -391,8 +380,7 @@ def encrypt_sensitive_properties(config_version_file,current_version,nifi_regist
         if contains_providers(nifi_registry_config_dir+'/authorizers.xml', "authorizer"):
             encrypt_config_command += ('-a', nifi_registry_config_dir + '/authorizers.xml')
 
-        if last_config_version:
-            last_config = get_config_by_version('/var/lib/ambari-agent/data', 'nifi-registry-ambari-config', last_config_version)
+        if last_config:
             last_master_key_password = last_config['configurations']['nifi-registry-ambari-config']['nifi.registry.security.encrypt.configuration.password']
 
         if last_master_key_password:
@@ -400,4 +388,4 @@ def encrypt_sensitive_properties(config_version_file,current_version,nifi_regist
 
         encrypt_config_command += ('-p', PasswordString(master_key_password))
         Execute(encrypt_config_command, user=nifi_registry_user, logoutput=False, environment=environment)
-        save_config_version(config_version_file,'encrypt', current_version, nifi_registry_user, nifi_registry_group)
+        save_config_version(config, config_version_file, 'encrypt', nifi_registry_user, nifi_registry_group)

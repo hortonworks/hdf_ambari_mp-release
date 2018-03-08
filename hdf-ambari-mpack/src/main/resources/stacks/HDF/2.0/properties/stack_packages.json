@@ -202,6 +202,20 @@
             "streamline"
           ]
         }
+      },
+      "KNOX": {
+        "KNOX_GATEWAY": {
+          "STACK-SELECT-PACKAGE": "knox-server",
+          "INSTALL": [
+            "knox-server"
+          ],
+          "PATCH": [
+            "knox-server"
+          ],
+          "STANDARD": [
+            "knox-server"
+          ]
+        }
       }
     },
     "conf-select": {
@@ -257,6 +271,13 @@
         {
           "conf_dir": "/etc/zookeeper/conf",
           "current_dir": "{0}/current/zookeeper-client/conf"
+        }
+      ],
+      "knox": [
+        {
+          "conf_dir": "/etc/knox/conf",
+          "current_dir": "{0}/current/knox-server/conf",
+          "component": "knox-server"
         }
       ]
     }
