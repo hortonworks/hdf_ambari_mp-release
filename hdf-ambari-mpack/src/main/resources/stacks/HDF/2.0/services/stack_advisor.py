@@ -297,7 +297,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
     ranger_audit_zk_port = ''
 
 
-    if 'AMBARI_INFRA' in servicesList and zookeeper_host_port and is_solr_cloud_enabled and not is_external_solr_cloud_enabled:
+    if 'AMBARI_INFRA_SOLR' in servicesList and zookeeper_host_port and is_solr_cloud_enabled and not is_external_solr_cloud_enabled:
       zookeeper_host_port = zookeeper_host_port.split(',')
       zookeeper_host_port.sort()
       zookeeper_host_port = ",".join(zookeeper_host_port)
@@ -811,7 +811,7 @@ class HDF20StackAdvisor(DefaultStackAdvisor):
 
   def recommendLogsearchConfigurations(self, configurations, clusterData, services, hosts):
     putLogsearchProperty = self.putProperty(configurations, "logsearch-properties", services)
-    infraSolrHosts = self.getComponentHostNames(services, "AMBARI_INFRA", "INFRA_SOLR")
+    infraSolrHosts = self.getComponentHostNames(services, "AMBARI_INFRA_SOLR", "INFRA_SOLR")
 
     if infraSolrHosts is not None and len(infraSolrHosts) > 0 \
       and "logsearch-properties" in services["configurations"]:

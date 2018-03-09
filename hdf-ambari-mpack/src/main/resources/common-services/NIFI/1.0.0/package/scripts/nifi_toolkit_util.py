@@ -290,7 +290,7 @@ def existing_cluster(params):
     kinit_cmd = ""
 
   # For every zk server try to find nifi zk dir
-  zookeeper_server_list = params.config['clusterHostInfo']['zookeeper_hosts']
+  zookeeper_server_list = params.config['clusterHostInfo'][params.zk_hosts_property]
 
   for zookeeper_server in zookeeper_server_list:
 

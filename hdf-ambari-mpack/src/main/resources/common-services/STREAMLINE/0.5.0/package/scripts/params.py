@@ -44,7 +44,7 @@ import ambari_simplejson as json # simplejson is much faster comparing to Python
 config = Script.get_config()
 tmp_dir = Script.get_tmp_dir()
 stack_root = Script.get_stack_root()
-stack_name = default("/hostLevelParams/stack_name", None)
+stack_name = default("/clusterLevelParams/stack_name", None)
 if stack_name == "HDP":
   # Override HDP stack root
   stack_root = "/usr/hdf"
@@ -53,11 +53,7 @@ retryAble = default("/commandParams/command_retry_enabled", False)
 # Version being upgraded/downgraded to
 version = default("/commandParams/version", None)
 
-# Version that is CURRENT.
-current_version = default("/hostLevelParams/current_version", None)
-
-
-stack_version_unformatted = config['hostLevelParams']['stack_version']
+stack_version_unformatted = config['clusterLevelParams']['stack_version']
 stack_version_formatted = format_stack_version(stack_version_unformatted)
 upgrade_direction = default("/commandParams/upgrade_direction", None)
 security_enabled = config['configurations']['cluster-env']['security_enabled']
@@ -70,7 +66,7 @@ version_for_stack_feature_checks = get_stack_feature_version(config)
 # downgrade_from_version provides the source-version the downgrade is happening from
 downgrade_from_version = default("/commandParams/downgrade_from_version", None)
 
-hostname = config['hostname']
+hostname = config['agentLevelParams']['hostname']
 
 # default streamline parameters
 streamline_home = os.path.join(stack_root, "current", "streamline")
@@ -100,7 +96,7 @@ streamline_managed_pid_dir = "/var/run/streamline"
 streamine_managed_log_dir = "/var/log/streamline"
 
 user_group = config['configurations']['cluster-env']['user_group']
-java64_home = config['hostLevelParams']['java_home']
+java64_home = config['ambariLevelParams']['java_home']
 streamline_env_sh_template = config['configurations']['streamline-env']['content']
 streamline_jaas_conf_template = default("/configurations/streamline_jaas_conf/content", None)
 
@@ -108,7 +104,7 @@ if security_enabled:
   smokeuser = config['configurations']['cluster-env']['smokeuser']
   smokeuser_principal = config['configurations']['cluster-env']['smokeuser_principal_name']
   smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
-  _hostname_lowercase = config['hostname'].lower()
+  _hostname_lowercase = config['agentLevelParams']['hostname'].lower()
   _streamline_principal_name = config['configurations']['streamline-env']['streamline_principal_name']
   streamline_jaas_principal = _streamline_principal_name.replace('_HOST',_hostname_lowercase)
   streamline_bare_principal = get_bare_principal(streamline_jaas_principal)
@@ -240,9 +236,9 @@ else:
 streamline_catalog_root_url = 'http://{0}:{1}/api/v1/catalog'.format(hostname,streamline_port)
 
 # mysql jar
-jdk_location = config['hostLevelParams']['jdk_location']
+jdk_location = config['ambariLevelParams']['jdk_location']
 if 'mysql' == streamline_storage_type:
-  jdbc_driver_jar = default("/hostLevelParams/custom_mysql_jdbc_name", None)
+  jdbc_driver_jar = default("/ambariLevelParams/custom_mysql_jdbc_name", None)
   if jdbc_driver_jar == None:
     Logger.error("Failed to find mysql-java-connector jar. Make sure you followed the steps to register mysql driver")
     Logger.info("Users should register the mysql java driver jar.")
@@ -251,7 +247,7 @@ if 'mysql' == streamline_storage_type:
     raise Fail('Unable to establish jdbc connection to your ' + streamline_storage_type + ' instance.')
 
 if 'oracle' == streamline_storage_type:
-  jdbc_driver_jar = default("/hostLevelParams/custom_oracle_jdbc_name", None)
+  jdbc_driver_jar = default("/ambariLevelParams/custom_oracle_jdbc_name", None)
   if jdbc_driver_jar == None:
     Logger.error("Failed to find ojdbc jar. Please download and make sure you followed the steps to register oracle driver")
     Logger.info("Users should register the oracle ojdbc driver jar.")
@@ -270,7 +266,7 @@ check_db_connection_jar_name = "DBConnectionVerification.jar"
 check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar_name}")
 
 # bootstrap commands
-jdk64_home=config['hostLevelParams']['java_home']
+jdk64_home=config['ambariLevelParams']['java_home']
 bootstrap_storage_command = os.path.join(streamline_home, "bootstrap", "bootstrap-storage.sh")
 bootstrap_storage_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/streamline-env.sh ; {bootstrap_storage_command}')
 

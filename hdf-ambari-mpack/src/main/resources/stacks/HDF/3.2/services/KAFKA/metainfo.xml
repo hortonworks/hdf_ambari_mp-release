@@ -16,11 +16,11 @@
    limitations under the License.
 -->
 <metainfo>
-    <schemaVersion>2.0</schemaVersion>
-    <services>
-        <service>
-            <name>KAFKA</name>
-            <version>1.0.0.3.2</version>
-        </service>
-    </services>
+  <schemaVersion>2.0</schemaVersion>
+  <services>
+    <service>
+      <name>KAFKA</name>
+      <version>1.0.0.3.2</version>
+    </service>
+  </services>
 </metainfo>
