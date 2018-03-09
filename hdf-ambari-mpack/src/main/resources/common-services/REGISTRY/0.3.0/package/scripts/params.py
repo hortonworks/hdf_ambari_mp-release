@@ -40,7 +40,7 @@ import ambari_simplejson as json # simplejson is much faster comparing to Python
 config = Script.get_config()
 tmp_dir = Script.get_tmp_dir()
 stack_root = Script.get_stack_root()
-stack_name = default("/hostLevelParams/stack_name", None)
+stack_name = default("/clusterLevelParams/stack_name", None)
 if stack_name == "HDP":
   # Override HDP stack root
   stack_root = "/usr/hdf"
@@ -49,11 +49,8 @@ retryAble = default("/commandParams/command_retry_enabled", False)
 # Version being upgraded/downgraded to
 version = default("/commandParams/version", None)
 
-# Version that is CURRENT.
-current_version = default("/hostLevelParams/current_version", None)
 
-
-stack_version_unformatted = config['hostLevelParams']['stack_version']
+stack_version_unformatted = config['clusterLevelParams']['stack_version']
 stack_version_formatted = format_stack_version(stack_version_unformatted)
 upgrade_direction = default("/commandParams/upgrade_direction", None)
 security_enabled = config['configurations']['cluster-env']['security_enabled']
@@ -76,7 +73,7 @@ stack_registry_support_schema_migrate = check_stack_feature('registry_support_sc
 # downgrade_from_version provides the source-version the downgrade is happening from
 downgrade_from_version = default("/commandParams/downgrade_from_version", None)
 
-hostname = config['hostname']
+hostname = config['agentLevelParams']['hostname']
 
 # default registry parameters
 registry_home = os.path.join(stack_root, "current", "registry")
@@ -98,11 +95,11 @@ registry_managed_pid_dir = "/var/run/registry"
 streamine_managed_log_dir = "/var/log/registry"
 
 user_group = config['configurations']['cluster-env']['user_group']
-java64_home = config['hostLevelParams']['java_home']
+java64_home = config['ambariLevelParams']['java_home']
 registry_env_sh_template = config['configurations']['registry-env']['content']
 
 if security_enabled:
-  _hostname_lowercase = config['hostname'].lower()
+  _hostname_lowercase = config['agentLevelParams']['hostname'].lower()
   registry_ui_keytab_path = config['configurations']['registry-env']['registry_ui_keytab']
   _registry_ui_jaas_principal_name = config['configurations']['registry-env']['registry_ui_principal_name']
   registry_ui_jaas_principal = _registry_ui_jaas_principal_name.replace('_HOST',_hostname_lowercase)
@@ -176,9 +173,9 @@ registry_schema_cache_expiry_interval = config['configurations']['registry-commo
 
 
 # mysql jar
-jdk_location = config['hostLevelParams']['jdk_location']
+jdk_location = config['ambariLevelParams']['jdk_location']
 if 'mysql' == registry_storage_type:
-  jdbc_driver_jar = default("/hostLevelParams/custom_mysql_jdbc_name", None)
+  jdbc_driver_jar = default("/ambariLevelParams/custom_mysql_jdbc_name", None)
   if jdbc_driver_jar == None:
     Logger.error("Failed to find mysql-java-connector jar. Make sure you followed the steps to register mysql driver")
     Logger.info("Users should register the mysql java driver jar.")
@@ -187,7 +184,7 @@ if 'mysql' == registry_storage_type:
     raise Fail('Unable to establish jdbc connection to your ' + registry_storage_type + ' instance.')
 
 if 'oracle' == registry_storage_type:
-  jdbc_driver_jar = default("/hostLevelParams/custom_oracle_jdbc_name", None)
+  jdbc_driver_jar = default("/ambariLevelParams/custom_oracle_jdbc_name", None)
   if jdbc_driver_jar == None:
     Logger.error("Failed to find ojdbc jar. Please download and sure you followed the steps to register oracle driver")
     Logger.info("Users should register the oracle java driver jar.")
@@ -205,7 +202,7 @@ check_db_connection_jar_name = "DBConnectionVerification.jar"
 check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar_name}")
 
 # bootstrap commands
-jdk64_home=config['hostLevelParams']['java_home']
+jdk64_home=config['ambariLevelParams']['java_home']
 bootstrap_storage_command = os.path.join(registry_home, "bootstrap", "bootstrap-storage.sh")
 bootstrap_storage_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/registry-env.sh ; {bootstrap_storage_command}')
 registry_agent_dir = "/var/lib/ambari-agent/data/registry"

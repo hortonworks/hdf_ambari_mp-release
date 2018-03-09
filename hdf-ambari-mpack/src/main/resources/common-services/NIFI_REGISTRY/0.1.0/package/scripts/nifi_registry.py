@@ -33,7 +33,7 @@ sys.setdefaultencoding('utf8')
 
 class Master(Script):
     def get_component_name(self):
-        stack_name = default("/hostLevelParams/stack_name", None)
+        stack_name = default("/clusterLevelParams/stack_name", None)
         if stack_name == "HDP":
             return None
         return "nifi-registry"

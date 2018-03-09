@@ -27,7 +27,7 @@
         <component>
           <name>STREAMLINE_SERVER</name>
           <displayName>Streaming Analytics Manager</displayName>
-          <category>MASTER</category>
+          <category>SLAVE</category>
           <cardinality>1+</cardinality>
           <versionAdvertised>true</versionAdvertised>
           <timelineAppId>STREAMLINE</timelineAppId>

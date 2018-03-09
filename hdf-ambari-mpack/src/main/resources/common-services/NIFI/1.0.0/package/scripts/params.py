@@ -40,7 +40,7 @@ config = Script.get_config()
 stack_root = Script.get_stack_root()
 zk_root = Script.get_stack_root();
 tmp_dir = Script.get_tmp_dir()
-stack_name = default("/hostLevelParams/stack_name", None)
+stack_name = default("/clusterLevelParams/stack_name", None)
 stack_version_buildnum = default("/commandParams/version", None)
 zk_stack_version_buildnum = default("/commandParams/version", None)
 
@@ -66,8 +66,6 @@ toolkit_tmp_dir = tmp_dir
 
 # Version being upgraded/downgraded to
 version = default("/commandParams/version", None)
-# Version that is CURRENT.
-current_version = default("/hostLevelParams/current_version", None)
 #upgrade direction
 upgrade_direction = default("/commandParams/upgrade_direction", None)
 
@@ -262,7 +260,7 @@ nifi_boostrap_notification_content = config['configurations']['nifi-bootstrap-no
 nifi_toolkit_java_options = config['configurations']['nifi-toolkit-env']['nifi_toolkit_java_options'] if 'nifi-toolkit-env' in config['configurations'] else '-Xms128m -Xmx256m'
 
 #autodetect jdk home
-jdk64_home=config['hostLevelParams']['java_home']
+jdk64_home=config['ambariLevelParams']['java_home']
 
 #autodetect ambari server for metrics
 if 'metrics_collector_hosts' in config['clusterHostInfo']:
@@ -278,10 +276,11 @@ zookeeper_port=default('/configurations/zoo.cfg/clientPort', None)
 #get comma separated list of zookeeper hosts from clusterHostInfo
 index = 0
 zookeeper_quorum=""
-for host in config['clusterHostInfo']['zookeeper_hosts']:
+zk_hosts_property = 'zookeeper_hosts' if 'zookeeper_hosts' in config['clusterHostInfo'] else "zookeeper_server_hosts"
+for host in config['clusterHostInfo'][zk_hosts_property]:
   zookeeper_quorum += host + ":"+str(zookeeper_port)
   index += 1
-  if index < len(config['clusterHostInfo']['zookeeper_hosts']):
+  if index < len(config['clusterHostInfo'][zk_hosts_property]):
     zookeeper_quorum += ","
 
 
@@ -300,9 +299,9 @@ has_namenode = not namenode_host == None
 
 nifi_authorizer = 'file-provider'
 
-nifi_host_name = config['hostname']
+nifi_host_name = config['agentLevelParams']['hostname']
 nifi_host_port = config['configurations']['nifi-ambari-config']['nifi.node.port']
-java_home = config['hostLevelParams']['java_home']
+java_home = config['ambariLevelParams']['java_home']
 security_enabled = config['configurations']['cluster-env']['security_enabled']
 smokeuser = config['configurations']['cluster-env']['smokeuser']
 smokeuser_principal = config['configurations']['cluster-env']['smokeuser_principal_name']
@@ -327,7 +326,7 @@ if security_enabled:
 
 # ranger host
 # E.g., 2.3
-stack_version_unformatted = config['hostLevelParams']['stack_version']
+stack_version_unformatted = config['clusterLevelParams']['stack_version']
 stack_version_formatted = format_stack_version(stack_version_unformatted)
 stack_supports_ranger_kerberos = stack_version_formatted and check_stack_feature(StackFeature.RANGER_KERBEROS_SUPPORT, stack_version_formatted)
 stack_supports_ranger_audit_db = stack_version_formatted and check_stack_feature(StackFeature.RANGER_AUDIT_DB_SUPPORT, stack_version_formatted)
@@ -356,7 +355,7 @@ ranger_plugin_properties = config['configurations']['ranger-nifi-plugin-properti
 policy_user = config['configurations']['ranger-nifi-plugin-properties']['policy_user']
 
 #For curl command in ranger plugin to get db connector
-jdk_location = config['hostLevelParams']['jdk_location']
+jdk_location = config['ambariLevelParams']['jdk_location']
 java_share_dir = '/usr/share/java'
 
 if has_ranger_admin:
@@ -368,13 +367,13 @@ if has_ranger_admin:
 
   if stack_supports_ranger_audit_db:
     if xa_audit_db_flavor == 'mysql':
-      jdbc_jar_name = default("/hostLevelParams/custom_mysql_jdbc_name", None)
-      previous_jdbc_jar_name = default("/hostLevelParams/previous_custom_mysql_jdbc_name", None)
+      jdbc_jar_name = default("/ambariLevelParams/custom_mysql_jdbc_name", None)
+      previous_jdbc_jar_name = default("/ambariLevelParams/previous_custom_mysql_jdbc_name", None)
       audit_jdbc_url = format('jdbc:mysql://{xa_db_host}/{xa_audit_db_name}')
       jdbc_driver = "com.mysql.jdbc.Driver"
     elif xa_audit_db_flavor == 'oracle':
-      jdbc_jar_name = default("/hostLevelParams/custom_oracle_jdbc_name", None)
-      previous_jdbc_jar_name = default("/hostLevelParams/previous_custom_oracle_jdbc_name", None)
+      jdbc_jar_name = default("/ambariLevelParams/custom_oracle_jdbc_name", None)
+      previous_jdbc_jar_name = default("/ambariLevelParams/previous_custom_oracle_jdbc_name", None)
       colon_count = xa_db_host.count(':')
       if colon_count == 2 or colon_count == 0:
         audit_jdbc_url = format('jdbc:oracle:thin:@{xa_db_host}')
@@ -382,18 +381,18 @@ if has_ranger_admin:
         audit_jdbc_url = format('jdbc:oracle:thin:@//{xa_db_host}')
       jdbc_driver = "oracle.jdbc.OracleDriver"
     elif xa_audit_db_flavor == 'postgres':
-      jdbc_jar_name = default("/hostLevelParams/custom_postgres_jdbc_name", None)
-      previous_jdbc_jar_name = default("/hostLevelParams/previous_custom_postgres_jdbc_name", None)
+      jdbc_jar_name = default("/ambariLevelParams/custom_postgres_jdbc_name", None)
+      previous_jdbc_jar_name = default("/ambariLevelParams/previous_custom_postgres_jdbc_name", None)
       audit_jdbc_url = format('jdbc:postgresql://{xa_db_host}/{xa_audit_db_name}')
       jdbc_driver = "org.postgresql.Driver"
     elif xa_audit_db_flavor == 'mssql':
-      jdbc_jar_name = default("/hostLevelParams/custom_mssql_jdbc_name", None)
-      previous_jdbc_jar_name = default("/hostLevelParams/previous_custom_mssql_jdbc_name", None)
+      jdbc_jar_name = default("/ambariLevelParams/custom_mssql_jdbc_name", None)
+      previous_jdbc_jar_name = default("/ambariLevelParams/previous_custom_mssql_jdbc_name", None)
       audit_jdbc_url = format('jdbc:sqlserver://{xa_db_host};databaseName={xa_audit_db_name}')
       jdbc_driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
     elif xa_audit_db_flavor == 'sqla':
-      jdbc_jar_name = default("/hostLevelParams/custom_sqlanywhere_jdbc_name", None)
-      previous_jdbc_jar_name = default("/hostLevelParams/previous_custom_sqlanywhere_jdbc_name", None)
+      jdbc_jar_name = default("/ambariLevelParams/custom_sqlanywhere_jdbc_name", None)
+      previous_jdbc_jar_name = default("/ambariLevelParams/previous_custom_sqlanywhere_jdbc_name", None)
       audit_jdbc_url = format('jdbc:sqlanywhere:database={xa_audit_db_name};host={xa_db_host}')
       jdbc_driver = "sap.jdbc4.sqlanywhere.IDriver"
 

@@ -18,7 +18,7 @@
     <versions>
         <active>true</active>
     </versions>
-    <extends>3.1</extends>
+    <extends>3.2.b</extends>
     <minJdk>1.7</minJdk>
     <maxJdk>1.8</maxJdk>
 </metainfo>

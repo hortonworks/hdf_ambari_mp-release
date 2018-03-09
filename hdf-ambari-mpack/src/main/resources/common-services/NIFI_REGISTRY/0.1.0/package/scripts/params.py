@@ -39,7 +39,7 @@ import ambari_simplejson as json # simplejson is much faster comparing to Python
 config = Script.get_config()
 stack_root = Script.get_stack_root()
 tmp_dir = Script.get_tmp_dir()
-stack_name = default("/hostLevelParams/stack_name", None)
+stack_name = default("/clusterLevelParams/stack_name", None)
 stack_version_buildnum = default("/commandParams/version", None)
 if stack_name == "HDP":
     # Override HDP stack root
@@ -58,8 +58,6 @@ toolkit_tmp_dir = tmp_dir
 
 # Version being upgraded/downgraded to
 version = default("/commandParams/version", None)
-# Version that is CURRENT.
-current_version = default("/hostLevelParams/current_version", None)
 #upgrade direction
 upgrade_direction = default("/commandParams/upgrade_direction", None)
 
@@ -211,11 +209,11 @@ nifi_registry_boostrap_content = config['configurations']['nifi-registry-bootstr
 nifi_toolkit_java_options = config['configurations']['nifi-toolkit-env']['nifi_toolkit_java_options'] if 'nifi-toolkit-env' in config['configurations'] else '-Xms128m -Xmx256m'
 
 #autodetect jdk home
-jdk64_home=config['hostLevelParams']['java_home']
+jdk64_home=config['ambariLevelParams']['java_home']
 
 nifi_registry_authorizer = 'managed-authorizer'
 
-java_home = config['hostLevelParams']['java_home']
+java_home = config['ambariLevelParams']['java_home']
 security_enabled = config['configurations']['cluster-env']['security_enabled']
 smokeuser = config['configurations']['cluster-env']['smokeuser']
 smokeuser_principal = config['configurations']['cluster-env']['smokeuser_principal_name']

@@ -15,12 +15,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
+
 <metainfo>
-    <schemaVersion>2.0</schemaVersion>
-    <services>
-        <service>
-            <name>STORM</name>
-            <version>1.2.0.3.2</version>
-        </service>
-    </services>
+  <schemaVersion>2.0</schemaVersion>
+  <services>
+    <service>
+      <name>STORM</name>
+      <version>1.2.0.3.2</version>
+      
+      <components>
+        <component>
+          <name>STORM_REST_API</name>
+          <deleted>true</deleted>
+        </component>
+      </components>
+      
+    </service>
+  </services>
 </metainfo>
