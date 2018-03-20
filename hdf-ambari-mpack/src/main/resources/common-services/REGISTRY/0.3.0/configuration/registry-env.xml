@@ -72,7 +72,7 @@
   <property>
     <name>content</name>
     <display-name>registry-env template</display-name>
-    <description>This is the jinja template for streamline-env.sh file</description>
+    <description>This is the jinja template for registry-env.sh file</description>
     <value>
 #!/bin/bash
 

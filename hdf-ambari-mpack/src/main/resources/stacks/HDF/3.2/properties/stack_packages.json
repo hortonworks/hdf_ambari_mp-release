@@ -222,73 +222,85 @@
       "kafka": [
         {
           "conf_dir": "/etc/kafka/conf",
-          "current_dir": "{0}/current/kafka-broker/conf"
+          "current_dir": "{0}/current/kafka-broker/conf",
+          "component": "kafka-broker"
         }
       ],
       "nifi": [
         {
           "conf_dir": "/etc/nifi/conf",
-          "current_dir": "{0}/current/nifi/conf"
+          "current_dir": "{0}/current/nifi/conf",
+          "component": "nifi"
         }
       ],
       "nifi-registry": [
         {
           "conf_dir": "/etc/nifi-registry/conf",
-          "current_dir": "{0}/current/nifi-registry/conf"
+          "current_dir": "{0}/current/nifi-registry/conf",
+          "component": "nifi-registry"
         }
       ],
       "streamline": [
         {
           "conf_dir": "/etc/streamline/conf",
-          "current_dir": "{0}/current/streamline/conf"
+          "current_dir": "{0}/current/streamline/conf",
+          "component": "streamline"
         }
       ],
       "registry": [
         {
           "conf_dir": "/etc/registry/conf",
-          "current_dir": "{0}/current/registry/conf"
+          "current_dir": "{0}/current/registry/conf",
+          "component": "registry"
         }
       ],
       "ranger-admin": [
         {
           "conf_dir": "/etc/ranger/admin/conf",
-          "current_dir": "{0}/current/ranger-admin/conf"
+          "current_dir": "{0}/current/ranger-admin/conf",
+          "component": "ranger-admin"
         }
       ],
       "ranger-kms": [
         {
           "conf_dir": "/etc/ranger/kms/conf",
-          "current_dir": "{0}/current/ranger-kms/conf"
+          "current_dir": "{0}/current/ranger-kms/conf",
+          "component": "ranger-kms"
         }
       ],
       "ranger-tagsync": [
         {
           "conf_dir": "/etc/ranger/tagsync/conf",
-          "current_dir": "{0}/current/ranger-tagsync/conf"
+          "current_dir": "{0}/current/ranger-tagsync/conf",
+          "component": "ranger-tagsync"
         }
       ],
       "ranger-usersync": [
         {
           "conf_dir": "/etc/ranger/usersync/conf",
-          "current_dir": "{0}/current/ranger-usersync/conf"
+          "current_dir": "{0}/current/ranger-usersync/conf",
+          "component": "ranger-usersync"
         }
       ],
       "storm": [
         {
           "conf_dir": "/etc/storm/conf",
-          "current_dir": "{0}/current/storm-client/conf"
+          "current_dir": "{0}/current/storm-client/conf",
+          "component": "storm-client"
         }
       ],
       "storm-slider-client": [
         {
           "conf_dir": "/etc/storm-slider-client/conf",
-          "current_dir": "{0}/current/storm-slider-client/conf"
+          "current_dir": "{0}/current/storm-slider-client/conf",
+          "component": "storm-slider-client"
         }
       ],
       "zookeeper": [
         {
           "conf_dir": "/etc/zookeeper/conf",
-          "current_dir": "{0}/current/zookeeper-client/conf"
+          "current_dir": "{0}/current/zookeeper-client/conf",
+          "component": "zookeeper-client"
         }
       ],
       "knox": [
