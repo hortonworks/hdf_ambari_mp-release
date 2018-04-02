@@ -754,7 +754,7 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
   </property>
   <property>
     <name>nifi.cluster.node.protocol.threads</name>
-    <value>10</value>
+    <value>50</value>
     <on-ambari-upgrade add="true"/>
     <description>The number of threads used for the node protocol. The default value is 10.</description>
   </property>
@@ -766,14 +766,14 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
   </property>
   <property>
     <name>nifi.cluster.node.connection.timeout</name>
-    <value>5 sec</value>
+    <value>30 sec</value>
     <on-ambari-upgrade add="true"/>
     <description>When connecting to another node in the cluster, specifies how long this node should wait before considering the connection a failure. The default value is 5 secs.</description>
   </property>
 
   <property>
     <name>nifi.cluster.node.read.timeout</name>
-    <value>5 sec</value>
+    <value>30 sec</value>
     <on-ambari-upgrade add="true"/>
     <description>When communicating with another node in the cluster, specifies how long this node should wait to receive information from the remote node before considering the communication with the node a failure. The default value is 5 secs.</description>
   </property>
@@ -809,13 +809,13 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
   </property>
   <property>
     <name>nifi.zookeeper.connect.timeout</name>
-    <value>3 secs</value>
+    <value>60 secs</value>
     <on-ambari-upgrade add="true"/>
     <description>How long to wait when connecting to ZooKeeper before considering the connection a failure. The default is 3 secs.</description>
   </property>
   <property>
     <name>nifi.zookeeper.session.timeout</name>
-    <value>3 secs</value>
+    <value>60 secs</value>
     <on-ambari-upgrade add="true"/>
     <description>How long to wait after losing a connection to ZooKeeper before the session is expired. The default is 3 secs.</description>
   </property>
