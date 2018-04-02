@@ -53,10 +53,10 @@ class StreamlineServer(Script):
     try:
       if params.stack_sam_support_schema_migrate:
         Execute(params.bootstrap_storage_run_cmd + ' migrate',
-              user="root")
+              user=params.streamline_user)
       else:
         Execute(params.bootstrap_storage_run_cmd + ' create',
-              user="root")
+              user=params.streamline_user)
     except:
       show_logs(params.streamline_log_dir, params.streamline_user)
       raise
@@ -125,15 +125,15 @@ class StreamlineServer(Script):
       #Check to see if bootstrap_done file exists or not.
       if os.path.isfile(params.bootstrap_file):
         if params.stack_sam_support_schema_migrate:
-          Execute(params.bootstrap_run_cmd + ' migrate', user="root")
           File(params.bootstrap_file, owner=params.streamline_user, group=params.user_group, mode=0644)
+          Execute(params.bootstrap_run_cmd + ' migrate', user=params.streamline_user)
       else:
         if params.stack_sam_support_schema_migrate:
-          Execute(params.bootstrap_run_cmd + ' migrate', user="root")
           File(params.bootstrap_file, owner=params.streamline_user, group=params.user_group, mode=0644)
+          Execute(params.bootstrap_run_cmd + ' migrate', user=params.streamline_user)
         else:
-          Execute(params.bootstrap_run_cmd, user=params.streamline_user)
           File(params.bootstrap_file, owner=params.streamline_user, group=params.user_group, mode=0644)
+          Execute(params.bootstrap_run_cmd, user=params.streamline_user)
     except:
       show_logs(params.streamline_log_dir, params.streamline_user)
       raise
