@@ -95,6 +95,9 @@ nifi_flow_config_dir = config['configurations']['nifi-ambari-config']['nifi.flow
 nifi_sensitive_props_key = config['configurations']['nifi-ambari-config']['nifi.sensitive.props.key']
 nifi_security_encrypt_configuration_password = config['configurations']['nifi-ambari-config']['nifi.security.encrypt.configuration.password']
 
+#param for nifi explicit key tab
+nifi_allow_explicit_keytab =  str(config['configurations']['nifi-ambari-config']['nifi.allow.explicit.keytab']).lower() if 'nifi.allow.explicit.keytab' in config['configurations']['nifi-ambari-config'] else 'true'
+
 #multiple content repository directories may be defined so search for all values
 nifi_content_repo_dir_default = None
 

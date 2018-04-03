@@ -48,6 +48,23 @@
                         <set key="nifi.version" value="1.5.0.{{stack_version_buildnum}}"/>
                     </definition>
 
+                    <!-- Update these configs in nifi-properties. -->
+                    <definition xsi:type="configure" id="hdf_3_2_0_0_update_nifi_properties_configs">
+                        <type>nifi-properties</type>
+                        <set key="nifi.version" value="1.6.0.{{stack_version_buildnum}}"/>
+                    </definition>
+
+                    <!-- Update environment in nifi-env -->
+                    <definition xsi:type="configure" id="hdf_3_2_0_0_update_nifi_env_configs">
+                        <type>nifi-env</type>
+                        <insert key="content" value="export NIFI_ALLOW_EXPLICIT_KEYTAB={{nifi_allow_explicit_keytab}}" insert-type="append" newline-before="true" newline-after="true"/>
+                    </definition>
+
+                    <definition xsi:type="configure" id="hdf_3_2_0_0_update_nifi_ambari_configs">
+                        <type>nifi-ambari-config</type>
+                        <set key="nifi.allow.explicit.keytab" value="true"/>
+                    </definition>
+
                 </changes>
             </component>
         </service>
