@@ -94,32 +94,13 @@ class Master(Script):
          content=Template("nifi.conf.j2")
     )
 
-    config_version_file = format("{params.nifi_config_dir}/config_version")
-
     #determine whether or not a cluster already exists based on zookeeper entries and determine if this is the first start of this node
     #if so authorizations and flow file will not be writen
     if not sudo.path_isfile(params.nifi_flow_config_dir+'/flow.xml.gz') and nifi_toolkit_util.existing_cluster(params):
       params.is_additional_node = True
 
-    if params.nifi_ca_host and params.nifi_ssl_enabled:
-      params.nifi_properties = nifi_toolkit_util.setup_keystore_truststore(is_starting, params, config_version_file)
-    elif params.nifi_ca_host and not params.nifi_ssl_enabled:
-      params.nifi_properties = nifi_toolkit_util.cleanup_toolkit_client_files(params, config_version_file)
-
-    #get the last sensitive properties key for migration to new key if necessary
-    if params.stack_support_encrypt_config:
-      params.nifi_properties['nifi.sensitive.props.key'] = nifi_toolkit_util.get_last_sensitive_props_key(config_version_file,params.nifi_properties)
-
     #write configurations
-    self.write_configurations(params)
-
-    if params.stack_support_encrypt_config:
-      nifi_toolkit_util.encrypt_sensitive_properties(params.config, config_version_file,
-                                        params.nifi_config_dir,params.jdk64_home,
-                                        params.nifi_toolkit_java_options,params.nifi_user,
-                                        params.nifi_group,params.nifi_security_encrypt_configuration_password,
-                                        params.nifi_flow_config_dir, params.nifi_sensitive_props_key, is_starting, params.toolkit_tmp_dir,
-                                        params.stack_support_encrypt_authorizers)
+    self.write_configurations(params, is_starting)
 
     # if this is not an additional node being added to an existing cluster write out flow.xml.gz to internal dir only if AMS installed (must be writable by Nifi)
     #  and only during first install. It is used to automate setup of Ambari metrics reporting task in Nifi
@@ -173,15 +154,50 @@ class Master(Script):
       version_file = params.nifi_config_dir + '/config_version'
       client_json_file = params.nifi_config_dir+ '/nifi-certificate-authority-client.json'
 
-      if not sudo.path_isfile(version_file):
-        Logger.info(format('Create config version file if it does not exist'))
-        nifi_toolkit_util.save_config_version(params.config,version_file,'ssl',params.nifi_user,params.nifi_group)
+      if sudo.path_isfile(version_file):
+        Logger.info(format('Remove config version file if does exist'))
+        sudo.unlink(version_file)
 
       if sudo.path_isfile(client_json_file):
         Logger.info(format('Remove client json file'))
         sudo.unlink(client_json_file)
 
-  def write_configurations(self, params):
+  def write_configurations(self, params, is_starting):
+
+    if os.path.isfile(params.nifi_config_dir + '/bootstrap.conf'):
+      bootstrap_current_conf = nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/bootstrap.conf')
+      last_security_encrypt_configuration_key = bootstrap_current_conf['nifi.bootstrap.sensitive.key'] if 'nifi.bootstrap.sensitive.key' in bootstrap_current_conf else None
+    else:
+      last_security_encrypt_configuration_key = None
+
+    if os.path.isfile(params.nifi_config_dir + '/nifi.properties'):
+      nifi_current_properties = nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties')
+      if 'nifi.sensitive.props.key' in nifi_current_properties:
+        params.nifi_properties['nifi.sensitive.props.key'] = nifi_current_properties['nifi.sensitive.props.key']
+      if 'nifi.sensitive.props.key.protected' in nifi_current_properties:
+        params.nifi_properties['nifi.sensitive.props.key.protected'] = nifi_current_properties['nifi.sensitive.props.key.protected']
+    else:
+      nifi_current_properties = params.nifi_properties
+      params.nifi_toolkit_tls_regenerate = True
+
+    #Obtain hash parameters from encrypt config tool
+    hash_params = nifi_toolkit_util.get_hash_parameters(params.jdk64_home, params.nifi_toolkit_java_options, params.toolkit_tmp_dir)
+
+    #Resolve and populate required security values and hashes
+    params.nifi_properties = nifi_toolkit_util.update_nifi_ssl_properties(params.nifi_properties, params.nifi_truststore, params.nifi_node_host,
+                               params.nifi_config_dir, params.nifi_truststoreType, params.nifi_truststorePasswd,
+                               params.nifi_keystore, params.nifi_keystoreType, params.nifi_keystorePasswd, params.nifi_keyPasswd, hash_params)
+
+    #determine whether new keystore/truststore should be regenerated
+    run_tls = (params.nifi_ca_host and params.nifi_ssl_enabled) and (params.nifi_toolkit_tls_regenerate or nifi_toolkit_util.generate_keystore_truststore(nifi_current_properties,params.nifi_properties))
+
+    if run_tls:
+      nifi_toolkit_util.move_keystore_truststore(nifi_current_properties)
+      params.nifi_properties = nifi_toolkit_util.create_keystore_truststore(is_starting, params)
+    elif not params.nifi_ssl_enabled:
+      params.nifi_properties = nifi_toolkit_util.clean_toolkit_client_files(nifi_current_properties, params.nifi_properties)
+    elif params.nifi_ssl_enabled and not run_tls and os.path.isfile(params.nifi_config_dir + '/nifi.properties'):
+      params.nifi_properties = nifi_toolkit_util.populate_ssl_properties(nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties'),params.nifi_properties,params)
 
     #write out nifi.properties
     PropertiesFile(params.nifi_config_dir + '/nifi.properties', properties = params.nifi_properties, mode = 0600, owner = params.nifi_user, group = params.nifi_group)
@@ -224,6 +240,12 @@ class Master(Script):
     #if security is enabled for kerberos create the nifi_jaas.conf file
     if params.security_enabled and params.stack_support_nifi_jaas:
       File(params.nifi_jaas_conf, content=InlineTemplate(params.nifi_jaas_conf_template), owner=params.nifi_user, group=params.nifi_group, mode=0400)
+
+    nifi_toolkit_util.encrypt_sensitive_properties(params.nifi_config_dir,params.jdk64_home,
+                                                   params.nifi_toolkit_java_options,params.nifi_user,
+                                                   last_security_encrypt_configuration_key, params.nifi_security_encrypt_configuration_password,
+                                                   params.nifi_flow_config_dir,params.nifi_sensitive_props_key, is_starting, params.toolkit_tmp_dir,
+                                                   params.stack_support_encrypt_authorizers)
 
 
 if __name__ == "__main__":

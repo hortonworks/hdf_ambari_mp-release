@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-import json, nifi_constants, os
+import json, nifi_constants, os, uuid, hashlib
 from resource_management import *
 from resource_management.core import sudo
 from resource_management.core.resources.system import File, Directory
@@ -26,10 +26,10 @@ from resource_management.core.source import StaticFile
 from resource_management.core.logger import Logger
 from resource_management.libraries.functions import format
 from resource_management.libraries.functions.decorator import retry
-from subprocess import call
 
 script_dir = os.path.dirname(__file__)
 files_dir = os.path.realpath(os.path.join(os.path.dirname(script_dir), 'files'))
+param_delim = '||'
 
 def load(config_json):
   if sudo.path_isfile(config_json):
@@ -86,12 +86,26 @@ def copy_toolkit_scripts(toolkit_files_dir, toolkit_tmp_dir, user, group, upgrad
     Directory(nifiToolkitDirTmpPath, owner=user, group=group, create_parents=False, recursive_ownership=True, cd_access="a", mode=0755)
     os.system("\/var/lib/ambari-agent/ambari-sudo.sh chmod -R 755 " + nifiToolkitDirTmpPath)
 
-def update_nifi_properties(client_dict, nifi_properties):
+def update_nifi_ca_properties(client_dict, nifi_properties):
   nifi_properties[nifi_constants.NIFI_SECURITY_KEYSTORE_TYPE] = client_dict['keyStoreType']
   nifi_properties[nifi_constants.NIFI_SECURITY_KEYSTORE_PASSWD] = client_dict['keyStorePassword']
   nifi_properties[nifi_constants.NIFI_SECURITY_KEY_PASSWD] = client_dict['keyPassword']
   nifi_properties[nifi_constants.NIFI_SECURITY_TRUSTSTORE_TYPE] = client_dict['trustStoreType']
   nifi_properties[nifi_constants.NIFI_SECURITY_TRUSTSTORE_PASSWD] = client_dict['trustStorePassword']
+
+def update_nifi_ssl_properties(nifi_properties, nifi_truststore, nifi_node_ssl_host, nifi_config_dir, nifi_truststoreType, nifi_truststorePasswd,
+                               nifi_keystore, nifi_keystoreType, nifi_keystorePasswd,nifi_keyPasswd, hash_params):
+  nifi_properties['nifi.security.truststore'] = nifi_truststore.replace('{nifi_node_ssl_host}', nifi_node_ssl_host).replace('{{nifi_config_dir}}', nifi_config_dir)
+  nifi_properties['nifi.security.truststoreType'] = nifi_truststoreType
+  nifi_properties['nifi.security.truststorePasswd'] = nifi_truststorePasswd
+  nifi_properties['nifi.security.keystore'] = nifi_keystore.replace('{nifi_node_ssl_host}', nifi_node_ssl_host).replace('{{nifi_config_dir}}', nifi_config_dir)
+  nifi_properties['nifi.security.keystoreType'] = nifi_keystoreType
+  nifi_properties['nifi.security.keystorePasswd'] = nifi_keystorePasswd
+  nifi_properties['nifi.security.keyPasswd'] = nifi_keyPasswd
+  nifi_properties['#nifi.security.ambari.hash.kspwd'] = hash(hash_params, nifi_properties['nifi.security.keystorePasswd'])
+  nifi_properties['#nifi.security.ambari.hash.kpwd']  = hash(hash_params, nifi_properties['nifi.security.keyPasswd'])
+  nifi_properties['#nifi.security.ambari.hash.tspwd'] = hash(hash_params, nifi_properties['nifi.security.truststorePasswd'])
+  return nifi_properties
 
 def store_exists(client_dict, key):
   if key not in client_dict:
@@ -109,23 +123,37 @@ def different(one, two, key, usingJsonConfig=False):
     return False
   return one[key] != two[key]
 
-def changed_keystore_truststore(orig_client_dict, new_client_dict, usingJsonConfig=False):
-  if not (store_exists(new_client_dict, 'keyStore') or store_exists(new_client_dict, 'trustStore')):
+def hash(hash_params, value):
+  salt = hash_params['salt']
+  return salt + param_delim + hashlib.sha256(salt.encode() + value.encode()).hexdigest()
+
+def match(hashed_password, value):
+  salt, password = hashed_password.split(param_delim)
+  return password == hashlib.sha256(salt.encode() + value.encode()).hexdigest()
+
+def generate_keystore_truststore(orig_client_dict, new_client_dict):
+  if not (store_exists(new_client_dict, 'nifi.security.keystore') and store_exists(new_client_dict, 'nifi.security.truststore')):
+    return True
+  elif orig_client_dict['nifi.security.keystoreType'] != new_client_dict['nifi.security.keystoreType']:
+    return True
+  elif ('#nifi.security.ambari.hash.kspwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.security.ambari.hash.kspwd'], new_client_dict['nifi.security.keystorePasswd']):
+    return True
+  elif ('#nifi.security.ambari.hash.kpwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.security.ambari.hash.kpwd'], new_client_dict['nifi.security.keyPasswd']):
+    return True
+  elif orig_client_dict['nifi.security.truststoreType'] != new_client_dict['nifi.security.truststoreType']:
+    return True
+  elif ('#nifi.security.ambari.hash.tspwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.security.ambari.hash.tspwd'], new_client_dict['nifi.security.truststorePasswd']):
+    return True
+  elif orig_client_dict['nifi.security.keystore'] != new_client_dict['nifi.security.keystore']:
+    return True
+  elif orig_client_dict['nifi.security.truststore'] != new_client_dict['nifi.security.truststore']:
+    return True
+  else:
     return False
-  elif different(orig_client_dict, new_client_dict, 'keyStoreType',usingJsonConfig):
-    return True
-  elif different(orig_client_dict, new_client_dict, 'keyStorePassword',usingJsonConfig):
-    return True
-  elif different(orig_client_dict, new_client_dict, 'keyPassword',usingJsonConfig):
-    return True
-  elif different(orig_client_dict, new_client_dict, 'trustStoreType',usingJsonConfig):
-    return True
-  elif different(orig_client_dict, new_client_dict, 'trustStorePassword',usingJsonConfig):
-    return True
 
 def move_keystore_truststore(client_dict):
-  move_store(client_dict, 'keyStore')
-  move_store(client_dict, 'trustStore')
+  move_store(client_dict, 'nifi.security.keystore')
+  move_store(client_dict, 'nifi.security.truststore')
 
 def move_store(client_dict, key):
   if store_exists(client_dict, key):
@@ -135,46 +163,6 @@ def move_store(client_dict, key):
       num += 1
     sudo.copy(name, name + '.bak.' + str(num))
     sudo.unlink(name)
-
-def save_config_version(config, version_file,version_type,nifi_user,nifi_group):
-  version = {}
-  if sudo.path_isfile(version_file):
-    contents = sudo.read_file(version_file)
-    version = json.loads(contents)
-    version[version_type] = config
-    sudo.unlink(version_file)
-  else:
-    version[version_type] = config
-
-  File(version_file,
-       owner=nifi_user,
-       group=nifi_group,
-       mode=0600,
-       content=json.dumps(version))
-
-def get_config_version(version_file,version_type):
-  if sudo.path_isfile(version_file):
-    contents = sudo.read_file(version_file)
-    version = json.loads(contents)
-    if version_type in version:
-      return version[version_type]
-    else:
-      return None
-  else:
-    return None
-
-def remove_config_version(version_file,version_type, nifi_user, nifi_group):
-  if sudo.path_isfile(version_file):
-    contents = sudo.read_file(version_file)
-    version = json.loads(contents)
-    version.pop(version_type, None)
-    sudo.unlink(version_file)
-
-    File(version_file,
-         owner=nifi_user,
-         group=nifi_group,
-         mode=0600,
-         content=json.dumps(version))
 
 def convert_properties_to_dict(prop_file):
   dict = {}
@@ -254,13 +242,6 @@ def get_nifi_ca_client_dict(config,params):
 
     return nifi_ca_client_config
 
-def get_last_sensitive_props_key(config_version_file,nifi_properties):
-  last_encrypt_config = get_config_version(config_version_file,'encrypt')
-  if last_encrypt_config:
-    return last_encrypt_config['configurations']['nifi-ambari-config']['nifi.sensitive.props.key']
-  else:
-    return nifi_properties['nifi.sensitive.props.key']
-
 def contains_providers(provider_file, tag):
   from xml.dom.minidom import parseString
   import xml.dom.minidom
@@ -321,40 +302,16 @@ def existing_cluster(params):
   return False
 
 
-def setup_keystore_truststore(is_starting, params, config_version_file):
+def create_keystore_truststore(is_starting, params):
   if is_starting:
-    #check against last version to determine if key/trust has changed
-    last_config = get_config_version(config_version_file,'ssl')
-    ca_client_dict = get_nifi_ca_client_dict(last_config, params)
-    using_client_json = len(ca_client_dict) == 0 and sudo.path_isfile(params.nifi_config_dir+ '/nifi-certificate-authority-client.json')
+    updated_properties = run_toolkit_client(get_nifi_ca_client_dict(params.config, params), params.nifi_config_dir,
+                                            params.jdk64_home, params.nifi_toolkit_java_options,
+                                            params.nifi_user, params.nifi_group,
+                                            params.toolkit_tmp_dir, params.stack_support_toolkit_update)
 
-    if using_client_json:
-      ca_client_dict = load(params.nifi_config_dir + '/nifi-certificate-authority-client.json')
+    update_nifi_ca_properties(updated_properties, params.nifi_properties)
 
-    changed_ks_ts = changed_keystore_truststore(ca_client_dict,params.nifi_ca_client_config,using_client_json) if not len(ca_client_dict) == 0 else True
-
-    if params.nifi_toolkit_tls_regenerate:
-      move_keystore_truststore(ca_client_dict)
-      ca_client_dict = {}
-    elif changed_ks_ts:
-      move_keystore_truststore(ca_client_dict)
-
-    if changed_ks_ts or params.nifi_toolkit_tls_regenerate:
-      overlay(ca_client_dict, params.nifi_ca_client_config)
-      updated_properties = run_toolkit_client(ca_client_dict, params.nifi_config_dir,
-                                              params.jdk64_home, params.nifi_toolkit_java_options,
-                                              params.nifi_user, params.nifi_group,
-                                              params.toolkit_tmp_dir, params.stack_support_toolkit_update)
-      update_nifi_properties(updated_properties, params.nifi_properties)
-      save_config_version(params.config, config_version_file,'ssl', params.nifi_user, params.nifi_group)
-    elif using_client_json:
-      save_config_version(params.config, config_version_file,'ssl', params.nifi_user, params.nifi_group)
-
-    old_nifi_properties = convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties')
-    return populate_ssl_properties(old_nifi_properties,params.nifi_properties,params)
-
-  else:
-    return params.nifi_properties
+  return params.nifi_properties
 
 @retry(times=20, sleep_time=5, max_sleep_time=20, backoff_factor=2, err_class=Fail)
 def run_toolkit_client(ca_client_dict, nifi_config_dir, jdk64_home, java_options, nifi_user,nifi_group,toolkit_tmp_dir, no_client_file=False):
@@ -388,28 +345,40 @@ def run_toolkit_client(ca_client_dict, nifi_config_dir, jdk64_home, java_options
 
   return updated_properties
 
-def cleanup_toolkit_client_files(params,config_version_file):
-  if get_config_version(config_version_file,'ssl'):
-    Logger.info("Search and remove any generated keystores and truststores")
-    ca_client_dict = get_nifi_ca_client_dict(params.config, params)
-    move_keystore_truststore(ca_client_dict)
-    params.nifi_properties['nifi.security.keystore'] = ''
-    params.nifi_properties['nifi.security.truststore'] = ''
-    remove_config_version(config_version_file,'ssl',params.nifi_user, params.nifi_group)
+def clean_toolkit_client_files(old_nifi_properties, new_nifi_properties):
+  move_keystore_truststore(old_nifi_properties)
+  new_nifi_properties['nifi.security.keystore'] = ''
+  new_nifi_properties['nifi.security.truststore'] = ''
+  return new_nifi_properties
 
-  return params.nifi_properties
 
-def encrypt_sensitive_properties(config, config_version_file, nifi_config_dir,jdk64_home,java_options,nifi_user,nifi_group,master_key_password,nifi_flow_config_dir,nifi_sensitive_props_key,
-                                 is_starting,toolkit_tmp_dir,support_encrypt_authorizers):
+def get_hash_parameters(jdk64_home, java_options, toolkit_tmp_dir):
+  encrypt_config_script = get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir)
+  File(encrypt_config_script, mode=0755)
+  encrypt_command = ('ambari-sudo.sh'
+                   ' JAVA_HOME="%(jdk64_home)s"'
+                   ' JAVA_OPTS="%(java_options)s"'
+                   ' %(encrypt_config_script)s'
+                   ' --currentHashParams'
+                 ) % locals()
+
+  code, out = shell.call(encrypt_command, quiet=True, logoutput=False)
+
+  if code > 0:
+    raise Fail("Call to encrypt config in nifi-toolkit encountered error: {0}".format(out))
+  else:
+    return json.loads(out)
+
+
+def encrypt_sensitive_properties(nifi_config_dir, jdk64_home, java_options, nifi_user, last_master_key_password, master_key_password, nifi_flow_config_dir, nifi_sensitive_props_key, is_starting,toolkit_tmp_dir, support_encrypt_authorizers):
   Logger.info("Encrypting NiFi sensitive configuration properties")
   encrypt_config_script = get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir)
-
   encrypt_config_command = (encrypt_config_script,)
   environment = {'JAVA_HOME': jdk64_home, 'JAVA_OPTS': java_options}
   File(encrypt_config_script, mode=0755)
 
   if is_starting:
-    last_config = get_config_version(config_version_file,'encrypt')
+
     encrypt_config_command += ('-v', '-b', nifi_config_dir + '/bootstrap.conf')
     encrypt_config_command += ('-n', nifi_config_dir + '/nifi.properties')
 
@@ -423,15 +392,8 @@ def encrypt_sensitive_properties(config, config_version_file, nifi_config_dir,jd
     if support_encrypt_authorizers and contains_providers(nifi_config_dir+'/authorizers.xml', "authorizer"):
       encrypt_config_command += ('-a', nifi_config_dir + '/authorizers.xml')
 
-    last_master_key_password = None
-
-    if last_config:
-      last_master_key_password = last_config['configurations']['nifi-ambari-config']['nifi.security.encrypt.configuration.password']
-
-    #The last master key password is required in order to migrate to the new password (if it was changed)
-    if last_master_key_password and last_master_key_password != master_key_password:
-      encrypt_config_command += ('-m', '-w', PasswordString(last_master_key_password))
+    if last_master_key_password:
+      encrypt_config_command += ('-m', '-e', PasswordString(last_master_key_password))
 
     encrypt_config_command += ('-p', PasswordString(master_key_password))
     Execute(encrypt_config_command, user=nifi_user, logoutput=False, environment=environment)
-    save_config_version(config, config_version_file, 'encrypt', nifi_user, nifi_group)

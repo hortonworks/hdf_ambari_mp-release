@@ -46,3 +46,17 @@ class NIFI170ServiceAdvisor(service_advisor.NIFI110ServiceAdvisor):
         validationProblems.extend(parentValidationProblems)
 
         return validationProblems
+
+    def validateNiFiSslProperties(self, properties, recommendedDefaults, configurations, services, hosts):
+
+        parentValidationProblems = super(NIFI170ServiceAdvisor, self).validateNiFiSslProperties(properties, recommendedDefaults, configurations, services, hosts)
+
+        validationItems = []
+        ssl_enabled = properties['nifi.node.ssl.isenabled'] and str(properties['nifi.node.ssl.isenabled']).lower() != 'false'
+        if properties['nifi.toolkit.tls.token'] and ssl_enabled and len(properties['nifi.toolkit.tls.token']) < 16:
+            validationItems.append({"config-name": 'nifi.toolkit.tls.token', 'item': self.getErrorItem('The NiFi CA token must be 16 or more characters.')})
+
+        validationProblems = self.toConfigurationValidationProblems(validationItems, "nifi-ambari-ssl-config")
+        validationProblems.extend(parentValidationProblems)
+
+        return validationProblems

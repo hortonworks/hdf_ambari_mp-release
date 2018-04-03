@@ -92,20 +92,10 @@ class Master(Script):
                   recursive_ownership=True,
                   cd_access='a')
 
-        config_version_file = format("{params.nifi_registry_config_dir}/config_version")
-
-        if params.nifi_ca_host and params.nifi_registry_ssl_enabled:
-            params.nifi_registry_properties = nifi_toolkit_util.setup_keystore_truststore(is_starting, params, config_version_file)
-        elif params.nifi_ca_host and not params.nifi_registry_ssl_enabled:
-            params.nifi_registry_properties = nifi_toolkit_util.cleanup_toolkit_client_files(params, config_version_file)
 
         #write configurations
-        self.write_configurations(params)
+        self.write_configurations(params, is_starting)
 
-        nifi_toolkit_util.encrypt_sensitive_properties(params.config, config_version_file, params.nifi_registry_config_dir, params.jdk64_home,
-                                                        params.nifi_toolkit_java_options, params.nifi_registry_user,
-                                                        params.nifi_registry_group, params.nifi_registry_security_encrypt_configuration_password,
-                                                        is_starting, params.toolkit_tmp_dir)
 
     def stop(self, env, upgrade_type=None):
         import params
@@ -166,9 +156,44 @@ class Master(Script):
                 Logger.info(format('Remove client json file'))
                 sudo.unlink(client_json_file)
 
-    def write_configurations(self, params):
+    def write_configurations(self, params, is_starting):
 
-        #write out nifi.properties
+        if os.path.isfile(params.nifi_registry_config_dir + '/bootstrap.conf'):
+            bootstrap_current_conf = nifi_toolkit_util.convert_properties_to_dict(params.nifi_registry_config_dir + '/bootstrap.conf')
+            last_security_encrypt_configuration_key = bootstrap_current_conf['nifi.registry.bootstrap.sensitive.key'] if 'nifi.registry.bootstrap.sensitive.key' in bootstrap_current_conf else None
+        else:
+            last_security_encrypt_configuration_key = None
+
+        if os.path.isfile(params.nifi_registry_config_dir + '/nifi-registry.properties'):
+            nifi_registry_current_properties = nifi_toolkit_util.convert_properties_to_dict(params.nifi_registry_config_dir + '/nifi-registry.properties')
+            if 'nifi.registry.sensitive.props.key' in nifi_registry_current_properties:
+                params.nifi_registry_properties['nifi.registry.sensitive.props.key'] = nifi_registry_current_properties['nifi.registry.sensitive.props.key']
+            if 'nifi.registry.sensitive.props.key.protected' in nifi_registry_current_properties:
+                params.nifi_registry_properties['nifi.registry.sensitive.props.key.protected'] = nifi_registry_current_properties['nifi.registry.sensitive.props.key.protected']
+        else:
+            nifi_registry_current_properties = params.nifi_registry_properties
+            params.nifi_toolkit_tls_regenerate = True
+
+        #Obtain hash parameters from encrypt config tool
+        hash_params = nifi_toolkit_util.get_hash_parameters(params.jdk64_home, params.nifi_toolkit_java_options, params.toolkit_tmp_dir)
+
+        #resolve and populate required security values and hashes
+        params.nifi_registry_properties = nifi_toolkit_util.update_nifi_registry_ssl_properties(params.nifi_registry_properties, params.nifi_registry_truststore, params.nifi_registry_host, params.nifi_registry_config_dir,
+                                                                                                params.nifi_registry_truststoreType, params.nifi_registry_truststorePasswd, params.nifi_registry_keystore,
+                                                                                                params.nifi_registry_keystoreType, params.nifi_registry_keystorePasswd, params.nifi_registry_keyPasswd, hash_params)
+
+        #determine whether new keystore/truststore should be regenerated
+        run_tls = (params.nifi_ca_host and params.nifi_registry_ssl_enabled) and (params.nifi_toolkit_tls_regenerate or nifi_toolkit_util.generate_keystore_truststore(nifi_registry_current_properties, params.nifi_registry_properties))
+
+        if run_tls:
+            nifi_toolkit_util.move_keystore_truststore(nifi_registry_current_properties)
+            params.nifi_registry_properties = nifi_toolkit_util.create_keystore_truststore(is_starting, params)
+        elif not params.nifi_registry_ssl_enabled:
+            params.nifi_registry_properties = nifi_toolkit_util.clean_toolkit_client_files(nifi_registry_current_properties, params.nifi_registry_properties)
+        elif params.nifi_registry_ssl_enabled and not run_tls and os.path.isfile(params.nifi_registry_config_dir + '/nifi-registry.properties'):
+            params.nifi_registry_properties = nifi_toolkit_util.populate_ssl_properties(nifi_toolkit_util.convert_properties_to_dict(params.nifi_registry_config_dir + '/nifi-registry.properties'),params.nifi_registry_properties,params)
+
+        #write out nifi-registry.properties
         PropertiesFile(params.nifi_registry_config_dir + '/nifi-registry.properties',
                        properties = params.nifi_registry_properties,
                        mode = 0600,
@@ -229,9 +254,12 @@ class Master(Script):
              group=params.nifi_registry_group,
              mode=0755)
 
-        #if security is enabled for kerberos create the nifi_jaas.conf file
-        #if params.security_enabled and params.stack_support_nifi_jaas:
-        #    File(params.nifi_jaas_conf, content=InlineTemplate(params.nifi_jaas_conf_template), owner=params.nifi_user, group=params.nifi_group, mode=0400)
+        nifi_toolkit_util.encrypt_sensitive_properties(params.nifi_registry_config_dir, params.jdk64_home,
+                                                       params.nifi_toolkit_java_options, params.nifi_registry_user,
+                                                       last_security_encrypt_configuration_key,
+                                                       params.nifi_registry_security_encrypt_configuration_password,
+                                                       is_starting, params.toolkit_tmp_dir)
+
 
 
 if __name__ == "__main__":
