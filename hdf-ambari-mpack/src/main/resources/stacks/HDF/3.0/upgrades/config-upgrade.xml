@@ -22,7 +22,7 @@
               </definition>
               <definition xsi:type="configure" id="add_skip_log_message_format_version">
                 <type>kafka-broker</type>
-                <set key="log.message.format.version" value="1.0" if-key="log.message.format.version" if-key-state="absent"/>
+                <set key="log.message.format.version" value="1.0" if-type="kafka-broker" if-key="log.message.format.version" if-key-state="absent"/>
               </definition>
             </changes>
           </component>
