@@ -114,7 +114,7 @@ def streamline(env, upgrade_type=None):
 def ensure_base_directories():
   import params
   import status_params
-  Directory([params.streamline_log_dir, status_params.streamline_pid_dir, params.conf_dir, params.streamline_agent_dir],
+  Directory([params.streamline_log_dir, status_params.streamline_pid_dir, params.conf_dir, params.streamline_agent_dir, params.streamline_bootstrap_dir],
             mode=0755,
             cd_access='a',
             owner=params.streamline_user,

@@ -71,7 +71,7 @@ hostname = config['agentLevelParams']['hostname']
 # default streamline parameters
 streamline_home = os.path.join(stack_root, "current", "streamline")
 streamline_bin = os.path.join(streamline_home, "bin", "streamline")
-
+streamline_bootstrap_dir = os.path.join(streamline_home, "bootstrap")
 streamline_managed_log_dir = os.path.join(streamline_home, "logs")
 conf_dir = os.path.join(streamline_home, "conf")
 
