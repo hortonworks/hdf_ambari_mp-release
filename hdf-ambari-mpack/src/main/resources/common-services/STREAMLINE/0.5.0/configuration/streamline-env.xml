@@ -75,6 +75,12 @@
     <description>Max number of processes limit setting for STREAMLINE user.</description>
     <on-ambari-upgrade add="true"/>
   </property>
+  <property>
+    <name>streamline_user_nproc_limit</name>
+    <value>65536</value>
+    <description>Max number of processes limit setting for STREAMLINE user.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
   <!-- streamline-env.sh -->
   <property>
     <name>content</name>
