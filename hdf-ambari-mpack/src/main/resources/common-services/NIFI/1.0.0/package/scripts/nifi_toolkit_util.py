@@ -375,15 +375,16 @@ def run_toolkit_client(ca_client_dict, nifi_config_dir, jdk64_home, java_options
   ca_client_script = get_toolkit_script('tls-toolkit.sh',toolkit_tmp_dir)
   File(ca_client_script, mode=0755)
   if no_client_file:
+
     ca_client_json_dump = json.dumps(ca_client_dict)
-    cert_command = (
-        'echo \'%(ca_client_json_dump)s\''
-        ' | ambari-sudo.sh'
-        ' JAVA_HOME="%(jdk64_home)s"'
-        ' JAVA_OPTS="%(java_options)s"'
-        ' %(ca_client_script)s'
-        ' client -f /dev/stdout --configJsonIn /dev/stdin'
-    ) % locals()
+    command_str = 'echo \'%(ca_client_json_dump)s\'' + ' | ambari-sudo.sh' + ' JAVA_HOME="%(jdk64_home)s"'
+
+    if java_options:
+      command_str = command_str + ' JAVA_OPTS="%(java_options)s"'
+
+    command_str = command_str + ' %(ca_client_script)s' + ' client -f /dev/stdout --configJsonIn /dev/stdin'
+    cert_command = command_str % locals()
+
     code, out = shell.call(cert_command, quiet=True, logoutput=False)
     if code > 0:
       raise Fail("Call to tls-toolkit encountered error: {0}".format(out))
@@ -418,7 +419,12 @@ def encrypt_sensitive_properties(config_version_file,current_version,nifi_config
   encrypt_config_script = get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir)
 
   encrypt_config_command = (encrypt_config_script,)
-  environment = {'JAVA_HOME': jdk64_home, 'JAVA_OPTS': java_options}
+
+  environment = {'JAVA_HOME': jdk64_home}
+
+  if java_options:
+    environment['JAVA_OPTS'] = java_options
+
   File(encrypt_config_script, mode=0755)
 
   if is_starting:
