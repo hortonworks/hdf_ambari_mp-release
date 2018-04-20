@@ -262,7 +262,7 @@ nifi_boostrap_content = config['configurations']['nifi-bootstrap-env']['content'
 nifi_boostrap_notification_content = config['configurations']['nifi-bootstrap-notification-services-env']['content']
 
 # params from nifi-toolkit-env
-nifi_toolkit_java_options = config['configurations']['nifi-toolkit-env']['nifi_toolkit_java_options'] if 'nifi-toolkit-env' in config['configurations'] else '-Xms128m -Xmx256m'
+nifi_toolkit_java_options = config['configurations']['nifi-toolkit-env']['nifi_toolkit_java_options'] if 'nifi-toolkit-env' in config['configurations'] else None
 
 #autodetect jdk home
 jdk64_home=config['hostLevelParams']['java_home']
