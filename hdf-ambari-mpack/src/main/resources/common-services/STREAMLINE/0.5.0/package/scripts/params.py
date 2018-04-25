@@ -126,9 +126,9 @@ if security_enabled:
 else:
   streamline_kerberos_params = ''
 
+enable_atlas_hook = default('/configurations/storm-env/storm.atlas.hook', False)
 
 # flatten streamline configs
-
 storm_client_home = config['configurations']['streamline-common']['storm.client.home']
 registry_url = config['configurations']['streamline-common']['registry.url']
 maven_repo_url = config['configurations']['streamline-common']['maven.repo.url']

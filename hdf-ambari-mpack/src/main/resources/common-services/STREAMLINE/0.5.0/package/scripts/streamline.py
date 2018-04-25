@@ -33,6 +33,7 @@ from resource_management.libraries.functions.get_user_call_output import get_use
 from resource_management.core.exceptions import ExecutionFailed
 from resource_management.core.logger import Logger
 from resource_management.core.exceptions import Fail
+from resource_management.libraries.functions.setup_atlas_hook import setup_atlas_jar_symlinks
 
 import urllib2, time, json
 
@@ -122,6 +123,10 @@ def ensure_base_directories():
             create_parents = True,
             recursive_ownership = True,
             )
+
+  if params.enable_atlas_hook:
+    storm_extlib_dir = os.path.join(params.storm_client_home, "extlib")
+    setup_atlas_jar_symlinks("storm", storm_extlib_dir)
 
 
 def download_database_connector_if_needed():
