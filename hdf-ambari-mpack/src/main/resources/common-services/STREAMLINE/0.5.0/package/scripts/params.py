@@ -183,11 +183,18 @@ except Exception, e:
   registry_url = registry_url.replace("{{registry_host}}", "localhost").replace("{{registry_port}}", "7788")
 
 streamline_storage_type = str(config['configurations']['streamline-common']['streamline.storage.type']).lower()
+streamline_storage_database = str(config['configurations']['streamline-common']['database_name'])
 streamline_storage_connector_connectorURI = config['configurations']['streamline-common']['streamline.storage.connector.connectURI']
 streamline_storage_connector_user = config['configurations']['streamline-common']['streamline.storage.connector.user']
 streamline_storage_connector_password = config['configurations']['streamline-common']['streamline.storage.connector.password']
 streamline_storage_query_timeout = config['configurations']['streamline-common']['streamline.storage.query.timeout']
 streamline_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+
+# database admin properties.
+database_admin_user_name = config['configurations']['streamline-common']['db_root_user']
+database_admin_password = config['configurations']['streamline-common']['db_root_password']
+database_admin_jdbc_url = config['configurations']['streamline-common']['db_root_jdbc_url']
+
 
 if streamline_storage_type == "postgresql":
   streamline_storage_java_class = "org.postgresql.ds.PGSimpleDataSource"
@@ -273,11 +280,15 @@ bootstrap_storage_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf
 bootstrap_command = os.path.join(streamline_home, "bootstrap", "bootstrap.sh")
 bootstrap_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/streamline-env.sh ; {bootstrap_command}')
 
+bootstrap_storage_intienv_command = os.path.join(streamline_home, "bootstrap", "bootstrap-storage-initenv.sh")
+bootstrap_storage_initevn_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/streamline-env.sh ; {bootstrap_storage_intienv_command}')
+
 bootstrap_file = "/var/lib/ambari-agent/data/streamline/bootstrap_done"
 streamline_agent_dir = "/var/lib/ambari-agent/data/streamline"
 
 stack_support_sam_storage_core_in_registry = check_stack_feature('sam_storage_core_in_registry', version_for_stack_feature_checks)
 stack_sam_support_schema_migrate = check_stack_feature('sam_support_schema_migrate', version_for_stack_feature_checks)
+stack_streamline_support_db_user_creation = check_stack_feature('streamline_support_db_user_creation', version_for_stack_feature_checks)
 
 if stack_support_sam_storage_core_in_registry:
   storage_provider_class = "com.hortonworks.registries.storage.impl.jdbc.JdbcStorageManager"

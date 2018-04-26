@@ -67,7 +67,7 @@ stack_support_rewrite_uri = check_stack_feature('registry_rewriteuri_filter_supp
 stack_support_allowed_resources = check_stack_feature('registry_allowed_resources_support', version_for_stack_feature_checks)
 stack_support_remove_rootpath = check_stack_feature('registry_remove_rootpath', version_for_stack_feature_checks)
 stack_registry_support_schema_migrate = check_stack_feature('registry_support_schema_migrate', version_for_stack_feature_checks)
-
+stack_registry_support_db_user_creation = check_stack_feature('registry_support_db_user_creation', version_for_stack_feature_checks)
 
 # When downgrading the 'version' and 'current_version' are both pointing to the downgrade-target version
 # downgrade_from_version provides the source-version the downgrade is happening from
@@ -109,8 +109,6 @@ if security_enabled:
   #registry_servlet_token_validity = (config['configurations']['registry-common']['token.validity'])
   registry_servlet_token_validity = 36000
   
-  
-
 registry_log_dir = config['configurations']['registry-env']['registry_log_dir']
 registry_log_maxbackupindex = config['configurations']['registry-log4j']['registry_log_maxbackupindex']
 registry_log_maxfilesize = config['configurations']['registry-log4j']['registry_log_maxfilesize']
@@ -121,12 +119,18 @@ registry_log_template = registry_log_template.replace('{{registry_log_maxfilesiz
 
 # flatten registry configs
 jar_storage = config['configurations']['registry-common']['jar.storage']
+registry_storage_database = str(config['configurations']['registry-common']['database_name'])
 registry_storage_type = str(config['configurations']['registry-common']['registry.storage.type']).lower()
 registry_storage_connector_connectorURI = config['configurations']['registry-common']['registry.storage.connector.connectURI']
 registry_storage_connector_user = config['configurations']['registry-common']['registry.storage.connector.user']
 registry_storage_connector_password = config['configurations']['registry-common']['registry.storage.connector.password']
 registry_storage_query_timeout = config['configurations']['registry-common']['registry.storage.query.timeout']
 registry_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+
+# database admin properties.
+database_admin_user_name = config['configurations']['registry-common']['db_root_user']
+database_admin_password = config['configurations']['registry-common']['db_root_password']
+database_admin_jdbc_url = config['configurations']['registry-common']['db_root_jdbc_url']
 
 jar_storage_type = config['configurations']['registry-common']['jar.storage.type']
 jar_storage_hdfs_url = config['configurations']['registry-common']['jar.storage.hdfs.url']
@@ -205,4 +209,8 @@ check_db_connection_jar = format("/usr/lib/ambari-agent/{check_db_connection_jar
 jdk64_home=config['ambariLevelParams']['java_home']
 bootstrap_storage_command = os.path.join(registry_home, "bootstrap", "bootstrap-storage.sh")
 bootstrap_storage_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/registry-env.sh ; {bootstrap_storage_command}')
+
+bootstrap_storage_intienv_command = os.path.join(registry_home, "bootstrap", "bootstrap-storage-initenv.sh")
+bootstrap_storage_initevn_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/registry-env.sh ; {bootstrap_storage_intienv_command}')
+
 registry_agent_dir = "/var/lib/ambari-agent/data/registry"

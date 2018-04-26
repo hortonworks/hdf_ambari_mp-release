@@ -382,6 +382,16 @@
         "name": "nifi_encrypted_authorizers_config",
         "description": "Support encrypted authorizers.xml configuration for version 3.1 onwards",
         "min_version": "3.1.0.0"
+      },
+      {
+        "name": "registry_support_db_user_creation",
+        "description": "Supports registry's database and user creation on the fly",
+        "min_version": "3.2.0.0"
+      },
+      {
+        "name": "streamline_support_db_user_creation",
+        "description": "Supports Strealine's database and user creation on the fly",
+        "min_version": "3.2.0.0"
       }
     ]
   }

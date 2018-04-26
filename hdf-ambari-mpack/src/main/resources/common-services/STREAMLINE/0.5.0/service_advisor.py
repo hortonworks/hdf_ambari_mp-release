@@ -40,6 +40,8 @@ except Exception as e:
     traceback.print_exc()
     print "Failed to load parent"
 
+DB_TYPE_DEFAULT_PORT_MAP = {"mysql":"3306", "oracle":"1521", "postgresql":"5432"}
+
 class STREAMLINE050ServiceAdvisor(service_advisor.ServiceAdvisor):
 
   def __init__(self, *args, **kwargs):
@@ -68,11 +70,37 @@ class STREAMLINE050ServiceAdvisor(service_advisor.ServiceAdvisor):
     Logger.info("Class: %s, Method: %s. Recommending Service Configurations." % (self.__class__.__name__, inspect.stack()[0][3]))
     pass
 
+  def autopopulateSTREAMLINEurl(self, configurations, clusterData, services, hosts):
+
+    putStreamlineCommonProperty = self.putProperty(configurations, "streamline-common", services)
+
+    streamline_storage_database = services['configurations']['streamline-common']['properties']['database_name']
+    streamline_storage_type = str(services['configurations']['streamline-common']['properties']['streamline.storage.type']).lower()
+
+    streamline_db_url_dict = {
+      'mysql': {'streamline.storage.connector.connectURI': 'jdbc:mysql://localhost:' + DB_TYPE_DEFAULT_PORT_MAP[streamline_storage_type] + '/' + streamline_storage_database},
+      'oracle': {'streamline.storage.connector.connectURI': 'jdbc:oracle:thin:@localhost:' + DB_TYPE_DEFAULT_PORT_MAP[streamline_storage_type] + '/' + streamline_storage_database},
+      'postgresql': {'streamline.storage.connector.connectURI': 'jdbc:postgresql://localhost:' + DB_TYPE_DEFAULT_PORT_MAP[streamline_storage_type] + '/' + streamline_storage_database},
+      }
+
+    streamlineDbProperties = streamline_db_url_dict.get(streamline_storage_type, streamline_db_url_dict['mysql'])
+    for key in streamlineDbProperties:
+      putStreamlineCommonProperty(key, streamlineDbProperties.get(key))
+
+    db_root_jdbc_url_dict = {
+      'mysql': {'db_root_jdbc_url': 'jdbc:mysql://localhost' + ':' + DB_TYPE_DEFAULT_PORT_MAP[streamline_storage_type]},
+      'postgresql': {'db_root_jdbc_url': 'jdbc:postgresql://localhost' + ':' + DB_TYPE_DEFAULT_PORT_MAP[streamline_storage_type]},
+      }
+
+    streamlinePrivelegeDbProperties = db_root_jdbc_url_dict.get(streamline_storage_type, db_root_jdbc_url_dict['mysql'])
+    for key in streamlinePrivelegeDbProperties:
+      putStreamlineCommonProperty(key, streamlinePrivelegeDbProperties.get(key))
+
   def getServiceConfigurationRecommendations(self, configurations, clusterData, services, hosts):
 
     Logger.info("Class: %s, Method: %s. Get Service Configuration Recommendations." % (self.__class__.__name__, inspect.stack()[0][3]))
     servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
-
+    self.autopopulateSTREAMLINEurl(configurations, clusterData, services, hosts)
     security_enabled = self.isSecurityEnabled(services)
     if 'STORM' in servicesList and security_enabled:
       storm_site = self.getServicesSiteProperties(services, "storm-site")

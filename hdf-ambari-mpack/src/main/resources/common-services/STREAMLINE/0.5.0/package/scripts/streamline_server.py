@@ -33,6 +33,7 @@ from resource_management.libraries.functions.stack_features import check_stack_f
 from resource_management.libraries.functions.show_logs import show_logs
 from resource_management.core.shell import as_sudo
 from resource_management.core import sudo
+from resource_management.core.utils import PasswordString
 
 import os, time, glob
 from streamline import ensure_base_directories
@@ -61,10 +62,26 @@ class StreamlineServer(Script):
       show_logs(params.streamline_log_dir, params.streamline_user)
       raise
 
+  def execute_bootstrap_storage_env(self, params):
+    from urlparse import urlparse
+    try:
+      # Getting hostname where streamline's database would be installed.
+      streamline_storage_database_hostname = urlparse(urlparse(params.streamline_storage_connector_connectorURI)[2])[1].split(":")[0]
+      database_admin_jdbc_url = params.database_admin_jdbc_url
+      if params.streamline_storage_type == 'postgresql':
+        database_admin_jdbc_url = database_admin_jdbc_url + '/postgres'
+      bootstrap_storage_initevn_db_cmd = database_admin_jdbc_url + ' ' + params.database_admin_user_name + ' ' + PasswordString(params.database_admin_password) + ' ' + params.streamline_storage_connector_user + ' ' + PasswordString(params.streamline_storage_connector_password) + ' ' + params.streamline_storage_database
+      Execute(params.bootstrap_storage_initevn_run_cmd + ' ' + bootstrap_storage_initevn_db_cmd, user='root')
+    except:
+      show_logs(params.streamline_log_dir, params.streamline_user)
+      raise
+
   def install(self, env):
     import params
     self.install_packages(env)
     self.configure(env)
+    if params.stack_streamline_support_db_user_creation:
+      self.execute_bootstrap_storage_env(params)
     if not params.stack_sam_support_schema_migrate:
       self.execute_bootstrap(params)
 

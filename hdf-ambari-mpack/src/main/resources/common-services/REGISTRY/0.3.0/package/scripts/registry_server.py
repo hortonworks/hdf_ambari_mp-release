@@ -31,6 +31,7 @@ from resource_management.libraries.functions.stack_features import check_stack_f
 from resource_management.libraries.functions.show_logs import show_logs
 from resource_management.core.shell import as_sudo
 from resource_management.core import sudo
+from resource_management.core.utils import PasswordString
 
 import os, time, shutil, glob
 from registry import ensure_base_directories
@@ -58,10 +59,26 @@ class RegistryServer(Script):
       show_logs(params.registry_log_dir, params.registry_user)
       raise
 
+  def execute_bootstrap_storage_env(self, params):
+    from urlparse import urlparse
+    try:
+      #Getting hostname where registry's database would be installed.
+      registry_storage_database_hostname = urlparse(urlparse(params.registry_storage_connector_connectorURI)[2])[1].split(":")[0]
+      database_admin_jdbc_url = params.database_admin_jdbc_url
+      if params.registry_storage_type == 'postgresql':
+        database_admin_jdbc_url = database_admin_jdbc_url + '/postgres'
+      bootstrap_storage_initevn_db_cmd =  database_admin_jdbc_url + ' ' + params.database_admin_user_name + ' ' + PasswordString(params.database_admin_password) + ' ' + params.registry_storage_connector_user + ' ' + PasswordString(params.registry_storage_connector_password) + ' ' + params.registry_storage_database
+      Execute(params.bootstrap_storage_initevn_run_cmd + ' ' + bootstrap_storage_initevn_db_cmd , user='root')
+    except:
+      show_logs(params.registry_log_dir, params.registry_user)
+      raise
+
   def install(self, env):
     import params
     self.install_packages(env)
     self.configure(env)
+    if params.stack_registry_support_db_user_creation:
+      self.execute_bootstrap_storage_env(params)
     if not params.stack_registry_support_schema_migrate:
       self.execute_bootstrap(params)
 

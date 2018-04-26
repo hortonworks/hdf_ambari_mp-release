@@ -144,7 +144,7 @@ def download_database_connector_if_needed():
           Logger.error("Failed to find ojdbc jar. Please download and make sure you followed the steps to register oracle jdbc driver")
           Logger.info("Users should register the oracle ojdbc driver jar.")
           Logger.info("Create a symlink e.g. ln -s /usr/share/java/ojdbc6.jar /usr/share/java/ojdbc.jar")
-          Logger.info("sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/ojdbc.jar")
+          Logger.info("sudo ambari-server setup --jdbc-db=oracle --jdbc-driver=/usr/share/java/ojdbc.jar")
           raise Fail('Unable to establish jdbc connection to your ' + params.streamline_storage_type + ' instance.')
 
   File(params.check_db_connection_jar,
