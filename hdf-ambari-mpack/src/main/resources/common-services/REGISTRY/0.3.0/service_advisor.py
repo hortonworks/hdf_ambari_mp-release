@@ -70,37 +70,10 @@ class REGISTRY030ServiceAdvisor(service_advisor.ServiceAdvisor):
     Logger.info("Class: %s, Method: %s. Recommending Service Configurations." % (self.__class__.__name__, inspect.stack()[0][3]))
     pass
 
-  def autopopulateREGISTRYurl(self, configurations, clusterData, services, hosts):
-
-    putRegistryCommonProperty = self.putProperty(configurations, "registry-common", services)
-
-    registry_storage_database = services['configurations']['registry-common']['properties']['database_name']
-    registry_storage_type = str(services['configurations']['registry-common']['properties']['registry.storage.type']).lower()
-
-    registry_db_url_dict = {
-      'mysql': {'registry.storage.connector.connectURI': 'jdbc:mysql://localhost:' + DB_TYPE_DEFAULT_PORT_MAP[registry_storage_type] + '/' + registry_storage_database},
-      'oracle': {'registry.storage.connector.connectURI': 'jdbc:oracle:thin:@localhost:' + DB_TYPE_DEFAULT_PORT_MAP[registry_storage_type] + '/' + registry_storage_database},
-      'postgresql': {'registry.storage.connector.connectURI': 'jdbc:postgresql://localhost:' + DB_TYPE_DEFAULT_PORT_MAP[registry_storage_type] + '/' + registry_storage_database},
-      }
-
-    registryDbProperties = registry_db_url_dict.get(registry_storage_type, registry_db_url_dict['mysql'])
-    for key in registryDbProperties:
-      putRegistryCommonProperty(key, registryDbProperties.get(key))
-
-    db_root_jdbc_url_dict = {
-      'mysql': {'db_root_jdbc_url': 'jdbc:mysql://localhost' + ':' + DB_TYPE_DEFAULT_PORT_MAP[registry_storage_type]},
-      'postgresql': {'db_root_jdbc_url': 'jdbc:postgresql://localhost' + ':' + DB_TYPE_DEFAULT_PORT_MAP[registry_storage_type]},
-      }
-
-    registryPrivelegeDbProperties = db_root_jdbc_url_dict.get(registry_storage_type, db_root_jdbc_url_dict['mysql'])
-    for key in registryPrivelegeDbProperties:
-      putRegistryCommonProperty(key, registryPrivelegeDbProperties.get(key))
-
   def getServiceConfigurationRecommendations(self, configurations, clusterData, services, hosts):
     Logger.info("Class: %s, Method: %s. get Service Configurations Recommendations. " % (self.__class__.__name__, inspect.stack()[0][3]))
     properties = get_ambari_properties()
     ambari_version = get_ambari_version(properties)
-    self.autopopulateREGISTRYurl(configurations, clusterData, services, hosts)
     if not(ambari_version) or not(ambari_version.startswith('2.5')):
       putRegistryLogSearchConfAttribute = self.putPropertyAttribute(configurations, "registry-logsearch-conf")
       putRegistryLogSearchConfAttribute('service_name', 'visible', 'false')

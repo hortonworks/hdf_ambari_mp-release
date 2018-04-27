@@ -173,6 +173,12 @@
         <name>registry.storage.type</name>
       </property>
     </depends-on>
+    <depends-on>
+      <property>
+        <type>registry-common</type>
+        <name>registry.storage.connector.connectURI</name>
+      </property>
+    </depends-on>
   </property>
   <property>
     <name>db_root_password</name>
