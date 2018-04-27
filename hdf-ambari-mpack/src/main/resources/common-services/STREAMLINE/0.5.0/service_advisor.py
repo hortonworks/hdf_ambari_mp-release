@@ -102,6 +102,11 @@ class STREAMLINE050ServiceAdvisor(service_advisor.ServiceAdvisor):
     servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
     self.autopopulateSTREAMLINEurl(configurations, clusterData, services, hosts)
     security_enabled = self.isSecurityEnabled(services)
+
+    if 'AMBARI_METRICS' in servicesList:
+      putAmsSiteProperty = self.putProperty(configurations, "ams-site")
+      putAmsSiteProperty('timeline.metrics.downsampler.event.metric.patterns', 'topology\.%')
+
     if 'STORM' in servicesList and security_enabled:
       storm_site = self.getServicesSiteProperties(services, "storm-site")
       streamline_env = self.getServicesSiteProperties(services, "streamline-env")
