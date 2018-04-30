@@ -57,42 +57,5 @@
     </value-attributes>
     <on-ambari-upgrade add="false"/>
   </property>
-  <property>
-    <name>httpProxyServer</name>
-    <displayName>HTTP Proxy Server</displayName>
-    <value></value>
-    <description>
-      URL for http proxy server. Please enter it in format protocol_name://host_name:port_number
-    </description>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
-    <on-ambari-upgrade add="true"/>
-  </property>
-  <property>
-    <name>httpProxyUsername</name>
-    <displayName>Username For HTTP Proxy Server</displayName>
-    <value></value>
-    <description>
-      Username for http proxy server.
-    </description>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
-    <on-ambari-upgrade add="true"/>
-  </property>
-  <property>
-    <name>httpProxyPassword</name>
-    <displayName>Password For HTTP Proxy Server Username</displayName>
-    <value></value>
-    <property-type>PASSWORD</property-type>
-    <description>
-      Password for http proxy server. Please don't enter password if you haven't entered httpProxyUsername.
-    </description>
-    <value-attributes>
-      <type>password</type>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
-    <on-ambari-upgrade add="true"/>
-  </property>
+
 </configuration>

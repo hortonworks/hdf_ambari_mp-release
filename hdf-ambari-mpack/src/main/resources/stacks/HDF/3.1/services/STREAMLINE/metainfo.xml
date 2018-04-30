@@ -21,7 +21,7 @@
         <service>
             <name>STREAMLINE</name>
             <version>0.6.0</version>
-            <extends>common-services/STREAMLINE/0.6.0</extends>
+            <extends>common-services/STREAMLINE/0.5.0</extends>
             <requiredServices>
                 <service>AMBARI_INFRA_SOLR</service>
                 <service>LOGSEARCH</service>
