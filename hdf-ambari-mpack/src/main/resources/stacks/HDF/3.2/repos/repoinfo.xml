@@ -41,18 +41,6 @@
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
-    <os family="suse11">
-        <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/suse11sp3/3.x/updates/3.2.0.0</baseurl>
-            <repoid>HDF-3.2</repoid>
-            <reponame>HDF</reponame>
-        </repo>
-        <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/suse11sp3</baseurl>
-            <repoid>HDP-UTILS-1.1.0.21</repoid>
-            <reponame>HDP-UTILS</reponame>
-        </repo>
-    </os>
     <os family="suse12">
         <repo>
             <baseurl>http://public-repo-1.hortonworks.com/HDF/sles12/3.x/updates/3.2.0.0</baseurl>
@@ -65,14 +53,14 @@
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
-    <os family="debian7">
+    <os family="debian9">
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/debian7/3.x/updates/3.2.0.0</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/debian9/3.x/updates/3.2.0.0</baseurl>
             <repoid>HDF-3.2</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/debian7</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/debian9</baseurl>
             <repoid>HDP-UTILS-1.1.0.21</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>

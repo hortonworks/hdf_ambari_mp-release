@@ -31,11 +31,11 @@ except Exception as e:
     traceback.print_exc()
     print "Failed to load parent"
 
-class NIFI160ServiceAdvisor(service_advisor.NIFI110ServiceAdvisor):
+class NIFI170ServiceAdvisor(service_advisor.NIFI110ServiceAdvisor):
 
     def validateNiFiAmbariConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
 
-        parentValidationProblems = super(NIFI160ServiceAdvisor, self).validateNiFiAmbariConfigurations(properties, recommendedDefaults, configurations, services, hosts)
+        parentValidationProblems = super(NIFI170ServiceAdvisor, self).validateNiFiAmbariConfigurations(properties, recommendedDefaults, configurations, services, hosts)
 
         validationItems = []
 
