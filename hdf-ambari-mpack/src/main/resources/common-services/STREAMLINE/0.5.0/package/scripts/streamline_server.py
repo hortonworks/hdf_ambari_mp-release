@@ -81,7 +81,6 @@ class StreamlineServer(Script):
     self.install_packages(env)
     self.configure(env)
     if params.stack_streamline_support_db_user_creation:
-      #print("params.database_create_db_dbuser : " , params.database_create_db_dbuser)
       if params.database_create_db_dbuser == "true":
         self.execute_bootstrap_storage_env(params)
     if not params.stack_sam_support_schema_migrate:
