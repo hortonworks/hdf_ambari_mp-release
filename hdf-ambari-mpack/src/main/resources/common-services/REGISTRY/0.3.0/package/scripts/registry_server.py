@@ -78,7 +78,8 @@ class RegistryServer(Script):
     self.install_packages(env)
     self.configure(env)
     if params.stack_registry_support_db_user_creation:
-      self.execute_bootstrap_storage_env(params)
+      if params.database_create_db_dbuser == "true":
+        self.execute_bootstrap_storage_env(params)
     if not params.stack_registry_support_schema_migrate:
       self.execute_bootstrap(params)
 

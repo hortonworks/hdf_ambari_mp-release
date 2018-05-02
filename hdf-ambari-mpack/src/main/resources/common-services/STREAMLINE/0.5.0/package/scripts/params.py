@@ -191,6 +191,7 @@ streamline_storage_query_timeout = config['configurations']['streamline-common']
 streamline_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 # database admin properties.
+database_create_db_dbuser = str(config['configurations']['streamline-env']['create_db_dbuser']).lower()
 database_admin_user_name = config['configurations']['streamline-common']['db_root_user']
 database_admin_password = config['configurations']['streamline-common']['db_root_password']
 database_admin_jdbc_url = config['configurations']['streamline-common']['db_root_jdbc_url']
