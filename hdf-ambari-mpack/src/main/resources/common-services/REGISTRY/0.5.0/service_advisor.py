@@ -35,6 +35,46 @@ DB_TYPE_DEFAULT_PORT_MAP = {"mysql":"3306", "oracle":"1521", "postgresql":"5432"
 
 class REGISTRY050ServiceAdvisor(service_advisor.REGISTRY030ServiceAdvisor):
 
+  def validateREGISTRYConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+
+    parentValidationProblems = super(REGISTRY050ServiceAdvisor, self).validateREGISTRYConfigurations(properties, recommendedDefaults, configurations, services, hosts)
+    validationItems = []
+    registry_storage_type = str(services['configurations']['registry-common']['properties']['registry.storage.type']).lower()
+    registry_storage_connector_connectURI = services['configurations']['registry-common']['properties']['registry.storage.connector.connectURI']
+    registry_database_name = services['configurations']['registry-common']['properties']['database_name']
+    url_error_message = ""
+
+    import re
+    if registry_storage_connector_connectURI:
+      if 'oracle' not in registry_storage_type:
+        pattern = '(.*?):(.*?)://(.*?):(.*?)/(.*)'
+        dbc_connector_uri = re.match(pattern, registry_storage_connector_connectURI)
+        if dbc_connector_uri is not None:
+          dbc_connector_type, db_storage_type, registry_db_hostname, registry_db_portnumber, registry_db_name = re.match(
+            pattern, registry_storage_connector_connectURI).groups()
+          if (not dbc_connector_type or not dbc_connector_type or not registry_db_hostname or not registry_db_portnumber or not registry_db_name):
+            url_error_message += "Please enter Registry storage connector url in following format jdbc:" + registry_storage_type + "://registry_db_hostname:port_number/" + registry_database_name
+            validationItems.append({"config-name": 'registry.storage.connector.connectURI', "item": self.getErrorItem(url_error_message)})
+        else:
+          url_error_message += "Please enter Registry storage connector url in following format jdbc:" + registry_storage_type + "://registry_db_hostname:port_number/" + registry_database_name
+          validationItems.append({"config-name": 'registry.storage.connector.connectURI', "item": self.getErrorItem(url_error_message)})
+      else:
+        pattern = '(.*?):(.*?):(.*?):@(.*?):(.*?)/(.*)'
+        dbc_connector_uri = re.match(pattern, registry_storage_connector_connectURI)
+        if dbc_connector_uri is not None:
+          dbc_connector_type, db_storage_type, dbc_connector_kind, registry_db_hostname, registry_db_portnumber, registry_db_name = re.match(
+            pattern, registry_storage_connector_connectURI).groups()
+          if (not dbc_connector_type or not db_storage_type or not dbc_connector_kind or not registry_db_hostname or not registry_db_portnumber or not registry_db_name):
+            url_error_message += "Please enter Registry storage connector url in following format jdbc:" + registry_storage_type + ":thin:@registry_db_hostname:port_number/" + registry_database_name
+            validationItems.append({"config-name": 'registry.storage.connector.connectURI', "item": self.getErrorItem(url_error_message)})
+        else:
+          url_error_message += "Please enter Registry storage connector url in following format jdbc:" + registry_storage_type + ":thin:@registry_db_hostname:port_number/" + registry_database_name
+          validationItems.append({"config-name": 'registry.storage.connector.connectURI', "item": self.getErrorItem(url_error_message)})
+
+    validationProblems = self.toConfigurationValidationProblems(validationItems, "registry-common")
+    validationProblems.extend(parentValidationProblems)
+    return validationProblems
+
   def autopopulateREGISTRYJdbcUrl(self, configurations, services):
 
     putRegistryCommonProperty = self.putProperty(configurations, "registry-common", services)
