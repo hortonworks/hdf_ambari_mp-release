@@ -128,7 +128,7 @@ registry_storage_query_timeout = config['configurations']['registry-common']['re
 registry_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 # database admin properties.
-datbase_create_db_dbuser = str(config['configurations']['registry-env']['create_db_dbuser']).lower()
+database_create_db_dbuser = str(config['configurations']['registry-env']['create_db_dbuser']).lower()
 database_admin_user_name = config['configurations']['registry-common']['db_root_user']
 database_admin_password = config['configurations']['registry-common']['db_root_password']
 database_admin_jdbc_url = config['configurations']['registry-common']['db_root_jdbc_url']

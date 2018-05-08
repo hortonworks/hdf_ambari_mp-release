@@ -70,4 +70,3 @@ class REGISTRY050ServiceAdvisor(service_advisor.REGISTRY030ServiceAdvisor):
   def getServiceConfigurationRecommendations(self, configurations, clusterData, services, hosts):
     super(REGISTRY050ServiceAdvisor, self).getServiceConfigurationRecommendations(configurations, clusterData, services, hosts)
     self.autopopulateREGISTRYJdbcUrl(configurations, services)
-

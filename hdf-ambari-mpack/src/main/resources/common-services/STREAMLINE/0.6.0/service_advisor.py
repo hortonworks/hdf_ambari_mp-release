@@ -35,6 +35,46 @@ DB_TYPE_DEFAULT_PORT_MAP = {"mysql":"3306", "oracle":"1521", "postgresql":"5432"
 
 class STREAMLINE060ServiceAdvisor(service_advisor.STREAMLINE050ServiceAdvisor):
 
+  def validateSTREAMLINEConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
+
+    parentValidationProblems = super(STREAMLINE060ServiceAdvisor, self).validateSTREAMLINEConfigurations(properties, recommendedDefaults, configurations, services, hosts)
+    validationItems = []
+    streamline_database_name = services['configurations']['streamline-common']['properties']['database_name']
+    streamline_storage_type = str(services['configurations']['streamline-common']['properties']['streamline.storage.type']).lower()
+    streamline_storage_connector_connectURI = services['configurations']['streamline-common']['properties']['streamline.storage.connector.connectURI']
+    url_error_message = ""
+
+    import re
+    if streamline_storage_connector_connectURI:
+      if 'oracle' not in streamline_storage_type:
+        pattern = '(.*?):(.*?)://(.*?):(.*?)/(.*)'
+        dbc_connector_uri = re.match(pattern, streamline_storage_connector_connectURI)
+        if dbc_connector_uri is not None:
+          dbc_connector_type, db_storage_type, streamline_db_hostname, streamline_db_portnumber, streamline_db_name = re.match(
+            pattern, streamline_storage_connector_connectURI).groups()
+          if (not dbc_connector_type or not dbc_connector_type or not streamline_db_hostname or not streamline_db_portnumber or not streamline_db_name):
+            url_error_message += "Please enter Streamline storage connector url in following format jdbc:" + streamline_storage_type + "://streamline_db_hostname:port_number/" + streamline_database_name
+            validationItems.append({"config-name": 'streamline.storage.connector.connectURI', "item": self.getErrorItem(url_error_message)})
+        else:
+          url_error_message += "Please enter Streamline storage connector url in following format jdbc:" + streamline_storage_type + "://streamline_db_hostname:port_number/" + streamline_database_name
+          validationItems.append({"config-name": 'streamline.storage.connector.connectURI', "item": self.getErrorItem(url_error_message)})
+      else:
+        pattern = '(.*?):(.*?):(.*?):@(.*?):(.*?)/(.*)'
+        dbc_connector_uri = re.match(pattern, streamline_storage_connector_connectURI)
+        if dbc_connector_uri is not None:
+          dbc_connector_type, db_storage_type, dbc_connector_kind, streamline_db_hostname, streamline_db_portnumber, streamline_db_name = re.match(
+            pattern, streamline_storage_connector_connectURI).groups()
+          if (not dbc_connector_type or not db_storage_type or not dbc_connector_kind or not streamline_db_hostname or not streamline_db_portnumber or not streamline_db_name):
+            url_error_message += "Please enter Streamline storage connector url in following format jdbc:" + streamline_storage_type + ":thin:@streamline_db_hostname:port_number/" + streamline_database_name
+            validationItems.append({"config-name": 'streamline.storage.connector.connectURI', "item": self.getErrorItem(url_error_message)})
+        else:
+          url_error_message += "Please enter Streamline storage connector url in following format jdbc:" + streamline_storage_type + ":thin:@streamline_db_hostname:port_number/" + streamline_database_name
+          validationItems.append({"config-name": 'streamline.storage.connector.connectURI', "item": self.getErrorItem(url_error_message)})
+
+    validationProblems = self.toConfigurationValidationProblems(validationItems, "streamline-common")
+    validationProblems.extend(parentValidationProblems)
+    return validationProblems
+
   def autopopulateSTREAMLINEJdbcUrl(self, configurations, services):
 
     putStreamlineCommonProperty = self.putProperty(configurations, "streamline-common", services)
