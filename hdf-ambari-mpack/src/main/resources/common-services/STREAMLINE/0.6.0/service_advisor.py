@@ -35,6 +35,34 @@ DB_TYPE_DEFAULT_PORT_MAP = {"mysql":"3306", "oracle":"1521", "postgresql":"5432"
 
 class STREAMLINE060ServiceAdvisor(service_advisor.STREAMLINE050ServiceAdvisor):
 
+  def getDBConnectionHostPort(self, db_type, db_host):
+    connection_string = ""
+    if db_type is None or db_type == "":
+      return connection_string
+    else:
+      colon_count = db_host.count(':')
+      if colon_count == 0:
+        if DB_TYPE_DEFAULT_PORT_MAP.has_key(db_type):
+          connection_string = db_host + ":" + DB_TYPE_DEFAULT_PORT_MAP[db_type]
+        else:
+          connection_string = db_host
+      elif colon_count == 1:
+        connection_string = db_host
+      elif colon_count == 2:
+        connection_string = db_host
+
+    return connection_string
+
+  def getOracleDBConnectionHostPort(self, db_type, db_host, db_name):
+    connection_string = self.getDBConnectionHostPort(db_type, db_host)
+    colon_count = db_host.count(':')
+    if colon_count == 1 and '/' in db_host:
+      connection_string = "//" + connection_string
+    elif colon_count == 0 or colon_count == 1:
+      connection_string = "//" + connection_string + "/" + db_name if db_name else "//" + connection_string
+
+    return connection_string
+
   def validateSTREAMLINEConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
 
     parentValidationProblems = super(STREAMLINE060ServiceAdvisor, self).validateSTREAMLINEConfigurations(properties, recommendedDefaults, configurations, services, hosts)
@@ -78,20 +106,16 @@ class STREAMLINE060ServiceAdvisor(service_advisor.STREAMLINE050ServiceAdvisor):
   def autopopulateSTREAMLINEJdbcUrl(self, configurations, services):
 
     putStreamlineCommonProperty = self.putProperty(configurations, "streamline-common", services)
+    putStreamlineEnvProperty = self.putProperty(configurations, "streamline-env", services)
 
     streamline_storage_database = services['configurations']['streamline-common']['properties']['database_name']
     streamline_storage_type = str(services['configurations']['streamline-common']['properties']['streamline.storage.type']).lower()
-    streamline_storage_connector_connectURI = services['configurations']['streamline-common']['properties']['streamline.storage.connector.connectURI']
-
-    if "oracle" in streamline_storage_connector_connectURI:
-      streamline_db_hostname = streamline_storage_connector_connectURI.split(":")[3].strip("@")
-    else:
-      streamline_db_hostname = streamline_storage_connector_connectURI.split(":")[2].strip("/")
+    streamline_db_hostname = services['configurations']['streamline-common']['properties']['streamline.storage.db.hostname']
 
     streamline_db_url_dict = {
-      'mysql': {'streamline.storage.connector.connectURI': 'jdbc:mysql://' + streamline_db_hostname + ':' + DB_TYPE_DEFAULT_PORT_MAP[streamline_storage_type] + '/' + streamline_storage_database},
-      'oracle': {'streamline.storage.connector.connectURI': 'jdbc:oracle:thin:@' + streamline_db_hostname + ':' + DB_TYPE_DEFAULT_PORT_MAP[streamline_storage_type] + '/' + streamline_storage_database},
-      'postgresql': {'streamline.storage.connector.connectURI': 'jdbc:postgresql://' + streamline_db_hostname + ':' + DB_TYPE_DEFAULT_PORT_MAP[streamline_storage_type] + '/' + streamline_storage_database},
+      'mysql': {'streamline.storage.connector.connectURI': 'jdbc:mysql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname) + '/' + streamline_storage_database},
+      'oracle': {'streamline.storage.connector.connectURI': 'jdbc:oracle:thin:@' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname) + '/' + streamline_storage_database},
+      'postgresql': {'streamline.storage.connector.connectURI': 'jdbc:postgresql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname) + '/' + streamline_storage_database},
       }
 
     streamlineDbProperties = streamline_db_url_dict.get(streamline_storage_type, streamline_db_url_dict['mysql'])
@@ -99,11 +123,15 @@ class STREAMLINE060ServiceAdvisor(service_advisor.STREAMLINE050ServiceAdvisor):
       putStreamlineCommonProperty(key, streamlineDbProperties.get(key))
 
     db_root_jdbc_url_dict = {
-      'mysql': {'db_root_jdbc_url': 'jdbc:mysql://' + streamline_db_hostname + ':' + DB_TYPE_DEFAULT_PORT_MAP[streamline_storage_type]},
-      'postgresql': {'db_root_jdbc_url': 'jdbc:postgresql://' + streamline_db_hostname + ':' + DB_TYPE_DEFAULT_PORT_MAP[streamline_storage_type]},
+      'mysql': {'db_root_jdbc_url': 'jdbc:mysql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname)},
+      'postgresql': {'db_root_jdbc_url': 'jdbc:postgresql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname)},
       }
 
     streamlinePrivelegeDbProperties = db_root_jdbc_url_dict.get(streamline_storage_type, db_root_jdbc_url_dict['mysql'])
+
+    if 'oracle' in streamline_storage_type:
+      putStreamlineEnvProperty("create_db_user", "false")
+
     for key in streamlinePrivelegeDbProperties:
       putStreamlineCommonProperty(key, streamlinePrivelegeDbProperties.get(key))
 

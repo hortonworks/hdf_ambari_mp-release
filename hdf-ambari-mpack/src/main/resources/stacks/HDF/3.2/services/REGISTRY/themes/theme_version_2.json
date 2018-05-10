@@ -144,6 +144,10 @@
                     "subsection-name": "subsection-registry-row1-col2"
                 },
                 {
+                    "config": "registry-common/registry.storage.db.hostname",
+                    "subsection-name": "subsection-registry-row1-col2"
+                },
+                {
                     "config": "registry-common/registry.storage.connector.connectURI",
                     "subsection-name": "subsection-registry-row1-col2"
                 },
@@ -290,6 +294,12 @@
                 "config": "registry-common/registry.storage.connector.password",
                 "widget": {
                     "type": "password"
+                }
+            },
+            {
+                "config": "registry-common/registry.storage.db.hostname",
+                "widget": {
+                    "type": "text-field"
                 }
             },
             {

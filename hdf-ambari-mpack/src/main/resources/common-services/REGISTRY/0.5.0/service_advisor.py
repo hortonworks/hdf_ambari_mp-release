@@ -35,6 +35,34 @@ DB_TYPE_DEFAULT_PORT_MAP = {"mysql":"3306", "oracle":"1521", "postgresql":"5432"
 
 class REGISTRY050ServiceAdvisor(service_advisor.REGISTRY030ServiceAdvisor):
 
+  def getDBConnectionHostPort(self, db_type, db_host):
+    connection_string = ""
+    if db_type is None or db_type == "":
+      return connection_string
+    else:
+      colon_count = db_host.count(':')
+      if colon_count == 0:
+        if DB_TYPE_DEFAULT_PORT_MAP.has_key(db_type):
+          connection_string = db_host + ":" + DB_TYPE_DEFAULT_PORT_MAP[db_type]
+        else:
+          connection_string = db_host
+      elif colon_count == 1:
+        connection_string = db_host
+      elif colon_count == 2:
+        connection_string = db_host
+
+    return connection_string
+
+  def getOracleDBConnectionHostPort(self, db_type, db_host, db_name):
+    connection_string = self.getDBConnectionHostPort(db_type, db_host)
+    colon_count = db_host.count(':')
+    if colon_count == 1 and '/' in db_host:
+      connection_string = "//" + connection_string
+    elif colon_count == 0 or colon_count == 1:
+      connection_string = "//" + connection_string + "/" + db_name if db_name else "//" + connection_string
+
+    return connection_string
+
   def validateREGISTRYConfigurations(self, properties, recommendedDefaults, configurations, services, hosts):
 
     parentValidationProblems = super(REGISTRY050ServiceAdvisor, self).validateREGISTRYConfigurations(properties, recommendedDefaults, configurations, services, hosts)
@@ -78,20 +106,16 @@ class REGISTRY050ServiceAdvisor(service_advisor.REGISTRY030ServiceAdvisor):
   def autopopulateREGISTRYJdbcUrl(self, configurations, services):
 
     putRegistryCommonProperty = self.putProperty(configurations, "registry-common", services)
+    putRegistryEnvProperty = self.putProperty(configurations, "registry-env", services)
 
     registry_storage_database = services['configurations']['registry-common']['properties']['database_name']
     registry_storage_type = str(services['configurations']['registry-common']['properties']['registry.storage.type']).lower()
-    registry_storage_connector_connectURI = services['configurations']['registry-common']['properties']['registry.storage.connector.connectURI']
-
-    if "oracle" in registry_storage_connector_connectURI:
-      registry_db_hostname = registry_storage_connector_connectURI.split(":")[3].strip("@")
-    else:
-      registry_db_hostname = registry_storage_connector_connectURI.split(":")[2].strip("/")
+    registry_db_hostname = services['configurations']['registry-common']['properties']['registry.storage.db.hostname']
 
     registry_db_url_dict = {
-      'mysql': {'registry.storage.connector.connectURI': 'jdbc:mysql://' + registry_db_hostname + ':' + DB_TYPE_DEFAULT_PORT_MAP[registry_storage_type] + '/' + registry_storage_database},
-      'oracle': {'registry.storage.connector.connectURI': 'jdbc:oracle:thin:@' + registry_db_hostname + ':' + DB_TYPE_DEFAULT_PORT_MAP[registry_storage_type] + '/' + registry_storage_database},
-      'postgresql': {'registry.storage.connector.connectURI': 'jdbc:postgresql://' + registry_db_hostname + ':' + DB_TYPE_DEFAULT_PORT_MAP[registry_storage_type] + '/' + registry_storage_database},
+      'mysql': {'registry.storage.connector.connectURI': 'jdbc:mysql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname)  + '/' + registry_storage_database},
+      'oracle': {'registry.storage.connector.connectURI': 'jdbc:oracle:thin:@' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname) + '/' + registry_storage_database},
+      'postgresql': {'registry.storage.connector.connectURI': 'jdbc:postgresql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname) + '/' + registry_storage_database},
     }
 
     registryDbProperties = registry_db_url_dict.get(registry_storage_type, registry_db_url_dict['mysql'])
@@ -99,13 +123,18 @@ class REGISTRY050ServiceAdvisor(service_advisor.REGISTRY030ServiceAdvisor):
       putRegistryCommonProperty(key, registryDbProperties.get(key))
 
     db_root_jdbc_url_dict = {
-      'mysql': {'db_root_jdbc_url': 'jdbc:mysql://' + registry_db_hostname + ':' + DB_TYPE_DEFAULT_PORT_MAP[registry_storage_type]},
-      'postgresql': {'db_root_jdbc_url': 'jdbc:postgresql://' + registry_db_hostname + ':' + DB_TYPE_DEFAULT_PORT_MAP[registry_storage_type]},
+      'mysql': {'db_root_jdbc_url': 'jdbc:mysql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname)},
+      'postgresql': {'db_root_jdbc_url': 'jdbc:postgresql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname)},
       }
 
-    registryPrivelegeDbProperties = db_root_jdbc_url_dict.get(registry_storage_type, db_root_jdbc_url_dict['mysql'])
-    for key in registryPrivelegeDbProperties:
-      putRegistryCommonProperty(key, registryPrivelegeDbProperties.get(key))
+    registryPrivilegeDbProperties = db_root_jdbc_url_dict.get(registry_storage_type, db_root_jdbc_url_dict['mysql'])
+
+    if 'oracle' in registry_storage_type:
+      putRegistryEnvProperty("create_db_user", "false")
+
+    for key in registryPrivilegeDbProperties:
+      putRegistryCommonProperty(key, registryPrivilegeDbProperties.get(key))
+
 
   def getServiceConfigurationRecommendations(self, configurations, clusterData, services, hosts):
     super(REGISTRY050ServiceAdvisor, self).getServiceConfigurationRecommendations(configurations, clusterData, services, hosts)

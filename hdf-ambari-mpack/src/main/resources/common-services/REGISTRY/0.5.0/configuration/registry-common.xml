@@ -21,25 +21,61 @@
 -->
 <configuration>
   <property>
+    <name>registry.storage.db.hostname</name>
+    <value>localhost:3306</value>
+    <display-name>Database Host with Port</display-name>
+    <description>Database Host or Server Name (FQDN) with port value </description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
     <name>db_root_user</name>
     <value>root</value>
     <display-name>Database Administrator (DBA) username</display-name>
     <description>Database Administrator (DBA) username. This user should have dba permission to create schema registry's database and user</description>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property require-input="true">
+    <name>registry.storage.connector.connectURI</name>
+    <value>jdbc:mysql://localhost:3306/registry</value>
+    <value-attributes>
+      <read_only>true</read_only>
+    </value-attributes>
+    <display-name>Registry storage connector url</display-name>
+    <description>Registry storage connector url</description>
+    <on-ambari-upgrade add="true"/>
+    <depends-on>
+      <property>
+        <type>registry-common</type>
+        <name>database_name</name>
+      </property>
+      <property>
+        <type>registry-common</type>
+        <name>registry.storage.type</name>
+      </property>
+      <property>
+        <type>registry-common</type>
+        <name>registry.storage.db.hostname</name>
+      </property>
+    </depends-on>
   </property>
   <property>
     <name>db_root_jdbc_url</name>
     <value>jdbc:mysql://localhost:3306</value>
+    <value-attributes>
+      <read_only>true</read_only>
+    </value-attributes>
     <display-name>JDBC connect string for Database Administrator (DBA) user</display-name>
     <description>JDBC connect string for Database Administrator (DBA) user</description>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
     <depends-on>
       <property>
         <type>registry-common</type>
         <name>registry.storage.type</name>
       </property>
-    </depends-on>
-    <depends-on>
+      <property>
+        <type>registry-common</type>
+        <name>registry.storage.db.hostname</name>
+      </property>
       <property>
         <type>registry-common</type>
         <name>registry.storage.connector.connectURI</name>
@@ -55,7 +91,6 @@
     <value-attributes>
       <type>password</type>
     </value-attributes>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
-
 </configuration>

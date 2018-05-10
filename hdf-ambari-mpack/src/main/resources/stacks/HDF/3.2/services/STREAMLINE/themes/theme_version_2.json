@@ -156,6 +156,10 @@
                     "subsection-name": "subsection-streamline-row1-col2"
                 },
                 {
+                    "config": "streamline-common/streamline.storage.db.hostname",
+                    "subsection-name": "subsection-streamline-row1-col2"
+                },
+                {
                     "config": "streamline-common/streamline.storage.connector.connectURI",
                     "subsection-name": "subsection-streamline-row1-col2"
                 },
@@ -320,6 +324,12 @@
                 "config": "streamline-common/streamline.storage.connector.password",
                 "widget": {
                     "type": "password"
+                }
+            },
+            {
+                "config": "streamline-common/streamline.storage.db.hostname",
+                "widget": {
+                    "type": "text-field"
                 }
             },
             {
