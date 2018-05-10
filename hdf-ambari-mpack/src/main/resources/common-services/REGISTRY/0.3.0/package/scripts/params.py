@@ -128,10 +128,11 @@ registry_storage_query_timeout = config['configurations']['registry-common']['re
 registry_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 # database admin properties.
-database_create_db_dbuser = str(config['configurations']['registry-env']['create_db_dbuser']).lower()
-database_admin_user_name = config['configurations']['registry-common']['db_root_user']
-database_admin_password = config['configurations']['registry-common']['db_root_password']
-database_admin_jdbc_url = config['configurations']['registry-common']['db_root_jdbc_url']
+if stack_registry_support_db_user_creation:
+  database_create_db_dbuser = str(config['configurations']['registry-env']['create_db_dbuser']).lower()
+  database_admin_user_name = config['configurations']['registry-common']['db_root_user']
+  database_admin_password = config['configurations']['registry-common']['db_root_password']
+  database_admin_jdbc_url = config['configurations']['registry-common']['db_root_jdbc_url']
 
 jar_storage_type = config['configurations']['registry-common']['jar.storage.type']
 jar_storage_hdfs_url = config['configurations']['registry-common']['jar.storage.hdfs.url']

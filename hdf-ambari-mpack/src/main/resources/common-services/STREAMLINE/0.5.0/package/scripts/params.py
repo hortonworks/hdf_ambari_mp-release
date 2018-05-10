@@ -140,6 +140,7 @@ jar_db_storage_enabled = False
 
 stack_support_sam_storage_core_in_registry = check_stack_feature('sam_storage_core_in_registry', version_for_stack_feature_checks)
 stack_support_sam_db_file_storage = check_stack_feature('sam_db_file_storage', version_for_stack_feature_checks)
+stack_streamline_support_db_user_creation = check_stack_feature('streamline_support_db_user_creation', version_for_stack_feature_checks)
 
 if stack_support_sam_storage_core_in_registry:
   jar_storage_class = "com.hortonworks.registries.common.util.LocalFileSystemStorage"
@@ -191,11 +192,11 @@ streamline_storage_query_timeout = config['configurations']['streamline-common']
 streamline_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 # database admin properties.
-database_create_db_dbuser = str(config['configurations']['streamline-env']['create_db_dbuser']).lower()
-database_admin_user_name = config['configurations']['streamline-common']['db_root_user']
-database_admin_password = config['configurations']['streamline-common']['db_root_password']
-database_admin_jdbc_url = config['configurations']['streamline-common']['db_root_jdbc_url']
-
+if stack_streamline_support_db_user_creation:
+  database_create_db_dbuser = str(config['configurations']['streamline-env']['create_db_dbuser']).lower()
+  database_admin_user_name = config['configurations']['streamline-common']['db_root_user']
+  database_admin_password = config['configurations']['streamline-common']['db_root_password']
+  database_admin_jdbc_url = config['configurations']['streamline-common']['db_root_jdbc_url']
 
 if streamline_storage_type == "postgresql":
   streamline_storage_java_class = "org.postgresql.ds.PGSimpleDataSource"
@@ -289,7 +290,7 @@ streamline_agent_dir = "/var/lib/ambari-agent/data/streamline"
 
 stack_support_sam_storage_core_in_registry = check_stack_feature('sam_storage_core_in_registry', version_for_stack_feature_checks)
 stack_sam_support_schema_migrate = check_stack_feature('sam_support_schema_migrate', version_for_stack_feature_checks)
-stack_streamline_support_db_user_creation = check_stack_feature('streamline_support_db_user_creation', version_for_stack_feature_checks)
+
 
 if stack_support_sam_storage_core_in_registry:
   storage_provider_class = "com.hortonworks.registries.storage.impl.jdbc.JdbcStorageManager"
