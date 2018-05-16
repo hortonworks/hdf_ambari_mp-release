@@ -160,6 +160,10 @@ registry_schema_cache_expiry_interval = config['configurations']['registry-commo
 
 # mysql jar
 jdk_location = config['hostLevelParams']['jdk_location']
+
+if jdk_location is not None and jdk_location.endswith('/'):
+  jdk_location = jdk_location[:-1]
+
 if 'mysql' == registry_storage_type:
   jdbc_driver_jar = default("/hostLevelParams/custom_mysql_jdbc_name", None)
   if jdbc_driver_jar == None:

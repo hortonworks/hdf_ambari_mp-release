@@ -148,7 +148,7 @@ def download_database_connector_if_needed():
           raise Fail('Unable to establish jdbc connection to your ' + params.streamline_storage_type + ' instance.')
 
   File(params.check_db_connection_jar,
-       content = DownloadSource(format("{jdk_location}{check_db_connection_jar_name}")))
+       content = DownloadSource(format("{jdk_location}/{check_db_connection_jar_name}")))
 
   target_jar_with_directory = params.connector_download_dir + os.path.sep + params.jdbc_driver_jar
   target_jar_bootstrap_dir = params.connector_bootstrap_download_dir + os.path.sep + params.jdbc_driver_jar

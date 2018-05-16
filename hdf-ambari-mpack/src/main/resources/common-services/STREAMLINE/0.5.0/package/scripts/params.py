@@ -235,6 +235,10 @@ streamline_catalog_root_url = 'http://{0}:{1}/api/v1/catalog'.format(hostname,st
 
 # mysql jar
 jdk_location = config['hostLevelParams']['jdk_location']
+
+if jdk_location is not None and jdk_location.endswith('/'):
+  jdk_location = jdk_location[:-1]
+
 if 'mysql' == streamline_storage_type:
   jdbc_driver_jar = default("/hostLevelParams/custom_mysql_jdbc_name", None)
   if jdbc_driver_jar == None:
