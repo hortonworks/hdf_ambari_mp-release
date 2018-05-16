@@ -24,6 +24,7 @@ from resource_management.core import sudo
 from resource_management.libraries.functions import conf_select
 from resource_management.libraries.functions import stack_select
 from resource_management.libraries.functions.stack_features import check_stack_feature
+from resource_management.libraries.resources.modify_properties_file import ModifyPropertiesFile
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.constants import Direction
 from resource_management.core.exceptions import Fail
@@ -160,9 +161,9 @@ class Master(Script):
 
         if os.path.isfile(params.nifi_registry_config_dir + '/bootstrap.conf'):
             bootstrap_current_conf = nifi_toolkit_util.convert_properties_to_dict(params.nifi_registry_config_dir + '/bootstrap.conf')
-            last_security_encrypt_configuration_key = bootstrap_current_conf['nifi.registry.bootstrap.sensitive.key'] if 'nifi.registry.bootstrap.sensitive.key' in bootstrap_current_conf else None
+            master_key = bootstrap_current_conf['nifi.registry.bootstrap.sensitive.key'] if 'nifi.registry.bootstrap.sensitive.key' in bootstrap_current_conf else None
         else:
-            last_security_encrypt_configuration_key = None
+            master_key = None
 
         if os.path.isfile(params.nifi_registry_config_dir + '/nifi-registry.properties'):
             nifi_registry_current_properties = nifi_toolkit_util.convert_properties_to_dict(params.nifi_registry_config_dir + '/nifi-registry.properties')
@@ -174,16 +175,13 @@ class Master(Script):
             nifi_registry_current_properties = params.nifi_registry_properties
             params.nifi_toolkit_tls_regenerate = True
 
-        #Obtain hash parameters from encrypt config tool
-        hash_params = nifi_toolkit_util.get_hash_parameters(params.jdk64_home, params.nifi_toolkit_java_options, params.toolkit_tmp_dir)
-
         #resolve and populate required security values and hashes
         params.nifi_registry_properties = nifi_toolkit_util.update_nifi_registry_ssl_properties(params.nifi_registry_properties, params.nifi_registry_truststore, params.nifi_registry_host, params.nifi_registry_config_dir,
                                                                                                 params.nifi_registry_truststoreType, params.nifi_registry_truststorePasswd, params.nifi_registry_keystore,
-                                                                                                params.nifi_registry_keystoreType, params.nifi_registry_keystorePasswd, params.nifi_registry_keyPasswd, hash_params)
+                                                                                                params.nifi_registry_keystoreType, params.nifi_registry_keystorePasswd, params.nifi_registry_keyPasswd)
 
         #determine whether new keystore/truststore should be regenerated
-        run_tls = (params.nifi_ca_host and params.nifi_registry_ssl_enabled) and (params.nifi_toolkit_tls_regenerate or nifi_toolkit_util.generate_keystore_truststore(nifi_registry_current_properties, params.nifi_registry_properties))
+        run_tls = (params.nifi_ca_host and params.nifi_registry_ssl_enabled) and (params.nifi_toolkit_tls_regenerate or nifi_toolkit_util.generate_keystore_truststore(nifi_registry_current_properties, params.nifi_registry_properties, master_key))
 
         if run_tls:
             nifi_toolkit_util.move_keystore_truststore(nifi_registry_current_properties)
@@ -192,6 +190,29 @@ class Master(Script):
             params.nifi_registry_properties = nifi_toolkit_util.clean_toolkit_client_files(nifi_registry_current_properties, params.nifi_registry_properties)
         elif params.nifi_registry_ssl_enabled and not run_tls and os.path.isfile(params.nifi_registry_config_dir + '/nifi-registry.properties'):
             params.nifi_registry_properties = nifi_toolkit_util.populate_ssl_properties(nifi_toolkit_util.convert_properties_to_dict(params.nifi_registry_config_dir + '/nifi-registry.properties'),params.nifi_registry_properties,params)
+
+        self.write_files(params)
+
+        nifi_toolkit_util.encrypt_sensitive_properties(params.nifi_registry_config_dir, params.jdk64_home,
+                                                       params.nifi_toolkit_java_options, params.nifi_registry_user,
+                                                       master_key,
+                                                       params.nifi_registry_security_encrypt_configuration_password,
+                                                       is_starting, params.toolkit_tmp_dir)
+
+        #Apply Hashed Ambari parameters by retrieving new master key and hashing required parameters for Ambari
+        bootstrap_current_conf = nifi_toolkit_util.convert_properties_to_dict(format("{params.nifi_registry_bootstrap_file}"))
+        master_key = bootstrap_current_conf['nifi.registry.bootstrap.sensitive.key'] if 'nifi.registry.bootstrap.sensitive.key' in bootstrap_current_conf else None
+        if master_key:
+            nifi_registry_hashed_params = nifi_toolkit_util.update_nifi_registry_ambari_hash_properties(params.nifi_registry_truststorePasswd, params.nifi_registry_keystorePasswd,
+                                                                                               params.nifi_registry_keyPasswd, master_key)
+            ModifyPropertiesFile(format("{params.nifi_registry_config_dir}/nifi-registry.properties"),
+                                 properties = nifi_registry_hashed_params,
+                                 owner = params.nifi_registry_user)
+        else:
+            raise Fail("Unable to persist ambari hashes due to no master key! Please validate this was written to bootstrap.conf file.")
+
+
+    def write_files(self, params):
 
         #write out nifi-registry.properties
         PropertiesFile(params.nifi_registry_config_dir + '/nifi-registry.properties',
@@ -253,13 +274,6 @@ class Master(Script):
              owner=params.nifi_registry_user,
              group=params.nifi_registry_group,
              mode=0755)
-
-        nifi_toolkit_util.encrypt_sensitive_properties(params.nifi_registry_config_dir, params.jdk64_home,
-                                                       params.nifi_toolkit_java_options, params.nifi_registry_user,
-                                                       last_security_encrypt_configuration_key,
-                                                       params.nifi_registry_security_encrypt_configuration_password,
-                                                       is_starting, params.toolkit_tmp_dir)
-
 
 
 if __name__ == "__main__":

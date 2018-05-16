@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-import json, nifi_constants, os, uuid, hashlib
+import json, nifi_constants, os, uuid, hashlib, hmac
 from resource_management import *
 from resource_management.core import sudo
 from resource_management.core.resources.system import File, Directory
@@ -94,7 +94,7 @@ def update_nifi_ca_properties(client_dict, nifi_properties):
   nifi_properties[nifi_constants.NIFI_SECURITY_TRUSTSTORE_PASSWD] = client_dict['trustStorePassword']
 
 def update_nifi_ssl_properties(nifi_properties, nifi_truststore, nifi_node_ssl_host, nifi_config_dir, nifi_truststoreType, nifi_truststorePasswd,
-                               nifi_keystore, nifi_keystoreType, nifi_keystorePasswd,nifi_keyPasswd, hash_params):
+                               nifi_keystore, nifi_keystoreType, nifi_keystorePasswd,nifi_keyPasswd):
   nifi_properties['nifi.security.truststore'] = nifi_truststore.replace('{nifi_node_ssl_host}', nifi_node_ssl_host).replace('{{nifi_config_dir}}', nifi_config_dir)
   nifi_properties['nifi.security.truststoreType'] = nifi_truststoreType
   nifi_properties['nifi.security.truststorePasswd'] = nifi_truststorePasswd
@@ -102,9 +102,13 @@ def update_nifi_ssl_properties(nifi_properties, nifi_truststore, nifi_node_ssl_h
   nifi_properties['nifi.security.keystoreType'] = nifi_keystoreType
   nifi_properties['nifi.security.keystorePasswd'] = nifi_keystorePasswd
   nifi_properties['nifi.security.keyPasswd'] = nifi_keyPasswd
-  nifi_properties['#nifi.security.ambari.hash.kspwd'] = hash(hash_params, nifi_properties['nifi.security.keystorePasswd'])
-  nifi_properties['#nifi.security.ambari.hash.kpwd']  = hash(hash_params, nifi_properties['nifi.security.keyPasswd'])
-  nifi_properties['#nifi.security.ambari.hash.tspwd'] = hash(hash_params, nifi_properties['nifi.security.truststorePasswd'])
+  return nifi_properties
+
+def update_nifi_ambari_hash_properties(nifi_truststorePasswd, nifi_keystorePasswd, nifi_keyPasswd, master_key):
+  nifi_properties = {}
+  nifi_properties['#nifi.security.ambari.hash.kspwd'] = hash(nifi_keystorePasswd, master_key)
+  nifi_properties['#nifi.security.ambari.hash.kpwd'] = hash(nifi_keyPasswd, master_key)
+  nifi_properties['#nifi.security.ambari.hash.tspwd'] = hash(nifi_truststorePasswd, master_key)
   return nifi_properties
 
 def store_exists(client_dict, key):
@@ -123,26 +127,33 @@ def different(one, two, key, usingJsonConfig=False):
     return False
   return one[key] != two[key]
 
-def hash(hash_params, value):
-  salt = hash_params['salt']
-  return salt + param_delim + hashlib.sha256(salt.encode() + value.encode()).hexdigest()
+def hash(value,master_key):
+  m = hashlib.sha512()
+  m.update(master_key)
+  derived_key = m.hexdigest()[0:32]
+  h = hmac.new(derived_key, value, hashlib.sha256)
+  return h.hexdigest()
 
-def match(hashed_password, value):
-  salt, password = hashed_password.split(param_delim)
-  return password == hashlib.sha256(salt.encode() + value.encode()).hexdigest()
+def match(a,b):
+  if len(a) != len(b):
+    return False
+  result = 0
+  for x, y in zip(a, b):
+    result |= int(x,base=16) ^ int(y,base=16)
+  return result == 0
 
-def generate_keystore_truststore(orig_client_dict, new_client_dict):
+def generate_keystore_truststore(orig_client_dict, new_client_dict, master_key):
   if not (store_exists(new_client_dict, 'nifi.security.keystore') and store_exists(new_client_dict, 'nifi.security.truststore')):
     return True
   elif orig_client_dict['nifi.security.keystoreType'] != new_client_dict['nifi.security.keystoreType']:
     return True
-  elif ('#nifi.security.ambari.hash.kspwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.security.ambari.hash.kspwd'], new_client_dict['nifi.security.keystorePasswd']):
+  elif ('#nifi.security.ambari.hash.kspwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.security.ambari.hash.kspwd'], hash(new_client_dict['nifi.security.keystorePasswd'], master_key)):
     return True
-  elif ('#nifi.security.ambari.hash.kpwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.security.ambari.hash.kpwd'], new_client_dict['nifi.security.keyPasswd']):
+  elif ('#nifi.security.ambari.hash.kpwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.security.ambari.hash.kpwd'], hash(new_client_dict['nifi.security.keyPasswd'], master_key)):
     return True
   elif orig_client_dict['nifi.security.truststoreType'] != new_client_dict['nifi.security.truststoreType']:
     return True
-  elif ('#nifi.security.ambari.hash.tspwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.security.ambari.hash.tspwd'], new_client_dict['nifi.security.truststorePasswd']):
+  elif ('#nifi.security.ambari.hash.tspwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.security.ambari.hash.tspwd'], hash(new_client_dict['nifi.security.truststorePasswd'],master_key)):
     return True
   elif orig_client_dict['nifi.security.keystore'] != new_client_dict['nifi.security.keystore']:
     return True
@@ -370,7 +381,7 @@ def get_hash_parameters(jdk64_home, java_options, toolkit_tmp_dir):
     return json.loads(out)
 
 
-def encrypt_sensitive_properties(nifi_config_dir, jdk64_home, java_options, nifi_user, last_master_key_password, master_key_password, nifi_flow_config_dir, nifi_sensitive_props_key, is_starting,toolkit_tmp_dir, support_encrypt_authorizers):
+def encrypt_sensitive_properties(nifi_config_dir, jdk64_home, java_options, nifi_user, last_master_key, master_key_password, nifi_flow_config_dir, nifi_sensitive_props_key, is_starting,toolkit_tmp_dir, support_encrypt_authorizers):
   Logger.info("Encrypting NiFi sensitive configuration properties")
   encrypt_config_script = get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir)
   encrypt_config_command = (encrypt_config_script,)
@@ -392,8 +403,8 @@ def encrypt_sensitive_properties(nifi_config_dir, jdk64_home, java_options, nifi
     if support_encrypt_authorizers and contains_providers(nifi_config_dir+'/authorizers.xml', "authorizer"):
       encrypt_config_command += ('-a', nifi_config_dir + '/authorizers.xml')
 
-    if last_master_key_password:
-      encrypt_config_command += ('-m', '-e', PasswordString(last_master_key_password))
+    if last_master_key:
+      encrypt_config_command += ('-m', '-e', PasswordString(last_master_key))
 
     encrypt_config_command += ('-p', PasswordString(master_key_password))
     Execute(encrypt_config_command, user=nifi_user, logoutput=False, environment=environment)

@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-import json, nifi_registry_constants, os, uuid, hashlib
+import json, nifi_registry_constants, os, uuid, hashlib, hmac
 from resource_management import *
 from resource_management.core import sudo
 from resource_management.core.resources.system import File, Directory
@@ -90,7 +90,7 @@ def update_nifi_ca_registry_properties(client_dict, nifi_registry_properties):
 
 def update_nifi_registry_ssl_properties(nifi_registry_properties, nifi_registry_truststore, nifi_registry_ssl_host, nifi_registry_config_dir,
                                         nifi_registry_truststoreType, nifi_registry_truststorePasswd, nifi_registry_keystore,
-                                        nifi_registry_keystoreType, nifi_registry_keystorePasswd, nifi_registry_keyPasswd, hash_params):
+                                        nifi_registry_keystoreType, nifi_registry_keystorePasswd, nifi_registry_keyPasswd):
 
     nifi_registry_properties['nifi.registry.security.truststore'] = nifi_registry_truststore.replace('{nifi_registry_ssl_host}', nifi_registry_ssl_host).replace('{{nifi_registry_config_dir}}', nifi_registry_config_dir)
     nifi_registry_properties['nifi.registry.security.truststoreType'] = nifi_registry_truststoreType
@@ -99,10 +99,13 @@ def update_nifi_registry_ssl_properties(nifi_registry_properties, nifi_registry_
     nifi_registry_properties['nifi.registry.security.keystoreType'] = nifi_registry_keystoreType
     nifi_registry_properties['nifi.registry.security.keystorePasswd'] = nifi_registry_keystorePasswd
     nifi_registry_properties['nifi.registry.security.keyPasswd'] = nifi_registry_keyPasswd
-    nifi_registry_properties['#nifi.registry.security.ambari.hash.kspwd'] = hash(hash_params, nifi_registry_properties['nifi.registry.security.keystorePasswd'])
-    nifi_registry_properties['#nifi.registry.security.ambari.hash.kpwd']  = hash(hash_params, nifi_registry_properties['nifi.registry.security.keyPasswd'])
-    nifi_registry_properties['#nifi.registry.security.ambari.hash.tspwd'] = hash(hash_params, nifi_registry_properties['nifi.registry.security.truststorePasswd'])
+    return nifi_registry_properties
 
+def update_nifi_registry_ambari_hash_properties(nifi_registry_truststorePasswd, nifi_registry_keystorePasswd, nifi_registry_keyPasswd, master_key):
+    nifi_registry_properties = {}
+    nifi_registry_properties['#nifi.registry.security.ambari.hash.kspwd'] = hash(nifi_registry_keystorePasswd, master_key)
+    nifi_registry_properties['#nifi.registry.security.ambari.hash.kpwd']  = hash(nifi_registry_keyPasswd, master_key)
+    nifi_registry_properties['#nifi.registry.security.ambari.hash.tspwd'] = hash(nifi_registry_truststorePasswd, master_key)
     return nifi_registry_properties
 
 def store_exists(client_dict, key):
@@ -135,26 +138,33 @@ def changed_keystore_truststore(orig_client_dict, new_client_dict, usingJsonConf
     elif different(orig_client_dict, new_client_dict, 'trustStorePassword',usingJsonConfig):
         return True
 
-def hash(hash_params, value):
-    salt = hash_params['salt']
-    return salt + param_delim + hashlib.sha256(salt.encode() + value.encode()).hexdigest()
+def hash(value, master_key):
+    m = hashlib.sha512()
+    m.update(master_key)
+    derived_key = m.hexdigest()[0:32]
+    h = hmac.new(derived_key, value, hashlib.sha256)
+    return h.hexdigest()
 
-def match(hashed_password, value):
-    salt, password = hashed_password.split(param_delim)
-    return password == hashlib.sha256(salt.encode() + value.encode()).hexdigest()
+def match(a, b):
+    if len(a) != len(b):
+        return False
+    result = 0
+    for x, y in zip(a, b):
+        result |= int(x,base=16) ^ int(y,base=16)
+    return result == 0
 
-def generate_keystore_truststore(orig_client_dict, new_client_dict):
+def generate_keystore_truststore(orig_client_dict, new_client_dict, master_key):
     if not (store_exists(new_client_dict, 'nifi.registry.security.keystore') and store_exists(new_client_dict, 'nifi.registry.security.truststore')):
         return True
     elif orig_client_dict['nifi.registry.security.keystoreType'] != new_client_dict['nifi.registry.security.keystoreType']:
         return True
-    elif ('#nifi.registry.security.ambari.hash.kspwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.registry.security.ambari.hash.kspwd'], new_client_dict['nifi.registry.security.keystorePasswd']):
+    elif ('#nifi.registry.security.ambari.hash.kspwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.registry.security.ambari.hash.kspwd'], hash(new_client_dict['nifi.registry.security.keystorePasswd'], master_key)):
         return True
-    elif ('#nifi.registry.security.ambari.hash.kpwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.registry.security.ambari.hash.kpwd'], new_client_dict['nifi.registry.security.keyPasswd']):
+    elif ('#nifi.registry.security.ambari.hash.kpwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.registry.security.ambari.hash.kpwd'], hash(new_client_dict['nifi.registry.security.keyPasswd'], master_key)):
         return True
     elif orig_client_dict['nifi.registry.security.truststoreType'] != new_client_dict['nifi.registry.security.truststoreType']:
         return True
-    elif ('#nifi.registry.security.ambari.hash.tspwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.registry.security.ambari.hash.tspwd'], new_client_dict['nifi.registry.security.truststorePasswd']):
+    elif ('#nifi.registry.security.ambari.hash.tspwd' not in orig_client_dict) or not match(orig_client_dict['#nifi.registry.security.ambari.hash.tspwd'], hash(new_client_dict['nifi.registry.security.truststorePasswd'], master_key)):
         return True
     elif orig_client_dict['nifi.registry.security.keystore'] != new_client_dict['nifi.registry.security.keystore']:
         return True
