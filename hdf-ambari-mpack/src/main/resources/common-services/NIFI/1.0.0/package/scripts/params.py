@@ -70,17 +70,33 @@ version = default("/commandParams/version", None)
 upgrade_direction = default("/commandParams/upgrade_direction", None)
 
 nifi_install_dir = os.path.join(stack_root, "current", "nifi")
- 
+# nifi registry properties
+if 'nifi-registry-ambari-config' in config['configurations']:
+  nifi_registry_port = config['configurations']['nifi-registry-ambari-config']['nifi.registry.port']
+  nifi_registry_ssl_port = config['configurations']['nifi-registry-ambari-config']['nifi.registry.port.ssl']
+  nifi_registry_ssl_enabled = config['configurations']['nifi-registry-ambari-ssl-config']['nifi.registry.ssl.isenabled']
+  nifi_registry_url_port = nifi_registry_ssl_port if nifi_registry_ssl_enabled else nifi_registry_port
+  nifi_registry_master_hosts = default("/clusterHostInfo/nifi_registry_master_hosts", [])
+  nifi_registry_host = None if len(nifi_registry_master_hosts) == 0 else nifi_registry_master_hosts[0]
+  nifi_registry_protocol = "https" if nifi_registry_ssl_enabled else "http"
+  nifi_registry_url = format("{nifi_registry_protocol}://{nifi_registry_host}:{nifi_registry_url_port}")
+else:
+  nifi_registry_url = None
+
+
 # params from nifi-ambari-config
 nifi_initial_mem = config['configurations']['nifi-ambari-config']['nifi.initial_mem']
 nifi_max_mem = config['configurations']['nifi-ambari-config']['nifi.max_mem']
 nifi_ambari_reporting_frequency = config['configurations']['nifi-ambari-config']['nifi.ambari_reporting_frequency']
 nifi_ambari_reporting_enabled = config['configurations']['nifi-ambari-config']['nifi.ambari_reporting_enabled']
 
+nifi_ssl_enabled = config['configurations']['nifi-ambari-ssl-config']['nifi.node.ssl.isenabled']
+nifi_host_name = config['agentLevelParams']['hostname']
 # note: nifi.node.port and nifi.node.ssl.port must be defined in same xml file for quicklinks to work
 nifi_node_port = config['configurations']['nifi-ambari-config']['nifi.node.port']
 nifi_node_ssl_port = config['configurations']['nifi-ambari-config']['nifi.node.ssl.port']
 nifi_node_protocol_port = config['configurations']['nifi-ambari-config']['nifi.node.protocol.port']
+nifi_url = format("https://{nifi_host_name}:{nifi_node_ssl_port}") if nifi_ssl_enabled else format("http://{nifi_host_name}:{nifi_node_port}")
 
 #zookeeper node path
 nifi_znode = config['configurations']['nifi-ambari-config']['nifi.nifi_znode']
@@ -140,7 +156,6 @@ if 'nifi_ca_hosts' in master_configs:
     nifi_ca_host = nifi_ca_hosts[0]
 
 # params from nifi-ambari-ssl-config
-nifi_ssl_enabled = config['configurations']['nifi-ambari-ssl-config']['nifi.node.ssl.isenabled']
 nifi_keystore = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystore']
 nifi_keystoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystoreType']
 nifi_keystorePasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystorePasswd']
@@ -302,7 +317,6 @@ has_namenode = not namenode_host == None
 
 nifi_authorizer = 'file-provider'
 
-nifi_host_name = config['agentLevelParams']['hostname']
 nifi_host_port = config['configurations']['nifi-ambari-config']['nifi.node.port']
 java_home = config['ambariLevelParams']['java_home']
 security_enabled = config['configurations']['cluster-env']['security_enabled']
@@ -315,6 +329,7 @@ stack_support_toolkit_update = check_stack_feature('toolkit_config_update', vers
 stack_support_admin_toolkit = check_stack_feature('admin_toolkit_support', version_for_stack_feature_checks)
 stack_support_nifi_jaas = check_stack_feature('nifi_jaas_conf_create', version_for_stack_feature_checks)
 stack_support_encrypt_authorizers = check_stack_feature('nifi_encrypted_authorizers_config', version_for_stack_feature_checks)
+stack_support_nifi_auto_client_registration = check_stack_feature('nifi_auto_client_registration', version_for_stack_feature_checks)
 
 if security_enabled:
   _hostname_lowercase = nifi_host_name.lower()

@@ -392,6 +392,11 @@
         "name": "streamline_support_db_user_creation",
         "description": "Supports Strealine's database and user creation on the fly",
         "min_version": "3.2.0.0"
+      },
+      {
+        "name": "nifi_auto_client_registration",
+        "description": "Supports NiFi's client registration in runtime",
+        "min_version": "3.2.0.0"
       }
     ]
   }

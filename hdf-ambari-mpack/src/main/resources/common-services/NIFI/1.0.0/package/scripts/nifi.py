@@ -29,6 +29,9 @@ from resource_management.libraries.functions.constants import Direction
 from resource_management.libraries.resources.modify_properties_file import ModifyPropertiesFile
 from resource_management.core.exceptions import Fail
 from setup_ranger_nifi import setup_ranger_nifi
+from resource_management.core.logger import Logger
+
+import nifi_cli
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -138,6 +141,10 @@ class Master(Script):
     #If nifi pid file not created yet, wait a bit
     if not os.path.isfile(status_params.nifi_pid_dir+'/nifi.pid'):
       Execute ('sleep 5')
+
+    if params.nifi_registry_url and params.stack_support_nifi_auto_client_registration:
+      Logger.info("Trying to register NIFI Registry. This can take up to several minutes. Please, wait...")
+      nifi_cli.create_or_update_reg_client(params.nifi_registry_host, params.nifi_registry_url)
 
   def status(self, env):
     import status_params

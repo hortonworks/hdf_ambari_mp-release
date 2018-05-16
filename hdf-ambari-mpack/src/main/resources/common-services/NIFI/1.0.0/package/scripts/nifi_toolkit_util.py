@@ -26,6 +26,8 @@ from resource_management.core.source import StaticFile
 from resource_management.core.logger import Logger
 from resource_management.libraries.functions import format
 from resource_management.libraries.functions.decorator import retry
+from resource_management.core import shell
+from resource_management.core.exceptions import Fail
 
 script_dir = os.path.dirname(__file__)
 files_dir = os.path.realpath(os.path.join(os.path.dirname(script_dir), 'files'))
@@ -408,3 +410,21 @@ def encrypt_sensitive_properties(nifi_config_dir, jdk64_home, java_options, nifi
 
     encrypt_config_command += ('-p', PasswordString(master_key_password))
     Execute(encrypt_config_command, user=nifi_user, logoutput=False, environment=environment)
+
+def get_client_opts():
+  import params
+  encrypt_config_script = get_toolkit_script('encrypt-config.sh', params.toolkit_tmp_dir)
+  environment = {'JAVA_HOME': params.jdk64_home, 'JAVA_OPTS': params.nifi_toolkit_java_options}
+  command_args = (encrypt_config_script, '-c', '-b', params.nifi_config_dir + '/bootstrap.conf', '-n', params.nifi_config_dir + '/nifi.properties')
+  code, out = shell.call(command_args, env=environment, logoutput=False, quiet=True, user=params.nifi_user)
+  if code == 0:
+    result = {}
+    for line in [l for l in out.splitlines() if l]:
+      try:
+        name, value = line.split("=")
+        result[name] = value
+      except ValueError:
+        pass
+    return result
+  else:
+    raise Fail("Unable to get parameters for client.")
