@@ -108,32 +108,33 @@ class STREAMLINE060ServiceAdvisor(service_advisor.STREAMLINE050ServiceAdvisor):
     putStreamlineCommonProperty = self.putProperty(configurations, "streamline-common", services)
     putStreamlineEnvProperty = self.putProperty(configurations, "streamline-env", services)
 
-    streamline_storage_database = services['configurations']['streamline-common']['properties']['database_name']
-    streamline_storage_type = str(services['configurations']['streamline-common']['properties']['streamline.storage.type']).lower()
-    streamline_db_hostname = services['configurations']['streamline-common']['properties']['streamline.storage.db.hostname']
+    if 'streamline-common' in services['configurations']:
+      streamline_storage_database = services['configurations']['streamline-common']['properties']['database_name']
+      streamline_storage_type = str(services['configurations']['streamline-common']['properties']['streamline.storage.type']).lower()
+      streamline_db_hostname = services['configurations']['streamline-common']['properties']['streamline.storage.db.hostname']
 
-    streamline_db_url_dict = {
-      'mysql': {'streamline.storage.connector.connectURI': 'jdbc:mysql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname) + '/' + streamline_storage_database},
-      'oracle': {'streamline.storage.connector.connectURI': 'jdbc:oracle:thin:@' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname) + '/' + streamline_storage_database},
-      'postgresql': {'streamline.storage.connector.connectURI': 'jdbc:postgresql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname) + '/' + streamline_storage_database},
-      }
+      streamline_db_url_dict = {
+        'mysql': {'streamline.storage.connector.connectURI': 'jdbc:mysql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname) + '/' + streamline_storage_database},
+        'oracle': {'streamline.storage.connector.connectURI': 'jdbc:oracle:thin:@' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname) + '/' + streamline_storage_database},
+        'postgresql': {'streamline.storage.connector.connectURI': 'jdbc:postgresql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname) + '/' + streamline_storage_database},
+        }
 
-    streamlineDbProperties = streamline_db_url_dict.get(streamline_storage_type, streamline_db_url_dict['mysql'])
-    for key in streamlineDbProperties:
-      putStreamlineCommonProperty(key, streamlineDbProperties.get(key))
+      streamlineDbProperties = streamline_db_url_dict.get(streamline_storage_type, streamline_db_url_dict['mysql'])
+      for key in streamlineDbProperties:
+        putStreamlineCommonProperty(key, streamlineDbProperties.get(key))
 
-    db_root_jdbc_url_dict = {
-      'mysql': {'db_root_jdbc_url': 'jdbc:mysql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname)},
-      'postgresql': {'db_root_jdbc_url': 'jdbc:postgresql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname)},
-      }
+      db_root_jdbc_url_dict = {
+        'mysql': {'db_root_jdbc_url': 'jdbc:mysql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname)},
+        'postgresql': {'db_root_jdbc_url': 'jdbc:postgresql://' + self.getDBConnectionHostPort(streamline_storage_type, streamline_db_hostname)},
+        }
 
-    streamlinePrivelegeDbProperties = db_root_jdbc_url_dict.get(streamline_storage_type, db_root_jdbc_url_dict['mysql'])
+      streamlinePrivelegeDbProperties = db_root_jdbc_url_dict.get(streamline_storage_type, db_root_jdbc_url_dict['mysql'])
 
-    if 'oracle' in streamline_storage_type:
-      putStreamlineEnvProperty("create_db_user", "false")
+      if 'oracle' in streamline_storage_type:
+        putStreamlineEnvProperty("create_db_user", "false")
 
-    for key in streamlinePrivelegeDbProperties:
-      putStreamlineCommonProperty(key, streamlinePrivelegeDbProperties.get(key))
+      for key in streamlinePrivelegeDbProperties:
+        putStreamlineCommonProperty(key, streamlinePrivelegeDbProperties.get(key))
 
   def getServiceConfigurationRecommendations(self, configurations, clusterData, services, hosts):
     super(STREAMLINE060ServiceAdvisor, self).getServiceConfigurationRecommendations(configurations, clusterData, services, hosts)

@@ -108,32 +108,33 @@ class REGISTRY050ServiceAdvisor(service_advisor.REGISTRY030ServiceAdvisor):
     putRegistryCommonProperty = self.putProperty(configurations, "registry-common", services)
     putRegistryEnvProperty = self.putProperty(configurations, "registry-env", services)
 
-    registry_storage_database = services['configurations']['registry-common']['properties']['database_name']
-    registry_storage_type = str(services['configurations']['registry-common']['properties']['registry.storage.type']).lower()
-    registry_db_hostname = services['configurations']['registry-common']['properties']['registry.storage.db.hostname']
+    if 'registry-common' in services['configurations']:
+      registry_storage_database = services['configurations']['registry-common']['properties']['database_name']
+      registry_storage_type = str(services['configurations']['registry-common']['properties']['registry.storage.type']).lower()
+      registry_db_hostname = services['configurations']['registry-common']['properties']['registry.storage.db.hostname']
 
-    registry_db_url_dict = {
-      'mysql': {'registry.storage.connector.connectURI': 'jdbc:mysql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname)  + '/' + registry_storage_database},
-      'oracle': {'registry.storage.connector.connectURI': 'jdbc:oracle:thin:@' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname) + '/' + registry_storage_database},
-      'postgresql': {'registry.storage.connector.connectURI': 'jdbc:postgresql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname) + '/' + registry_storage_database},
-    }
-
-    registryDbProperties = registry_db_url_dict.get(registry_storage_type, registry_db_url_dict['mysql'])
-    for key in registryDbProperties:
-      putRegistryCommonProperty(key, registryDbProperties.get(key))
-
-    db_root_jdbc_url_dict = {
-      'mysql': {'db_root_jdbc_url': 'jdbc:mysql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname)},
-      'postgresql': {'db_root_jdbc_url': 'jdbc:postgresql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname)},
+      registry_db_url_dict = {
+        'mysql': {'registry.storage.connector.connectURI': 'jdbc:mysql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname)  + '/' + registry_storage_database},
+        'oracle': {'registry.storage.connector.connectURI': 'jdbc:oracle:thin:@' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname) + '/' + registry_storage_database},
+        'postgresql': {'registry.storage.connector.connectURI': 'jdbc:postgresql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname) + '/' + registry_storage_database},
       }
 
-    registryPrivilegeDbProperties = db_root_jdbc_url_dict.get(registry_storage_type, db_root_jdbc_url_dict['mysql'])
+      registryDbProperties = registry_db_url_dict.get(registry_storage_type, registry_db_url_dict['mysql'])
+      for key in registryDbProperties:
+        putRegistryCommonProperty(key, registryDbProperties.get(key))
 
-    if 'oracle' in registry_storage_type:
-      putRegistryEnvProperty("create_db_user", "false")
+      db_root_jdbc_url_dict = {
+        'mysql': {'db_root_jdbc_url': 'jdbc:mysql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname)},
+        'postgresql': {'db_root_jdbc_url': 'jdbc:postgresql://' + self.getDBConnectionHostPort(registry_storage_type, registry_db_hostname)},
+        }
 
-    for key in registryPrivilegeDbProperties:
-      putRegistryCommonProperty(key, registryPrivilegeDbProperties.get(key))
+      registryPrivilegeDbProperties = db_root_jdbc_url_dict.get(registry_storage_type, db_root_jdbc_url_dict['mysql'])
+
+      if 'oracle' in registry_storage_type:
+        putRegistryEnvProperty("create_db_user", "false")
+
+      for key in registryPrivilegeDbProperties:
+        putRegistryCommonProperty(key, registryPrivilegeDbProperties.get(key))
 
 
   def getServiceConfigurationRecommendations(self, configurations, clusterData, services, hosts):
