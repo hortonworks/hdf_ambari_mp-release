@@ -23,6 +23,8 @@ from resource_management import *
 from resource_management.core import sudo
 from resource_management.libraries.functions import conf_select
 from resource_management.libraries.functions import stack_select
+from resource_management.libraries.functions.default import default
+from resource_management.libraries.functions.generate_logfeeder_input_config import generate_logfeeder_input_config
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.constants import Direction
@@ -30,6 +32,7 @@ from resource_management.libraries.resources.modify_properties_file import Modif
 from resource_management.core.exceptions import Fail
 from setup_ranger_nifi import setup_ranger_nifi
 from resource_management.core.logger import Logger
+from resource_management.core.source import Template
 
 import nifi_cli
 
@@ -47,7 +50,7 @@ class Master(Script):
     Logger.info("Executing Stack Upgrade pre-restart")
     import params
     env.set_params(params)
-    
+
     if params.version and check_stack_feature(StackFeature.ROLLING_UPGRADE, format_stack_version(params.version)):
       stack_select.select("nifi", params.version)
     if params.version and check_stack_feature(StackFeature.CONFIG_VERSIONING, params.version):
@@ -105,6 +108,8 @@ class Master(Script):
 
     #write configurations
     self.write_configurations(params, is_starting)
+
+    generate_logfeeder_input_config('nifi', Template("input.config-nifi.json.j2", extra_imports=[default]))
 
     # if this is not an additional node being added to an existing cluster write out flow.xml.gz to internal dir only if AMS installed (must be writable by Nifi)
     #  and only during first install. It is used to automate setup of Ambari metrics reporting task in Nifi

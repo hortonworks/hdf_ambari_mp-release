@@ -25,7 +25,9 @@ from resource_management.libraries.resources.properties_file import PropertiesFi
 from resource_management.libraries.resources.template_config import TemplateConfig
 from resource_management.core.resources.system import Directory, Execute, File, Link
 from resource_management.core.source import StaticFile, Template, InlineTemplate, DownloadSource
+from resource_management.libraries.functions.default import default
 from resource_management.libraries.functions import format
+from resource_management.libraries.functions.generate_logfeeder_input_config import generate_logfeeder_input_config
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions import Direction
@@ -64,13 +66,15 @@ def registry(env, upgrade_type=None):
          mode=0644,
          content=Template("registry.conf.j2")
     )
-    
+
     File(format("{conf_dir}/registry.yaml"),
          content=Template("registry.yaml.j2"),
          owner=params.registry_user,
          group=params.user_group,
          mode=0644
     )
+
+    generate_logfeeder_input_config('registry', Template("input.config-registry.json.j2", extra_imports=[default]))
 
     if not os.path.islink(params.registry_managed_log_dir):
       Link(params.registry_managed_log_dir,

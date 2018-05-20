@@ -24,8 +24,11 @@ from resource_management.core.exceptions import ComponentIsNotRunning
 from resource_management.core.resources.system import Directory, Execute
 from resource_management.core.sudo import kill, read_file, path_isfile, unlink
 from resource_management.libraries.functions.check_process_status import check_process_status
+from resource_management.libraries.functions.default import default
+from resource_management.libraries.functions.generate_logfeeder_input_config import generate_logfeeder_input_config
 from resource_management.libraries.script.script import Script
 from resource_management.core.resources import File
+from resource_management.core.source import Template
 from signal import SIGTERM, SIGKILL
 
 class CertificateAuthority(Script):
@@ -56,6 +59,8 @@ class CertificateAuthority(Script):
     nifi_toolkit_util.overlay(ca_dict, params.nifi_ca_config)
     nifi_toolkit_util.dump(ca_json, ca_dict, params.nifi_user, params.nifi_group)
 
+    generate_logfeeder_input_config('nifi', Template("input.config-nifi.json.j2", extra_imports=[default]))
+
     Directory([params.nifi_config_dir],
         owner=params.nifi_user,
         group=params.nifi_group,
@@ -68,7 +73,7 @@ class CertificateAuthority(Script):
     ca_json = os.path.join(params.nifi_config_dir, 'nifi-certificate-authority.json')
     nifi_toolkit_util.move_store(nifi_toolkit_util.load(ca_json), 'keyStore')
     unlink(ca_json)
-    
+
   def status(self, env):
     import status_params
     check_process_status(status_params.nifi_ca_pid_file)

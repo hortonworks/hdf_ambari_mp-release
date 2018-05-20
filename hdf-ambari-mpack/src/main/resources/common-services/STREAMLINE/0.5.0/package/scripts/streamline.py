@@ -25,7 +25,9 @@ from resource_management.libraries.resources.properties_file import PropertiesFi
 from resource_management.libraries.resources.template_config import TemplateConfig
 from resource_management.core.resources.system import Directory, Execute, File, Link
 from resource_management.core.source import StaticFile, Template, InlineTemplate, DownloadSource
+from resource_management.libraries.functions.default import default
 from resource_management.libraries.functions import format
+from resource_management.libraries.functions.generate_logfeeder_input_config import generate_logfeeder_input_config
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions import Direction
@@ -87,13 +89,15 @@ def streamline(env, upgrade_type=None):
          content=Template("streamline.conf.j2")
     )
 
-    
+
     File(format("{conf_dir}/streamline.yaml"),
          content=Template("streamline.yaml.j2"),
          owner=params.streamline_user,
          group=params.user_group,
          mode=0644
     )
+
+    generate_logfeeder_input_config('streamline', Template("input.config-streamline.json.j2", extra_imports=[default]))
 
     if params.security_enabled:
         if params.streamline_jaas_conf_template:
@@ -108,7 +112,7 @@ def streamline(env, upgrade_type=None):
       Link(params.streamline_managed_log_dir,
            to=params.streamline_log_dir)
 
-      
+
     download_database_connector_if_needed()
 
 
