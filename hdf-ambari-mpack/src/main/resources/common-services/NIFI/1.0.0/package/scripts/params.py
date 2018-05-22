@@ -347,6 +347,10 @@ policy_user = config['configurations']['ranger-nifi-plugin-properties']['policy_
 
 #For curl command in ranger plugin to get db connector
 jdk_location = config['hostLevelParams']['jdk_location']
+
+if jdk_location is not None and jdk_location.endswith('/'):
+  jdk_location = jdk_location[:-1]
+
 java_share_dir = '/usr/share/java'
 
 if has_ranger_admin:

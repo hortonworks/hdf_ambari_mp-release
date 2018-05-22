@@ -48,6 +48,9 @@ java_home = config['hostLevelParams']['java_home']
 java_version = expect("/hostLevelParams/java_version", int)
 jdk_location = config['hostLevelParams']['jdk_location']
 
+if jdk_location is not None and jdk_location.endswith('/'):
+  jdk_location = jdk_location[:-1]
+
 sudo = AMBARI_SUDO_BINARY
 
 ambari_server_hostname = config['clusterHostInfo']['ambari_server_host'][0]
