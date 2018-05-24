@@ -15,31 +15,26 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
+
 <metainfo>
     <schemaVersion>2.0</schemaVersion>
     <services>
         <service>
-            <name>REGISTRY</name>
-            <version>0.3.0</version>
-            <extends>common-services/REGISTRY/0.3.0</extends>
-            <themes>
-                <theme>
-                    <fileName>theme_version_2.json</fileName>
-                    <default>true</default>
-                </theme>
-            </themes>
+            <name>NIFI_REGISTRY</name>
+            <version>0.2.0</version>
+            <extends>common-services/NIFI_REGISTRY/0.2.0</extends>
             <components>
                 <component>
-                    <name>REGISTRY_SERVER</name>
+                    <name>NIFI_REGISTRY_MASTER</name>
                     <versionAdvertised>false</versionAdvertised>
-                </component>
-            </components>
+                </component></components>
+
             <osSpecifics>
                 <osSpecific>
                     <osFamily>redhat7,amazon2015,redhat6,suse11,suse12</osFamily>
                     <packages>
                         <package>
-                            <name>registry_3_2_*</name>
+                            <name>nifi-registry_3_2_*</name>
                         </package>
                     </packages>
                 </osSpecific>
@@ -47,7 +42,7 @@
                     <osFamily>debian7,ubuntu12,ubuntu14,ubuntu16</osFamily>
                     <packages>
                         <package>
-                            <name>registry-3_2_*</name>
+                            <name>nifi-registry-3_2_*</name>
                         </package>
                     </packages>
                 </osSpecific>

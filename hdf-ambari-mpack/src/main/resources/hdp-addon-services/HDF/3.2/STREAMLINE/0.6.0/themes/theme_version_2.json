@@ -1,6 +1,6 @@
 {
     "name": "default",
-    "description": "Default theme for Schema Registry service",
+    "description": "Default theme for STREAMLINE service",
     "configuration": {
         "layouts": [
             {
@@ -8,46 +8,46 @@
                 "tabs": [
                     {
                         "name": "default",
-                        "display-name": "Schema Registry Configuration",
+                        "display-name": "STREAMLINE CONFIG",
                         "layout": {
                             "tab-columns": "2",
-                            "tab-rows": "2",
+                            "tab-rows": "1",
                             "sections": [
                                 {
-                                    "name": "section-registry",
+                                    "name": "section-streamline",
                                     "display-name": "",
                                     "row-index": "0",
                                     "column-index": "0",
-                                    "row-span": "3",
+                                    "row-span": "2",
                                     "column-span": "2",
-                                    "section-columns": "2",
-                                    "section-rows": "3",
+                                    "section-columns": "1",
+                                    "section-rows": "1",
                                     "subsections": [
                                         {
-                                            "name": "subsection-registry-row1-col1",
-                                            "display-name": "Schema Registry Config",
+                                            "name": "subsection-streamline-row1-col1",
+                                            "display-name": "STREAMLINE CONFIG",
                                             "row-index": "0",
                                             "column-index": "0",
                                             "row-span": "1",
                                             "column-span": "1"
                                         },
                                         {
-                                            "name": "subsection-registry-row1-col2",
-                                            "display-name": "Schema Registry Config",
+                                            "name": "subsection-streamline-row1-col2",
+                                            "display-name": "STREAMLINE STORAGE",
                                             "row-index": "0",
                                             "column-index": "1",
                                             "row-span": "1",
                                             "column-span": "1"
                                         },
                                         {
-                                            "name": "subsection-registry-db-row2",
+                                            "name": "subsection-streamline-db-row2",
                                             "row-index": "1",
                                             "column-index": "0",
                                             "row-span": "1",
                                             "column-span": "2"
                                         },
                                         {
-                                            "name": "subsection-registry-db-root-user-col1",
+                                            "name": "subsection-streamline-db-root-user-col1",
                                             "row-index": "2",
                                             "column-index": "0",
                                             "row-span": "1",
@@ -55,9 +55,9 @@
                                             "depends-on": [
                                                 {
                                                     "configs":[
-                                                        "registry-env/create_db_dbuser"
+                                                        "streamline-env/create_db_dbuser"
                                                     ],
-                                                    "if": "${registry-env/create_db_dbuser}",
+                                                    "if": "${streamline-env/create_db_dbuser}",
                                                     "then": {
                                                         "property_value_attributes": {
                                                             "visible": true
@@ -72,7 +72,7 @@
                                             ]
                                         },
                                         {
-                                            "name": "subsection-registry-db-root-user-col2",
+                                            "name": "subsection-streamline-db-root-user-col2",
                                             "row-index": "2",
                                             "column-index": "1",
                                             "row-span": "1",
@@ -80,9 +80,9 @@
                                             "depends-on": [
                                                 {
                                                     "configs":[
-                                                        "registry-env/create_db_dbuser"
+                                                        "streamline-env/create_db_dbuser"
                                                     ],
-                                                    "if": "${registry-env/create_db_dbuser}",
+                                                    "if": "${streamline-env/create_db_dbuser}",
                                                     "then": {
                                                         "property_value_attributes": {
                                                             "visible": true
@@ -108,58 +108,70 @@
             "configuration-layout": "default",
             "configs": [
                 {
-                    "config": "registry-common/port",
-                    "subsection-name": "subsection-registry-row1-col1"
+                    "config": "streamline-common/port",
+                    "subsection-name": "subsection-streamline-row1-col1"
                 },
                 {
-                    "config": "registry-common/adminPort",
-                    "subsection-name": "subsection-registry-row1-col1"
+                    "config": "streamline-common/adminPort",
+                    "subsection-name": "subsection-streamline-row1-col1"
                 },
                 {
-                    "config": "registry-common/jar.storage.type",
-                    "subsection-name": "subsection-registry-row1-col1"
+                    "config": "streamline-common/jar.storage.type",
+                    "subsection-name": "subsection-streamline-row1-col1"
                 },
                 {
-                    "config": "registry-common/jar.storage.hdfs.url",
-                    "subsection-name": "subsection-registry-row1-col1"
+                    "config": "streamline-common/jar.storage.hdfs.url",
+                    "subsection-name": "subsection-streamline-row1-col1"
                 },
                 {
-                    "config": "registry-common/jar.storage",
-                    "subsection-name": "subsection-registry-row1-col1"
+                    "config": "streamline-common/jar.storage",
+                    "subsection-name": "subsection-streamline-row1-col1"
                 },
                 {
-                    "config": "registry-common/database_name",
-                    "subsection-name": "subsection-registry-row1-col2"
+                    "config": "streamline-common/topology.test.results.dir",
+                    "subsection-name": "subsection-streamline-row1-col1"
                 },
                 {
-                    "config": "registry-common/registry.storage.type",
-                    "subsection-name": "subsection-registry-row1-col2"
+                    "config": "streamline-common/streamline.dashboard.url",
+                    "subsection-name": "subsection-streamline-row1-col1"
                 },
                 {
-                    "config": "registry-common/registry.storage.connector.user",
-                    "subsection-name": "subsection-registry-row1-col2"
+                    "config": "streamline-common/registry.url",
+                    "subsection-name": "subsection-streamline-row1-col1"
                 },
                 {
-                    "config": "registry-common/registry.storage.connector.password",
-                    "subsection-name": "subsection-registry-row1-col2"
+                    "config": "streamline-common/database_name",
+                    "subsection-name": "subsection-streamline-row1-col2"
                 },
                 {
-                    "config": "registry-common/registry.storage.db.hostname",
-                    "subsection-name": "subsection-registry-row1-col2"
+                    "config": "streamline-common/streamline.storage.type",
+                    "subsection-name": "subsection-streamline-row1-col2"
                 },
                 {
-                    "config": "registry-common/registry.storage.connector.connectURI",
-                    "subsection-name": "subsection-registry-row1-col2"
+                    "config": "streamline-common/streamline.storage.connector.user",
+                    "subsection-name": "subsection-streamline-row1-col2"
                 },
                 {
-                    "config": "registry-env/create_db_dbuser",
-                    "subsection-name": "subsection-registry-db-row2",
+                    "config": "streamline-common/streamline.storage.connector.password",
+                    "subsection-name": "subsection-streamline-row1-col2"
+                },
+                {
+                    "config": "streamline-common/streamline.storage.db.hostname",
+                    "subsection-name": "subsection-streamline-row1-col2"
+                },
+                {
+                    "config": "streamline-common/streamline.storage.connector.connectURI",
+                    "subsection-name": "subsection-streamline-row1-col2"
+                },
+                {
+                    "config": "streamline-env/create_db_dbuser",
+                    "subsection-name": "subsection-streamline-db-row2",
                     "depends-on": [
                         {
                             "configs":[
-                                "registry-common/registry.storage.type"
+                                "streamline-common/streamline.storage.type"
                             ],
-                            "if": "${registry-common/registry.storage.type} === oracle",
+                            "if": "${streamline-common/streamline.storage.type} === oracle",
                             "then": {
                                 "property_value_attributes": {
                                     "visible": false
@@ -174,14 +186,14 @@
                     ]
                 },
                 {
-                    "config": "registry-common/db_root_user",
-                    "subsection-name": "subsection-registry-db-root-user-col1",
+                    "config": "streamline-common/db_root_user",
+                    "subsection-name": "subsection-streamline-db-root-user-col1",
                     "depends-on": [
                         {
                             "configs":[
-                                "registry-common/registry.storage.type"
+                                "streamline-common/streamline.storage.type"
                             ],
-                            "if": "${registry-common/registry.storage.type} === oracle",
+                            "if": "${streamline-common/streamline.storage.type} === oracle",
                             "then": {
                                 "property_value_attributes": {
                                     "visible": false
@@ -196,14 +208,14 @@
                     ]
                 },
                 {
-                    "config": "registry-common/db_root_jdbc_url",
-                    "subsection-name": "subsection-registry-db-root-user-col1",
+                    "config": "streamline-common/db_root_jdbc_url",
+                    "subsection-name": "subsection-streamline-db-root-user-col1",
                     "depends-on": [
                         {
                             "configs":[
-                                "registry-common/registry.storage.type"
+                                "streamline-common/streamline.storage.type"
                             ],
-                            "if": "${registry-common/registry.storage.type} === oracle",
+                            "if": "${streamline-common/streamline.storage.type} === oracle",
                             "then": {
                                 "property_value_attributes": {
                                     "visible": false
@@ -218,14 +230,14 @@
                     ]
                 },
                 {
-                    "config": "registry-common/db_root_password",
-                    "subsection-name": "subsection-registry-db-root-user-col2",
+                    "config": "streamline-common/db_root_password",
+                    "subsection-name": "subsection-streamline-db-root-user-col2",
                     "depends-on": [
                         {
                             "configs":[
-                                "registry-common/registry.storage.type"
+                                "streamline-common/streamline.storage.type"
                             ],
-                            "if": "${registry-common/registry.storage.type} === oracle",
+                            "if": "${streamline-common/streamline.storage.type} === oracle",
                             "then": {
                                 "property_value_attributes": {
                                     "visible": false
@@ -243,91 +255,109 @@
         },
         "widgets": [
             {
-                "config": "registry-common/port",
+                "config": "streamline-common/port",
                 "widget": {
                     "type": "text-field"
                 }
             },
             {
-                "config": "registry-common/adminPort",
+                "config": "streamline-common/adminPort",
                 "widget": {
                     "type": "text-field"
                 }
             },
             {
-                "config": "registry-common/jar.storage.type",
+                "config": "streamline-common/jar.storage.type",
                 "widget": {
                     "type": "combo"
                 }
             },
             {
-                "config": "registry-common/jar.storage.hdfs.url",
+                "config": "streamline-common/jar.storage.hdfs.url",
                 "widget": {
                     "type": "text-field"
                 }
             },
             {
-                "config": "registry-common/jar.storage",
+                "config": "streamline-common/jar.storage",
                 "widget": {
                     "type": "text-field"
                 }
             },
             {
-                "config": "registry-common/database_name",
+                "config": "streamline-common/topology.test.results.dir",
                 "widget": {
                     "type": "text-field"
                 }
             },
             {
-                "config": "registry-common/registry.storage.type",
+                "config": "streamline-common/streamline.dashboard.url",
+                "widget": {
+                    "type": "text-field"
+                }
+            },
+            {
+                "config": "streamline-common/registry.url",
+                "widget": {
+                    "type": "text-field"
+                }
+            },
+            {
+                "config": "streamline-common/database_name",
+                "widget": {
+                    "type": "text-field"
+                }
+            },
+            {
+                "config": "streamline-common/streamline.storage.type",
                 "widget": {
                     "type": "combo"
                 }
             },
             {
-                "config": "registry-common/registry.storage.connector.user",
+                "config": "streamline-common/streamline.storage.connector.user",
                 "widget": {
                     "type": "text-field"
                 }
             },
             {
-                "config": "registry-common/registry.storage.connector.password",
+                "config": "streamline-common/streamline.storage.connector.password",
                 "widget": {
                     "type": "password"
                 }
             },
             {
-                "config": "registry-common/registry.storage.db.hostname",
+                "config": "streamline-common/streamline.storage.db.hostname",
                 "widget": {
                     "type": "text-field"
                 }
             },
             {
-                "config": "registry-common/registry.storage.connector.connectURI",
+                "config": "streamline-common/streamline.storage.connector.connectURI",
                 "widget": {
                     "type": "text-field"
                 }
             },
             {
-                "config": "registry-env/create_db_dbuser",
+                "config": "streamline-env/create_db_dbuser",
                 "widget": {
                     "type": "toggle"
                 }
             },
             {
-                "config": "registry-common/db_root_user",
+                "config": "streamline-common/db_root_user",
                 "widget": {
                     "type": "text-field"
                 }
             },
             {
-                "config": "registry-common/db_root_jdbc_url",
+                "config": "streamline-common/db_root_jdbc_url",
                 "widget": {
                     "type": "text-field"
                 }
             },
             {
-                "config": "registry-common/db_root_password",
+                "config": "streamline-common/db_root_password",
                 "widget": {
                     "type": "password"
                 }

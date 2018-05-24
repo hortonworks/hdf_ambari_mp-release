@@ -115,22 +115,24 @@
       <outputDirectory>hdp-addon-services/HDF/3.1/NIFI_REGISTRY/0.1.0/repos</outputDirectory>
     </file>
 
+    <!-- Copy HDF-3.2 repooinfo to HDF-3.2 addon services -->
     <file>
       <source>src/main/resources/stacks/HDF/3.2/repos/repoinfo.xml</source>
-      <outputDirectory>hdp-addon-services/HDF/3.2/NIFI/1.5.0/repos</outputDirectory>
+      <outputDirectory>hdp-addon-services/HDF/3.2/NIFI/1.7.0/repos</outputDirectory>
     </file>
     <file>
       <source>src/main/resources/stacks/HDF/3.2/repos/repoinfo.xml</source>
-      <outputDirectory>hdp-addon-services/HDF/3.2/NIFI_REGISTRY/0.1.0/repos</outputDirectory>
+      <outputDirectory>hdp-addon-services/HDF/3.2/NIFI_REGISTRY/0.2.0/repos</outputDirectory>
     </file>
     <file>
       <source>src/main/resources/stacks/HDF/3.2/repos/repoinfo.xml</source>
-      <outputDirectory>hdp-addon-services/HDF/3.2/REGISTRY/0.3.0/repos</outputDirectory>
+      <outputDirectory>hdp-addon-services/HDF/3.2/REGISTRY/0.5.0/repos</outputDirectory>
     </file>
     <file>
       <source>src/main/resources/stacks/HDF/3.2/repos/repoinfo.xml</source>
       <outputDirectory>hdp-addon-services/HDF/3.2/STREAMLINE/0.6.0/repos</outputDirectory>
     </file>
+
   </files>    
   <dependencySets>
   </dependencySets>
