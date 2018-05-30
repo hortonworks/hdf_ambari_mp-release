@@ -78,7 +78,7 @@
 
       <osSpecifics>
         <osSpecific>
-          <osFamily>redhat7,amazon2015,redhat6,suse11,suse12</osFamily>
+          <osFamily>redhat7,amazon2015,redhat6,suse11,suse12,amazonlinux2</osFamily>
           <packages>
             <package>
               <name>streamline_${stack_version}</name>

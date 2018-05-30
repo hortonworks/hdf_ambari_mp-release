@@ -89,4 +89,16 @@
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
+    <os family="amazonlinux2">
+        <repo>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/amazonlinux2/3.x/updates/3.2.0.0</baseurl>
+            <repoid>HDF-3.2</repoid>
+            <reponame>HDF</reponame>
+        </repo>
+        <repo>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu16</baseurl>
+            <repoid>HDP-UTILS-1.1.0.21</repoid>
+            <reponame>HDP-UTILS</reponame>
+        </repo>
+    </os>
 </reposinfo>
