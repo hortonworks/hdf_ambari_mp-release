@@ -42,6 +42,32 @@
         &lt;class&gt;org.apache.nifi.registry.provider.flow.FileSystemFlowPersistenceProvider&lt;/class&gt;
         &lt;property name="Flow Storage Directory"&gt;{{nifi_registry_internal_dir}}/flow_storage&lt;/property&gt;
     &lt;/flowPersistenceProvider&gt;
+
+    &lt;!--
+    &lt;flowPersistenceProvider&gt;
+        &lt;class&gt;org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider&lt;/class&gt;
+        &lt;property name="Flow Storage Directory"&gt;./flow_storage&lt;/property&gt;
+        &lt;property name="Remote To Push"&gt;&lt;/property&gt;
+        &lt;property name="Remote Access User"&gt;&lt;/property&gt;
+        &lt;property name="Remote Access Password"&gt;&lt;/property&gt;
+    &lt;/flowPersistenceProvider&gt;
+    --&gt;
+
+    &lt;!--
+    &lt;eventHookProvider&gt;
+        &lt;class&gt;org.apache.nifi.registry.provider.hook.ScriptEventHookProvider&lt;/class&gt;
+        &lt;property name="Script Path"&gt;&lt;/property&gt;
+        &lt;property name="Working Directory"&gt;&lt;/property&gt;
+    &lt;/eventHookProvider&gt;
+    --&gt;
+
+    &lt;!-- This will log all events to a separate file specified by the EVENT_APPENDER in logback.xml --&gt;
+    &lt;!--
+    &lt;eventHookProvider&gt;
+        &lt;class&gt;org.apache.nifi.registry.provider.hook.LoggingEventHookProvider&lt;/class&gt;
+    &lt;/eventHookProvider&gt;
+    --&gt;
+
 &lt;/providers&gt;
 
         </value>
