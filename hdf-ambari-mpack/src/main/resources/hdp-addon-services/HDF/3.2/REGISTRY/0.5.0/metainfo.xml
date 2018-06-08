@@ -36,7 +36,7 @@
             </components>
             <osSpecifics>
                 <osSpecific>
-                    <osFamily>redhat7,amazon2015,redhat6,suse11,suse12</osFamily>
+                    <osFamily>redhat7,amazon2015,suse11,suse12</osFamily>
                     <packages>
                         <package>
                             <name>registry_3_2_*</name>
@@ -44,7 +44,7 @@
                     </packages>
                 </osSpecific>
                 <osSpecific>
-                    <osFamily>debian7,ubuntu12,ubuntu14,ubuntu16</osFamily>
+                    <osFamily>debian9,ubuntu14,ubuntu16</osFamily>
                     <packages>
                         <package>
                             <name>registry-3_2_*</name>
