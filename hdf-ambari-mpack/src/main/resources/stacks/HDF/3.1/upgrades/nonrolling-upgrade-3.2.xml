@@ -218,6 +218,11 @@
                 <task xsi:type="configure" id="hdf_3_2_0_0_update_nifi_ambari_configs"/>
             </execute-stage>
 
+            <!-- NIFI_REGISTRY -->
+            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Update NiFi Registry Properties">
+                <task xsi:type="configure" id="hdf_3_2_0_0_update_nifi_registry_properties_configs"/>
+            </execute-stage>
+
         </group>
 
         <!--

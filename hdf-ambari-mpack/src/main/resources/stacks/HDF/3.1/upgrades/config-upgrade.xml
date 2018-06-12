@@ -69,6 +69,20 @@
             </component>
         </service>
 
+        <service name="NIFI_REGISTRY">
+            <component name="NIFI_REGISTRY_MASTER">
+                <changes>
+
+                    <!-- Update these configs in nifi-registry-properties. -->
+                    <definition xsi:type="configure" id="hdf_3_2_0_0_update_nifi_registry_properties_configs">
+                        <type>nifi-registry-properties</type>
+                        <set key="nifi.registry.db.password" value="nifireg"/>
+                    </definition>
+
+                </changes>
+            </component>
+        </service>
+
         <service name="REGISTRY">
             <component name="REGISTRY_SERVER">
                 <changes>
