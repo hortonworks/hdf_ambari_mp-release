@@ -276,7 +276,7 @@
       <scope>COMPLETE</scope>
       <execute-stage title="Update remaining HDF stack to {{version}}">
         <task xsi:type="execute">
-          <script>scripts/ru_set_all.py</script>
+          <script>scripts/stack_select_set_all.py</script>
           <function>actionexecute</function>
         </task>
       </execute-stage>

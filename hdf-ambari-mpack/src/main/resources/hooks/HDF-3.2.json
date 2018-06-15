@@ -1,57 +1,104 @@
 {
-  "type" : "full-release",
-  "name" : "hdf-ambari-mpack",
+  "type": "full-release",
+  "name": "hdf-ambari-mpack",
   "version": "${project.version}",
   "hash": "${buildNumber}",
   "branch": "${scmBranch}",
-  "description" : "HDF Ambari Management Pack",
+  "description": "HDF Ambari Management Pack",
   "prerequisites": {
-    "min-ambari-version" : "${minAmbariVersion}",
-    "max-ambari-version" : "${maxAmbariVersion}"
+    "min-ambari-version": "${minAmbariVersion}",
+    "max-ambari-version": "${maxAmbariVersion}"
   },
   "artifacts": [
     {
-      "name" : "hdp-addon-services",
-      "type" : "stack-addon-service-definitions",
+      "name": "hdp-addon-services-hdp26",
+      "type": "stack-addon-service-definitions",
       "source_dir": "hdp-addon-services/HDF/3.2",
       "service_versions_map": [
         {
-          "service_name" : "NIFI",
-          "service_version" : "1.7.0",
-          "applicable_stacks" : [
+          "service_name": "NIFI",
+          "service_version": "1.7.0",
+          "applicable_stacks": [
             {
-              "stack_name" : "HDP",
-              "stack_version" : "3.0"
+              "stack_name": "HDP",
+              "stack_version": "2.6"
             }
           ]
         },
         {
-          "service_name" : "NIFI_REGISTRY",
-          "service_version" : "0.2.0",
-          "applicable_stacks" : [
+          "service_name": "NIFI_REGISTRY",
+          "service_version": "0.2.0",
+          "applicable_stacks": [
             {
-              "stack_name" : "HDP",
-              "stack_version" : "3.0"
+              "stack_name": "HDP",
+              "stack_version": "2.6"
             }
           ]
         },
         {
-          "service_name" : "REGISTRY",
-          "service_version" : "0.3.0",
-          "applicable_stacks" : [
+          "service_name": "REGISTRY",
+          "service_version": "0.5.2",
+          "applicable_stacks": [
             {
-              "stack_name" : "HDP",
-              "stack_version" : "3.0"
+              "stack_name": "HDP",
+              "stack_version": "2.6"
             }
           ]
         },
         {
-          "service_name" : "STREAMLINE",
-          "service_version" : "0.6.0",
-          "applicable_stacks" : [
+          "service_name": "STREAMLINE",
+          "service_version": "0.6.0",
+          "applicable_stacks": [
             {
-              "stack_name" : "HDP",
-              "stack_version" : "3.0"
+              "stack_name": "HDP",
+              "stack_version": "2.6"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "hdp-addon-services-hdp30",
+      "type": "stack-addon-service-definitions",
+      "source_dir": "hdp-addon-services/HDF/3.2",
+      "service_versions_map": [
+        {
+          "service_name": "NIFI",
+          "service_version": "1.7.0",
+          "applicable_stacks": [
+            {
+              "stack_name": "HDP",
+              "stack_version": "3.0"
+            }
+          ]
+        },
+        {
+          "service_name": "NIFI_REGISTRY",
+          "service_version": "0.2.0",
+          "applicable_stacks": [
+            {
+              "stack_name": "HDP",
+              "stack_version": "3.0"
+            }
+          ]
+        },
+        {
+          "service_name": "REGISTRY",
+          "service_version": "0.5.2",
+          "applicable_stacks": [
+            {
+              "stack_name": "HDP",
+              "stack_version": "3.0"
+            }
+          ]
+        },
+        {
+          "service_name": "STREAMLINE",
+          "service_version": "0.6.0",
+          "applicable_stacks": [
+            {
+              "stack_name": "HDP",
+              "stack_version": "3.0"
             }
           ]
         }
