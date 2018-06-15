@@ -138,7 +138,7 @@ class Master(Script):
     import params
     import status_params
 
-    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type=None)
+    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type)
     self.configure(env, is_starting = True)
     setup_ranger_nifi(upgrade_type=None)
 

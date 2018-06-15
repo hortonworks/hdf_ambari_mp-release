@@ -69,11 +69,10 @@ def get_toolkit_script(scriptName, scriptDir = files_dir):
 
 def copy_toolkit_scripts(toolkit_files_dir, toolkit_tmp_dir, user, group, upgrade_type):
   run_ca_tmp_script = os.path.join(toolkit_tmp_dir,'run_ca.sh')
+  new_run_ca_tmp_script = StaticFile("run_ca.sh")
 
-  if not sudo.path_isfile(run_ca_tmp_script) or not (upgrade_type is None):
-    File(format(run_ca_tmp_script),
-         content=StaticFile("run_ca.sh"),
-         mode=0755,owner=user, group=group)
+  if not sudo.path_isfile(run_ca_tmp_script) or sudo.read_file(run_ca_tmp_script) != new_run_ca_tmp_script:
+    File(format(run_ca_tmp_script), content=new_run_ca_tmp_script, mode=0755,owner=user, group=group)
 
   nifiToolkitDirFilesPath = None
   nifiToolkitDirTmpPath = None
