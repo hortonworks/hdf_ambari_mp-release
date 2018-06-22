@@ -25,24 +25,111 @@
 # $4 -> stdout log
 # $5 -> stderr log
 # $6 -> pid file
+COMMAND=$1
+JAVA_HOME=$2
+TLS_TOOLKIT_SH=$3
+CONFIG_JSON=$4
+STDOUT_FILE=$5
+STD_ERR_FILE=$6
+PID_FILE=$7
+CA_CHECK_URL=${8:-https://localhost:10443/v1/api}
 
-die() {
-  echo "$1"
-  exit 1
+wait_for_url() {
+    PROTOCOL_OPT=" "
+    HTTP_CODE=$(curl -s -k${PROTOCOL_OPT}-o /dev/null -w "%{http_code}" ${CA_CHECK_URL})
+    CURL_CODE=$?
+    TIMEOUT=60
+    while [ ${TIMEOUT} -ne 0 ] && [ ${CURL_CODE} -ne 0 ]; do
+        [ ${CURL_CODE} -eq 35 ] && PROTOCOL_OPT=" --tlsv1.2 "
+        sleep 1
+        (( TIMEOUT-- ))
+        HTTP_CODE=$(curl -s -k${PROTOCOL_OPT}-o /dev/null -w "%{http_code}" ${CA_CHECK_URL})
+        CURL_CODE=$?
+    done
+
+    if [ ${TIMEOUT} -eq 0 ] && [ ${CURL_CODE} -ne 0 ]; then
+        echo "NIFI-CA api was not accessible in 60 seconds, start failed"
+        return 1
+    else
+        echo "NIFI-CA api http-code '${HTTP_CODE}', start finished"
+        return 0
+    fi
 }
 
-read -r -d '' WAIT_FOR_LOG << 'EOF'
-  STDOUT_LOG="$0"
-  until [ -f "$STDOUT_LOG" ]; do
-    echo "Waiting for $STDOUT_LOG to exist"
-    sleep 1;
-  done
-EOF
+run_nifi_ca_process() {
+    JAVA_HOME="$JAVA_HOME" nohup "$TLS_TOOLKIT_SH" server -F -f "$CONFIG_JSON" >> "$STDOUT_FILE" 2>> "$STD_ERR_FILE" < /dev/null &
+    NEW_PID=$!
+    echo ${NEW_PID} > ${PID_FILE}
+    echo "Started NIFI-CA with pid '$NEW_PID'"
+}
 
-JAVA_HOME="$1" nohup "$2" server -F -f "$3" > "$4" 2> "$5" < /dev/null &
-echo "$!" > "$6"
-timeout 30 bash -c "$WAIT_FOR_LOG" "$4" || die "Timed out while waiting for $4"
+start_ca() {
+    if [ -f ${PID_FILE} ]; then
+        OLD_PID=`cat ${PID_FILE}`
+        if kill -0 ${OLD_PID} > /dev/null 2>&1; then
+            echo "NIFI-CA process already running with pid $(cat ${PID_FILE})"
+        else
+            echo "Stale NIFI-CA pid '$OLD_PID' exists"
+            run_nifi_ca_process
+        fi
+    else
+        run_nifi_ca_process
+    fi
+    wait_for_url
+    return $?
+}
 
-#Want to wait until Jetty starts
-#See http://superuser.com/questions/270529/monitoring-a-file-until-a-string-is-found#answer-900134
-( tail -f -n +1 "$4" & ) | timeout 180 grep -q "Server Started" || die "Timed out while waiting for CA server to start"
+stop_ca() {
+    if [ -f ${PID_FILE} ]; then
+        PID=`cat ${PID_FILE}`
+
+        kill -15 ${PID} > /dev/null 2>&1
+
+        kill -0 ${PID} > /dev/null 2>&1
+        KILL_CODE=$?
+        TIMEOUT=15
+
+        while [ ${TIMEOUT} -ne 0 ] && [ ${KILL_CODE} -eq 0 ]; do
+            sleep 1
+            (( TIMEOUT-- ))
+            kill -0 ${PID} > /dev/null 2>&1
+            KILL_CODE=$?
+        done
+
+        if [ ${TIMEOUT} -eq 0 ] && [ ${KILL_CODE} -eq 0 ]; then
+            echo "NIFI-CA refused to stop gracefully in 15 seconds, hard-killing"
+            kill -9 ${PID}
+            sleep 2
+            kill -0 ${PID}
+            KILL_CODE=$?
+            if [ ${KILL_CODE} -eq 0 ]; then
+                echo "Failed to hard-kill NIFI-CA with pid '$PID'"
+                return 1
+            else
+                echo "NIFI-CA with pid '$PID' was hard-killed"
+                return 0
+            fi
+        else
+            echo "NIFI-CA with pid '$PID' was gracefully stopped"
+            return 0
+        fi
+    else
+        echo "Pid file '$PID_FILE' does not exist, consider NIFI-CA is stopped"
+        return 0
+    fi
+}
+
+case ${COMMAND} in
+     start)
+          start_ca
+          exit $?
+          ;;
+     stop)
+          stop_ca
+          exit $?
+          ;;
+     *)
+          echo "Command must be [start | stop ]"
+          exit 1
+          ;;
+esac

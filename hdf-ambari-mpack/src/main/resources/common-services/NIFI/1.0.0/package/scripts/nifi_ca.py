@@ -96,23 +96,50 @@ class CertificateAuthority(Script):
 
     File(ca_server_script, mode=0755)
     File(run_ca_script, mode=0755)
-    Execute((run_ca_script, params.jdk64_home, ca_server_script, params.nifi_config_dir + '/nifi-certificate-authority.json', params.nifi_ca_log_file_stdout, params.nifi_ca_log_file_stderr, status_params.nifi_ca_pid_file), user=params.nifi_user)
+    Execute(
+      (
+        run_ca_script,
+        "start",
+        params.jdk64_home,
+        ca_server_script,
+        params.nifi_config_dir + '/nifi-certificate-authority.json',
+        params.nifi_ca_log_file_stdout,
+        params.nifi_ca_log_file_stderr,
+        status_params.nifi_ca_pid_file,
+        params.toolkit_ca_check_url
+      ),
+      user=params.nifi_user,
+      logoutput=True
+    )
     if not os.path.isfile(status_params.nifi_ca_pid_file):
       raise Exception('Expected pid file to exist')
 
   def stop(self, env, upgrade_type=None):
+    import params
     import status_params
 
+    run_ca_script = os.path.join(params.toolkit_tmp_dir, 'run_ca.sh')
+    ca_server_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',params.toolkit_tmp_dir)
+    File(ca_server_script, mode=0755)
+    File(run_ca_script, mode=0755)
+
     if path_isfile(status_params.nifi_ca_pid_file):
+      Execute(
+        (
+          run_ca_script,
+          "stop",
+          params.jdk64_home,
+          ca_server_script,
+          params.nifi_config_dir + '/nifi-certificate-authority.json',
+          params.nifi_ca_log_file_stdout,
+          params.nifi_ca_log_file_stderr,
+          status_params.nifi_ca_pid_file,
+          params.toolkit_ca_check_url
+        ),
+        user=params.nifi_user,
+        logoutput=True
+      )
       try:
-        self.status(env)
-        pid = int(read_file(status_params.nifi_ca_pid_file))
-        for i in range(25):
-          kill(pid, SIGTERM)
-          time.sleep(1)
-          self.status(env)
-        kill(pid, SIGKILL)
-        time.sleep(5)
         self.status(env)
       except ComponentIsNotRunning:
         unlink(status_params.nifi_ca_pid_file)

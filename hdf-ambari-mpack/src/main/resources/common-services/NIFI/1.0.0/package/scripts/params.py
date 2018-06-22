@@ -155,6 +155,7 @@ if 'nifi_ca_hosts' in master_configs:
   if len(nifi_ca_hosts) > 0:
     nifi_ca_host = nifi_ca_hosts[0]
 
+
 # params from nifi-ambari-ssl-config
 nifi_keystore = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystore']
 nifi_keystoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.keystoreType']
@@ -204,6 +205,9 @@ nifi_ca_config = {
   "caHostname" : nifi_ca_host,
   "port" : int(nifi_ca_parent_config['nifi.toolkit.tls.port'])
 }
+
+toolkit_ca_api_port = int(nifi_ca_parent_config['nifi.toolkit.tls.port'])
+toolkit_ca_check_url = format("https://{nifi_ca_host}:{toolkit_ca_api_port}/v1/api")
 
 if nifi_ca_host:
   nifi_ca_config['dn'] = nifi_toolkit_dn_prefix + nifi_ca_host + nifi_toolkit_dn_suffix
