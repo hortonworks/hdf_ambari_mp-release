@@ -151,7 +151,11 @@ def list_reg_clients():
     for registry in result_json["registries"]:
       if "component" in registry:
         component = registry["component"]
-        result.append((component["description"], component["name"], component["id"], component["uri"]))
+        if "description" in component:
+          description = component["description"]
+        else:
+          description = ''
+        result.append((description, component["name"], component["id"], component["uri"]))
 
   Logger.info("Retrieved:" + str(len(result)) + " clients")
   return result
