@@ -149,7 +149,10 @@ class Master(Script):
 
     if params.nifi_registry_url and params.stack_support_nifi_auto_client_registration:
       Logger.info("Trying to register NIFI Registry. This can take up to several minutes. Please, wait...")
-      nifi_cli.create_or_update_reg_client(params.nifi_registry_host, params.nifi_registry_url)
+      try:
+        nifi_cli.create_or_update_reg_client(params.nifi_registry_host, params.nifi_registry_url)
+      except:
+        Logger.warning("Unable to create or update registry client. Please review NiFi to setup the registry manually if necessary.")
 
   def status(self, env):
     import status_params
