@@ -96,7 +96,7 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu16</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/amazonlinux2</baseurl>
             <repoid>HDP-UTILS-1.1.0.21</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
