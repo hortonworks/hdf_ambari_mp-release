@@ -19,6 +19,7 @@ limitations under the License.
 import os
 import imp
 import traceback
+from ambari_server.serverConfiguration import get_ambari_properties, get_ambari_version
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SERVICE_DIR = os.path.join(SCRIPT_DIR, '../0.5.0/')
@@ -137,5 +138,21 @@ class STREAMLINE060ServiceAdvisor(service_advisor.STREAMLINE050ServiceAdvisor):
         putStreamlineCommonProperty(key, streamlinePrivelegeDbProperties.get(key))
 
   def getServiceConfigurationRecommendations(self, configurations, clusterData, services, hosts):
-    super(STREAMLINE060ServiceAdvisor, self).getServiceConfigurationRecommendations(configurations, clusterData, services, hosts)
+
+    Logger.info("Class: %s, Method: %s. Get Service Configuration Recommendations." % (self.__class__.__name__, inspect.stack()[0][3]))
+    servicesList = [service["StackServices"]["service_name"] for service in services["services"]]
+
+    if 'AMBARI_METRICS' in servicesList:
+      putAmsSiteProperty = self.putProperty(configurations, "ams-site")
+      putAmsSiteProperty('timeline.metrics.downsampler.event.metric.patterns', 'topology\.%')
+
+    properties = get_ambari_properties()
+    ambari_version = get_ambari_version(properties)
+    if not (ambari_version) or not (ambari_version.startswith('2.5')):
+      putStreamlineLogSearchConfAttribute = self.putPropertyAttribute(configurations, "streamline-logsearch-conf")
+      putStreamlineLogSearchConfAttribute('service_name', 'visible', 'false')
+      putStreamlineLogSearchConfAttribute('component_mappings', 'visible', 'false')
+      putStreamlineLogSearchConfAttribute('content', 'visible', 'false')
+
     self.autopopulateSTREAMLINEJdbcUrl(configurations, services)
+    pass
