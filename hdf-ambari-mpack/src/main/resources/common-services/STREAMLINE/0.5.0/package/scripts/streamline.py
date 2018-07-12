@@ -198,7 +198,7 @@ def wait_until_server_starts():
 
         if params.security_enabled:
           get_app_info_cmd = "curl --negotiate -u : -ks --location-trusted --connect-timeout " + curl_connection_timeout + " " + streamline_api
-          return_code, stdout, _ = get_user_call_output(get_app_info_cmd, user='root', path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',)
+          return_code, stdout, _ = get_user_call_output(get_app_info_cmd, user=params.streamline_user, path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',)
           try:
             json_response = json.loads(stdout)
             success = True
