@@ -24,8 +24,8 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ppc64le</baseurl>
-            <repoid>HDP-UTILS-1.1.0.21</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/ppc64le</baseurl>
+            <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
@@ -36,8 +36,8 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/centos7</baseurl>
-            <repoid>HDP-UTILS-1.1.0.21</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/centos7</baseurl>
+            <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
@@ -48,8 +48,8 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/sles12</baseurl>
-            <repoid>HDP-UTILS-1.1.0.21</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/sles12</baseurl>
+            <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
@@ -60,8 +60,8 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/debian9</baseurl>
-            <repoid>HDP-UTILS-1.1.0.21</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/debian9</baseurl>
+            <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
@@ -72,8 +72,8 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu14</baseurl>
-            <repoid>HDP-UTILS-1.1.0.21</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/ubuntu14</baseurl>
+            <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
@@ -84,8 +84,8 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/ubuntu16</baseurl>
-            <repoid>HDP-UTILS-1.1.0.21</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/ubuntu16</baseurl>
+            <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
@@ -96,8 +96,8 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.21/repos/amazonlinux2</baseurl>
-            <repoid>HDP-UTILS-1.1.0.21</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/amazonlinux2</baseurl>
+            <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
