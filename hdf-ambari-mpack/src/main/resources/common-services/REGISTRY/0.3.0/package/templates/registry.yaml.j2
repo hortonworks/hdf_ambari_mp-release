@@ -99,11 +99,39 @@ server:
   rootPath: '/api/*'
 {% endif %}
   applicationConnectors:
+{% if registry_ssl_enabled == false %}
     - type: http
       port: {{registry_port}}
+{% else %}
+    - type: https
+      port: {{registry_ssl_port}}
+      keyStorePath: {{registry_keyStorePath}}
+      keyStorePassword: {{registry_keyStorePassword}}
+      keyStoreType: {{registry_keyStoreType}}
+      trustStorePath: {{registry_trustStorePath}}
+      trustStorePassword: {{registry_trustStorePassword}}
+      trustStoreType: {{registry_trustStoreType}}
+      validateCerts: {{registry_validateCerts}}
+      validatePeers: {{registry_validatePeers}}
+{% endif %}
+
   adminConnectors:
+{% if registry_ssl_enabled == false %}
     - type: http
       port: {{registry_admin_port}}
+{% else %}
+    - type: https
+      port: {{registry_ssl_adminPort}}
+      keyStorePath: {{registry_keyStorePath}}
+      keyStorePassword: {{registry_keyStorePassword}}
+      keyStoreType: {{registry_keyStoreType}}
+      trustStorePath: {{registry_trustStorePath}}
+      trustStorePassword: {{registry_trustStorePassword}}
+      trustStoreType: {{registry_trustStoreType}}
+      validateCerts: {{registry_validateCerts}}
+      validatePeers: {{registry_validatePeers}}
+{% endif %}
+
 
 logging:
   {{registry_log_template}}
