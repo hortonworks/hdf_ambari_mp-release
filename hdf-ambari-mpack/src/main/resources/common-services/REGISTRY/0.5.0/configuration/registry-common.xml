@@ -99,14 +99,14 @@
     <value>7790</value>
     <display-name>Schema Registry port (SSL)</display-name>
     <description>HTTPS port Schema Registry node runs on when SSL is enabled</description>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
   <property>
     <name>registry.ssl.adminPort</name>
     <value>7791</value>
     <display-name>Schema Registry adminport (SSL)</display-name>
     <description>HTTPS adminport Schema Registry node runs on when SSL is enabled</description>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
 
 </configuration>
