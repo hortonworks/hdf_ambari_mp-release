@@ -99,7 +99,7 @@ server:
   rootPath: '/api/*'
 {% endif %}
   applicationConnectors:
-{% if registry_ssl_enabled == false %}
+{% if not registry_ssl_enabled %}
     - type: http
       port: {{registry_port}}
 {% else %}
@@ -116,7 +116,7 @@ server:
 {% endif %}
 
   adminConnectors:
-{% if registry_ssl_enabled == false %}
+{% if not registry_ssl_enabled %}
     - type: http
       port: {{registry_admin_port}}
 {% else %}

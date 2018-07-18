@@ -31,7 +31,7 @@
     <value-attributes>
       <type>boolean</type>
     </value-attributes>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
 
   <!-- ssl properties -->
@@ -43,7 +43,7 @@
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
   <property>
     <name>registry.keyStorePassword</name>
@@ -55,7 +55,7 @@
       <empty-value-valid>true</empty-value-valid>
       <type>password</type>
     </value-attributes>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
   <property>
     <name>registry.keyStoreType</name>
@@ -65,7 +65,7 @@
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
   <property>
     <name>registry.trustStorePath</name>
@@ -75,7 +75,7 @@
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
   <property>
     <name>registry.trustStorePassword</name>
@@ -87,7 +87,7 @@
       <empty-value-valid>true</empty-value-valid>
       <type>password</type>
     </value-attributes>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
   <property>
     <name>registry.trustStoreType</name>
@@ -97,21 +97,21 @@
     <value-attributes>
       <empty-value-valid>true</empty-value-valid>
     </value-attributes>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
   <property>
     <name>registry.validateCerts</name>
     <value>false</value>
     <display-name>validateCerts</display-name>
     <description>Whether or not to validate TLS certificates before starting. If enabled, it will refuse to start with expired or otherwise invalid certificates.</description>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
   <property>
     <name>registry.validatePeers</name>
     <value>false</value>
     <display-name>validatePeers</display-name>
     <description>Whether or not to validate TLS peer certificates.</description>
-    <on-ambari-upgrade add="false"/>
+    <on-ambari-upgrade add="true"/>
   </property>
 
 </configuration>
