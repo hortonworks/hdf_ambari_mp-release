@@ -19,12 +19,12 @@
     <latest>http://public-repo-1.hortonworks.com/HDF/hdf_urlinfo.json</latest>
     <os family="redhat-ppc7">
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/centos7/3.x/updates/3.2.0.0</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/centos7-ppc/3.x/updates/3.2.0.0</baseurl>
             <repoid>HDF-3.2</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/ppc64le</baseurl>
+            <baseurl>http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/centos7-ppc</baseurl>
             <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
