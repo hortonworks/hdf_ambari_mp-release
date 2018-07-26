@@ -118,6 +118,7 @@ class CertificateAuthority(Script):
     import params
     import status_params
 
+    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type)
     run_ca_script = os.path.join(params.toolkit_tmp_dir, 'run_ca.sh')
     ca_server_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',params.toolkit_tmp_dir)
     File(ca_server_script, mode=0755)
