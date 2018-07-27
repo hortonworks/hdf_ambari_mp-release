@@ -158,6 +158,7 @@
           <label>ORACLE</label>
         </entry>
       </entries>
+      <selection-cardinality>1</selection-cardinality>
     </value-attributes>
     <description>Type of the storage. 
       mysql installed by ambari is only for development and not suitable for production use cases due to it being not HA
