@@ -94,7 +94,7 @@ def streamline(env, upgrade_type=None):
          content=Template("streamline.yaml.j2"),
          owner=params.streamline_user,
          group=params.user_group,
-         mode=0644
+         mode=0600
     )
 
     generate_logfeeder_input_config('streamline', Template("input.config-streamline.json.j2", extra_imports=[default]))
