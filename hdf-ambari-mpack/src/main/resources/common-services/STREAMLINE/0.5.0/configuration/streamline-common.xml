@@ -236,32 +236,4 @@
     </value-attributes>
     <on-ambari-upgrade add="false"/>
   </property>
-  <property>
-    <name>streamlineTrustStorePath</name>
-    <displayName>Path For Truststore</displayName>
-    <value></value>
-    <description>
-      Custom truststore path for adding certificates which JRE disallows by default.
-      May need to be set up when importing SSL enabled Ambari clusters.
-      Note that it applies to Streamline JVM instance globally.
-    </description>
-    <value-attributes>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
-    <on-ambari-upgrade add="false"/>
-  </property>
-  <property>
-    <name>streamlineTrustStorePassword</name>
-    <displayName>Password For Truststore</displayName>
-    <value></value>
-    <description>
-      Password for custom truststore
-    </description>
-    <value-attributes>
-      <type>password</type>
-      <empty-value-valid>true</empty-value-valid>
-    </value-attributes>
-    <on-ambari-upgrade add="false"/>
-  </property>
-
 </configuration>

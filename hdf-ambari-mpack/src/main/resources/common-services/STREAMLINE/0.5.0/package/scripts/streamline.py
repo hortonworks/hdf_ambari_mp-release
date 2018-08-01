@@ -187,7 +187,10 @@ def download_database_connector_if_needed():
 
 def wait_until_server_starts():
     import params
-    streamline_api = format("http://{params.hostname}:{params.streamline_port}/api/v1/config/streamline")
+    if params.streamline_ssl_enabled:
+      streamline_api = format("https://{params.hostname}:{params.streamline_ssl_port}/api/v1/config/streamline")
+    else:
+      streamline_api = format("http://{params.hostname}:{params.streamline_port}/api/v1/config/streamline")
     Logger.info(streamline_api)
     max_retries = 6
     success = False

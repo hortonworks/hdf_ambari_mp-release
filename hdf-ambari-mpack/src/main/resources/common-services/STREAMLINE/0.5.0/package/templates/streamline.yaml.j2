@@ -67,13 +67,6 @@ storageProviderConfiguration:
     queryTimeoutInSecs: {{streamline_storage_query_timeout}}
   providerClass: "{{storage_provider_class}}"
 
-{% if streamline_truststore_path %}
-trustStorePath: "{{streamline_truststore_path}}"
-{% endif %}
-{% if streamline_truststore_password %}
-trustStorePassword: "{{streamline_truststore_password}}"
-{% endif %}
-
 {% if security_enabled %}
 authorizerConfiguration:
   className: {{streamline_authorizer_class}}
@@ -91,11 +84,38 @@ loginConfiguration:
 server:
   rootPath: '/api/*'
   applicationConnectors:
+{% if not streamline_ssl_enabled %}
     - type: http
       port: {{streamline_port}}
+{% else %}
+    - type: https
+      port: {{streamline_ssl_port}}
+      keyStorePath: {{streamline_keyStorePath}}
+      keyStorePassword: {{streamline_keyStorePassword}}
+      keyStoreType: {{streamline_keyStoreType}}
+      trustStorePath: {{streamline_trustStorePath}}
+      trustStorePassword: {{streamline_trustStorePassword}}
+      trustStoreType: {{streamline_trustStoreType}}
+      validateCerts: {{streamline_validateCerts}}
+      validatePeers: {{streamline_validatePeers}}
+{% endif %}
+
   adminConnectors:
+{% if not streamline_ssl_enabled %}
     - type: http
       port: {{streamline_admin_port}}
+{% else %}
+    - type: https
+      port: {{streamline_ssl_adminPort}}
+      keyStorePath: {{streamline_keyStorePath}}
+      keyStorePassword: {{streamline_keyStorePassword}}
+      keyStoreType: {{streamline_keyStoreType}}
+      trustStorePath: {{streamline_trustStorePath}}
+      trustStorePassword: {{streamline_trustStorePassword}}
+      trustStoreType: {{streamline_trustStoreType}}
+      validateCerts: {{streamline_validateCerts}}
+      validatePeers: {{streamline_validatePeers}}
+{% endif %}
 
 {% if security_enabled %}
 servletFilters:
