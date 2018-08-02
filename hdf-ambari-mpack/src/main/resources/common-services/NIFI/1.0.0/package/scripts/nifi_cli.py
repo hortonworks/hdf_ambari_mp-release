@@ -29,7 +29,7 @@ def nifi_cli(command=None, subcommand=None, errors_retries=12, retries_pause=10,
   """
   import params
   cli_env = {"JAVA_HOME": params.java_home}
-  cli_script = nifi_toolkit_util.get_toolkit_script("cli.sh", params.toolkit_tmp_dir)
+  cli_script = nifi_toolkit_util.get_toolkit_script("cli.sh", params.toolkit_tmp_dir, params.stack_version_buildnum)
 
   if errors_retries < 1:
     errors_retries = 1

@@ -47,7 +47,7 @@ class NifiRegistryServiceCheck(Script):
 
         Logger.info("Checking Nifi Registry portal {0} status".format(url))
         if params.nifi_registry_ssl_enabled:
-            NifiRegistryServiceCheck.check_nifi_registry_portal_with_toolkit(url,params.jdk64_home,params.nifi_registry_install_dir,params.nifi_registry_bootstrap_file)
+            NifiRegistryServiceCheck.check_nifi_registry_portal_with_toolkit(url,params.jdk64_home,params.nifi_registry_install_dir,params.nifi_registry_bootstrap_file, params.toolkit_tmp_dir, params.stack_version_buildnum)
         else:
             NifiRegistryServiceCheck.check_nifi_registry_portal_with_python(url + "/nifi-registry")
 
@@ -81,10 +81,10 @@ class NifiRegistryServiceCheck(Script):
 
     @staticmethod
     @retry(times=30, sleep_time=5, max_sleep_time=20, backoff_factor=2, err_class=Fail)
-    def check_nifi_registry_portal_with_toolkit(url, jdk64_home, nifi_registry_dir, nifi_registry_bootstrap):
+    def check_nifi_registry_portal_with_toolkit(url, jdk64_home, nifi_registry_dir, nifi_registry_bootstrap, toolkit_tmp_dir, stack_version_buildnum):
         Logger.info("Checking Nifi Registry portal with toolkit")
 
-        tls_toolkit_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh')
+        tls_toolkit_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh', toolkit_tmp_dir, stack_version_buildnum)
         File(tls_toolkit_script, mode=0755)
 
         nifi_registry_props_file = nifi_registry_dir + '/conf/nifi-registry.properties'
@@ -92,7 +92,9 @@ class NifiRegistryServiceCheck(Script):
         nifi_registry_props = NifiRegistryServiceCheck.convert_properties_to_dict(
             jdk64_home,
             nifi_registry_props_file,
-            nifi_registry_bootstrap)
+            nifi_registry_bootstrap,
+            toolkit_tmp_dir,
+            stack_version_buildnum)
 
         if len(nifi_registry_props) == 0:
             raise Fail('Unable to read properties from {0}'.format(nifi_registry_props_file))
@@ -119,10 +121,10 @@ class NifiRegistryServiceCheck(Script):
                     raise Fail("Error connecting to NiFi Registry: {0}".format(out))
 
     @staticmethod
-    def convert_properties_to_dict(jdk64_home, nifi_registry_props_file, nifi_registry_bootstrap):
+    def convert_properties_to_dict(jdk64_home, nifi_registry_props_file, nifi_registry_bootstrap, toolkit_tmp_dir, stack_version_buildnum):
         dict = {}
         if sudo.path_isfile(nifi_registry_props_file):
-            encrypt_tool_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh')
+            encrypt_tool_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh', toolkit_tmp_dir, stack_version_buildnum)
             File(encrypt_tool_script, mode=0755)
 
             command =  'ambari-sudo.sh JAVA_HOME=' + jdk64_home + ' '+ encrypt_tool_script + ' --nifiRegistry --decrypt -r ' + nifi_registry_props_file + ' -b ' + nifi_registry_bootstrap

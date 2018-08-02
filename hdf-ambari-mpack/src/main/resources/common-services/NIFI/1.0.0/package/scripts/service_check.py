@@ -47,7 +47,7 @@ class NifiServiceCheck(Script):
         urls.append("http://{0}:{1}".format(nifi_master_host, params.nifi_node_port))
 
     if params.stack_support_admin_toolkit:
-      NifiServiceCheck.check_nifi_portal_with_toolkit(urls,params.jdk64_home,params.nifi_install_dir,params.nifi_bootstrap_file)
+      NifiServiceCheck.check_nifi_portal_with_toolkit(urls,params.jdk64_home,params.nifi_install_dir,params.nifi_bootstrap_file, params.toolkit_tmp_dir, params.stack_version_buildnum)
     else:
       for url in urls:
         Logger.info("Checking Nifi portal {0} status".format(url))
@@ -82,9 +82,9 @@ class NifiServiceCheck(Script):
 
   @staticmethod
   @retry(times=30, sleep_time=5, max_sleep_time=20, backoff_factor=2, err_class=Fail)
-  def check_nifi_portal_with_toolkit(urls,jdk64_home,nifi_dir,nifi_bootstrap):
+  def check_nifi_portal_with_toolkit(urls,jdk64_home,nifi_dir,nifi_bootstrap,toolkit_tmp_dir,stack_version_buildnum):
 
-    node_manager_script = nifi_toolkit_util.get_toolkit_script('node-manager.sh')
+    node_manager_script = nifi_toolkit_util.get_toolkit_script('node-manager.sh', toolkit_tmp_dir, stack_version_buildnum)
     File(node_manager_script, mode=0755)
     command =  'ambari-sudo.sh JAVA_HOME='+jdk64_home+' '+ node_manager_script + ' -d ' + nifi_dir +' -b ' + nifi_bootstrap +' -o status -u "' + ','.join(urls) + '"'
     code, out = shell.call(command,quiet=True,logoutput=False)

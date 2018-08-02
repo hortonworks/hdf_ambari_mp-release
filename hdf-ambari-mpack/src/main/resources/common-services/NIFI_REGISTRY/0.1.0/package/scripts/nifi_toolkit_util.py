@@ -51,10 +51,10 @@ def overlay(config_dict, overlay_dict):
         if (k not in config_dict) or not(overlay_dict[k] == config_dict[k]):
             config_dict[k] = v
 
-def get_toolkit_script(scriptName, scriptDir = files_dir):
+def get_toolkit_script(scriptName, scriptDir = files_dir, toolkitDirPrefix = 'nifi-toolkit-'):
     nifiToolkitDir = None
     for dir in os.listdir(scriptDir):
-        if dir.startswith('nifi-toolkit-'):
+        if toolkitDirPrefix in dir and dir.startswith('nifi-toolkit'):
             nifiToolkitDir = os.path.join(scriptDir, dir)
 
     if nifiToolkitDir is None:
@@ -291,16 +291,16 @@ def create_keystore_truststore(is_starting, params):
         updated_properties = run_toolkit_client(get_nifi_ca_client_dict(params.config, params), params.nifi_registry_config_dir,
                                                 params.jdk64_home, params.nifi_toolkit_java_options,
                                                 params.nifi_registry_user, params.nifi_registry_group,
-                                                params.toolkit_tmp_dir, params.stack_support_toolkit_update)
+                                                params.toolkit_tmp_dir, params.stack_version_buildnum, params.stack_support_toolkit_update)
 
         update_nifi_ca_registry_properties(updated_properties, params.nifi_registry_properties)
 
     return params.nifi_registry_properties
 
 @retry(times=20, sleep_time=5, max_sleep_time=20, backoff_factor=2, err_class=Fail)
-def run_toolkit_client(ca_client_dict, nifi_registry_config_dir, jdk64_home, java_options, nifi_registry_user,nifi_registry_group,toolkit_tmp_dir, no_client_file=False):
+def run_toolkit_client(ca_client_dict, nifi_registry_config_dir, jdk64_home, java_options, nifi_registry_user,nifi_registry_group,toolkit_tmp_dir, stack_version_buildnum, no_client_file=False):
     Logger.info("Generating NiFi Registry Keystore and Truststore")
-    ca_client_script = get_toolkit_script('tls-toolkit.sh',toolkit_tmp_dir)
+    ca_client_script = get_toolkit_script('tls-toolkit.sh',toolkit_tmp_dir, stack_version_buildnum)
     File(ca_client_script, mode=0755)
     if no_client_file:
         Logger.info("Executing toolkit without client file")
@@ -337,27 +337,9 @@ def clean_toolkit_client_files(old_nifi_registry_properties, new_nifi_registry_p
     new_nifi_registry_properties['nifi.registry.security.truststore'] = ''
     return new_nifi_registry_properties
 
-def get_hash_parameters(jdk64_home, java_options, toolkit_tmp_dir):
-    encrypt_config_script = get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir)
-    File(encrypt_config_script, mode=0755)
-    encrypt_command = ('ambari-sudo.sh'
-                       ' JAVA_HOME="%(jdk64_home)s"'
-                       ' JAVA_OPTS="%(java_options)s"'
-                       ' %(encrypt_config_script)s'
-                       ' --currentHashParams'
-                       ) % locals()
-
-    code, out = shell.call(encrypt_command, quiet=True, logoutput=False)
-
-    if code > 0:
-        raise Fail("Call to encrypt config in nifi-toolkit encountered error: {0}".format(out))
-    else:
-        return json.loads(out)
-
-
-def encrypt_sensitive_properties(nifi_registry_config_dir, jdk64_home, java_options, nifi_registry_user, last_master_key, master_key_password, is_starting,toolkit_tmp_dir):
+def encrypt_sensitive_properties(nifi_registry_config_dir, jdk64_home, java_options, nifi_registry_user, last_master_key, master_key_password, is_starting,toolkit_tmp_dir, stack_version_buildnum):
     Logger.info("Encrypting NiFi Registry sensitive configuration properties")
-    encrypt_config_script = get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir)
+    encrypt_config_script = get_toolkit_script('encrypt-config.sh',toolkit_tmp_dir, stack_version_buildnum)
     encrypt_config_command = (encrypt_config_script,)
     environment = {'JAVA_HOME': jdk64_home, 'JAVA_OPTS': java_options}
     File(encrypt_config_script, mode=0755)
