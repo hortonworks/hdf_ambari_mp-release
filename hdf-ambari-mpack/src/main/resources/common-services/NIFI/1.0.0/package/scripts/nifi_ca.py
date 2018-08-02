@@ -39,7 +39,7 @@ class CertificateAuthority(Script):
     self.install_packages(env)
 
     #Be sure ca script is in cache
-    nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',params.toolkit_files_dir)
+    nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh', params.toolkit_files_dir, params.stack_version_buildnum)
 
   def configure(self, env):
     import params
@@ -85,7 +85,7 @@ class CertificateAuthority(Script):
     nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type)
 
     self.configure(env)
-    ca_server_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',params.toolkit_tmp_dir)
+    ca_server_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',params.toolkit_tmp_dir, params.stack_version_buildnum)
     run_ca_script = os.path.join(params.toolkit_tmp_dir, 'run_ca.sh')
     Directory([params.nifi_config_dir],
         owner=params.nifi_user,
@@ -120,7 +120,7 @@ class CertificateAuthority(Script):
 
     nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type)
     run_ca_script = os.path.join(params.toolkit_tmp_dir, 'run_ca.sh')
-    ca_server_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',params.toolkit_tmp_dir)
+    ca_server_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',params.toolkit_tmp_dir, params.stack_version_buildnum)
     File(ca_server_script, mode=0755)
     File(run_ca_script, mode=0755)
 

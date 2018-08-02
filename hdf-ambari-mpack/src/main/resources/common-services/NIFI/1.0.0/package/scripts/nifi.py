@@ -227,7 +227,7 @@ class Master(Script):
                                                    params.nifi_toolkit_java_options,params.nifi_user,
                                                    master_key, params.nifi_security_encrypt_configuration_password,
                                                    params.nifi_flow_config_dir,params.nifi_sensitive_props_key, is_starting, params.toolkit_tmp_dir,
-                                                   params.stack_support_encrypt_authorizers)
+                                                   params.stack_support_encrypt_authorizers, params.stack_version_buildnum)
 
     #Apply Hashed Ambari parameters by retrieving new master key and hashing required parameters for Ambari
     bootstrap_current_conf = nifi_toolkit_util.convert_properties_to_dict(format("{params.nifi_bootstrap_file}"))
