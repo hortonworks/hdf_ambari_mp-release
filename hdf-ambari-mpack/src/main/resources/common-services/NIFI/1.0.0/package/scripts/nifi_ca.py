@@ -39,7 +39,7 @@ class CertificateAuthority(Script):
     self.install_packages(env)
 
     #Be sure ca script is in cache
-    nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh', params.toolkit_files_dir, params.stack_version_buildnum)
+    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type=None)
 
   def configure(self, env):
     import params
