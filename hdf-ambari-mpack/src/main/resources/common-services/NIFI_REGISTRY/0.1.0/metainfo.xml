@@ -73,6 +73,17 @@
                 </osSpecific>
             </osSpecifics>
 
+            <themes>
+                <theme>
+                    <fileName>directories.json</fileName>
+                    <default>true</default>
+                </theme>
+                <theme>
+                    <fileName>credentials.json</fileName>
+                    <default>true</default>
+                </theme>
+            </themes>
+
             <commandScript>
                 <script>scripts/service_check.py</script>
                 <scriptType>PYTHON</scriptType>
