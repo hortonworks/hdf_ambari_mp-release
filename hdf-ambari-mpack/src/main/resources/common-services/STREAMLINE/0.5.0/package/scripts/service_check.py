@@ -32,7 +32,12 @@ class ServiceCheck(Script):
   def service_check(self, env):
     import params
     env.set_params(params)
-    streamline_api = format("http://{params.hostname}:{params.streamline_port}/api/v1/catalog/streams/componentbundles")
+
+    if params.streamline_ssl_enabled:
+      streamline_api = format("https://{params.hostname}:{params.streamline_ssl_port}/api/v1/catalog/streams/componentbundles")
+    else:
+      streamline_api = format("http://{params.hostname}:{params.streamline_port}/api/v1/catalog/streams/componentbundles")
+
     Logger.info(streamline_api)
     max_retries = 3
     success = False
@@ -82,6 +87,3 @@ class ServiceCheck(Script):
 
 if __name__ == "__main__":
     ServiceCheck().execute()
-
-
-

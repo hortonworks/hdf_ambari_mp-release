@@ -55,6 +55,8 @@
         <config-type>registry-common</config-type>
         <config-type>registry-env</config-type>
         <config-type>registry-log4j</config-type>
+        <config-type>registry-logsearch-conf</config-type>
+        <config-type>registry-ssl-config</config-type>
       </configuration-dependencies>
 
       <themes>

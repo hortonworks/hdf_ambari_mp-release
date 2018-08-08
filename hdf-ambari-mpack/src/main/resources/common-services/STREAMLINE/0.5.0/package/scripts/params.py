@@ -72,6 +72,7 @@ hostname = config['agentLevelParams']['hostname']
 streamline_home = os.path.join(stack_root, "current", "streamline")
 streamline_bin = os.path.join(streamline_home, "bin", "streamline")
 streamline_bootstrap_dir = os.path.join(streamline_home, "bootstrap")
+streamline_libs = os.path.join(streamline_home, "libs")
 streamline_managed_log_dir = os.path.join(streamline_home, "logs")
 conf_dir = os.path.join(streamline_home, "conf")
 
@@ -89,7 +90,8 @@ streamline_log_template = streamline_log_template.replace('{{streamline_log_dir}
 streamline_log_template = streamline_log_template.replace('{{streamline_log_maxbackupindex}}', streamline_log_maxbackupindex)
 streamline_log_template = streamline_log_template.replace('{{streamline_log_maxfilesize}}', ("%sMB" % streamline_log_maxfilesize))
 
-
+streamline_port = config['configurations']['streamline-common']['port']
+streamline_admin_port = config['configurations']['streamline-common']['adminPort']
 
 # This is hardcoded on the streamline bash process lifecycle on which we have no control over
 streamline_managed_pid_dir = "/var/run/streamline"
@@ -125,6 +127,27 @@ if security_enabled:
   streamline_min_time_before_login = config['configurations']['streamline-common']['min.time.before.login']
 else:
   streamline_kerberos_params = ''
+
+#SSL related configs
+if 'streamline-ssl-config' in config['configurations']:
+  streamline_ssl_enabled = config['configurations']['streamline-ssl-config']['streamline.ssl.isenabled']
+  streamline_ssl_port = config['configurations']['streamline-common']['streamline.ssl.port']
+  streamline_ssl_adminPort = config['configurations']['streamline-common']['streamline.ssl.adminPort']
+  streamline_keyStorePath = config['configurations']['streamline-ssl-config']['streamline.keyStorePath']
+  streamline_keyStorePassword = config['configurations']['streamline-ssl-config']['streamline.keyStorePassword']
+  streamline_keyStoreType = config['configurations']['streamline-ssl-config']['streamline.keyStoreType']
+  streamline_trustStorePath = config['configurations']['streamline-ssl-config']['streamline.trustStorePath']
+  streamline_trustStorePassword = config['configurations']['streamline-ssl-config']['streamline.trustStorePassword']
+  streamline_trustStoreType = config['configurations']['streamline-ssl-config']['streamline.trustStoreType']
+  streamline_validateCerts = config['configurations']['streamline-ssl-config']['streamline.validateCerts']
+  streamline_validatePeers = config['configurations']['streamline-ssl-config']['streamline.validatePeers']
+else:
+  streamline_ssl_enabled = False
+
+if streamline_ssl_enabled:
+  streamline_catalog_root_url = 'https://{0}:{1}/api/v1/catalog'.format(hostname, streamline_ssl_port)
+else:
+  streamline_catalog_root_url = 'http://{0}:{1}/api/v1/catalog'.format(hostname,streamline_port)
 
 enable_atlas_hook = default('/configurations/storm-env/storm.atlas.hook', False)
 
@@ -206,9 +229,6 @@ else:
   streamline_storage_java_class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 
 
-streamline_port = config['configurations']['streamline-common']['port']
-streamline_admin_port = config['configurations']['streamline-common']['adminPort']
-
 #Http Proxy Configs for HDF-3.2 onwards
 stack_sam_support_httpProxy = check_stack_feature('sam_support_httpProxy', version_for_stack_feature_checks)
 if stack_sam_support_httpProxy:
@@ -230,19 +250,6 @@ else:
   http_proxy_server = None
   http_proxy_username = None
   http_proxy_password = None
-
-# Custom Truststore
-if 'streamlineTrustStorePath' in config['configurations']['streamline-common']:
-  streamline_truststore_path = config['configurations']['streamline-common']['streamlineTrustStorePath']
-else:
-  streamline_truststore_path = None
-
-if 'streamlineTrustStorePassword' in config['configurations']['streamline-common']:
-  streamline_truststore_password = config['configurations']['streamline-common']['streamlineTrustStorePassword']
-else:
-  streamline_truststore_password = None
-
-streamline_catalog_root_url = 'http://{0}:{1}/api/v1/catalog'.format(hostname,streamline_port)
 
 # mysql jar
 jdk_location = config['ambariLevelParams']['jdk_location']

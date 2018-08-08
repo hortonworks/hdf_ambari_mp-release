@@ -94,7 +94,7 @@ def streamline(env, upgrade_type=None):
          content=Template("streamline.yaml.j2"),
          owner=params.streamline_user,
          group=params.user_group,
-         mode=0644
+         mode=0600
     )
 
     generate_logfeeder_input_config('streamline', Template("input.config-streamline.json.j2", extra_imports=[default]))
@@ -119,7 +119,7 @@ def streamline(env, upgrade_type=None):
 def ensure_base_directories():
   import params
   import status_params
-  Directory([params.streamline_log_dir, status_params.streamline_pid_dir, params.conf_dir, params.streamline_agent_dir, params.streamline_bootstrap_dir],
+  Directory([params.streamline_log_dir, status_params.streamline_pid_dir, params.conf_dir, params.streamline_agent_dir, params.streamline_bootstrap_dir, params.streamline_libs],
             mode=0755,
             cd_access='a',
             owner=params.streamline_user,
@@ -187,7 +187,10 @@ def download_database_connector_if_needed():
 
 def wait_until_server_starts():
     import params
-    streamline_api = format("http://{params.hostname}:{params.streamline_port}/api/v1/config/streamline")
+    if params.streamline_ssl_enabled:
+      streamline_api = format("https://{params.hostname}:{params.streamline_ssl_port}/api/v1/config/streamline")
+    else:
+      streamline_api = format("http://{params.hostname}:{params.streamline_port}/api/v1/config/streamline")
     Logger.info(streamline_api)
     max_retries = 6
     success = False

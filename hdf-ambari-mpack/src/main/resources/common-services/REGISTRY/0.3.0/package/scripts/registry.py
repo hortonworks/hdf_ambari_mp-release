@@ -71,7 +71,7 @@ def registry(env, upgrade_type=None):
          content=Template("registry.yaml.j2"),
          owner=params.registry_user,
          group=params.user_group,
-         mode=0644
+         mode=0600
     )
 
     generate_logfeeder_input_config('registry', Template("input.config-registry.json.j2", extra_imports=[default]))

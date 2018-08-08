@@ -108,7 +108,23 @@ if security_enabled:
   registry_servlet_kerberos_name_rules = config['configurations']['registry-common']['kerberos.name.rules']
   #registry_servlet_token_validity = (config['configurations']['registry-common']['token.validity'])
   registry_servlet_token_validity = 36000
-  
+
+#SSL related configs
+if 'registry-ssl-config' in config['configurations']:
+  registry_ssl_enabled = config['configurations']['registry-ssl-config']['registry.ssl.isenabled']
+  registry_ssl_port = config['configurations']['registry-common']['registry.ssl.port']
+  registry_ssl_adminPort = config['configurations']['registry-common']['registry.ssl.adminPort']
+  registry_keyStorePath = config['configurations']['registry-ssl-config']['registry.keyStorePath']
+  registry_keyStorePassword = config['configurations']['registry-ssl-config']['registry.keyStorePassword']
+  registry_keyStoreType = config['configurations']['registry-ssl-config']['registry.keyStoreType']
+  registry_trustStorePath = config['configurations']['registry-ssl-config']['registry.trustStorePath']
+  registry_trustStorePassword = config['configurations']['registry-ssl-config']['registry.trustStorePassword']
+  registry_trustStoreType = config['configurations']['registry-ssl-config']['registry.trustStoreType']
+  registry_validateCerts = config['configurations']['registry-ssl-config']['registry.validateCerts']
+  registry_validatePeers = config['configurations']['registry-ssl-config']['registry.validatePeers']
+else:
+  registry_ssl_enabled = False
+
 registry_log_dir = config['configurations']['registry-env']['registry_log_dir']
 registry_log_maxbackupindex = config['configurations']['registry-log4j']['registry_log_maxbackupindex']
 registry_log_maxfilesize = config['configurations']['registry-log4j']['registry_log_maxfilesize']

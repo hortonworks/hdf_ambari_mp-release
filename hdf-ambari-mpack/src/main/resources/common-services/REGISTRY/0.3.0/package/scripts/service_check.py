@@ -33,7 +33,12 @@ class ServiceCheck(Script):
     import params
     env.set_params(params)
     Logger.info("Registry check passed")
-    registry_api = format("http://{params.hostname}:{params.registry_port}/api/v1/schemaregistry/schemaproviders")
+
+    if params.registry_ssl_enabled:
+      registry_api = format("https://{params.hostname}:{params.registry_ssl_port}/api/v1/schemaregistry/schemaproviders")
+    else:
+      registry_api = format("http://{params.hostname}:{params.registry_port}/api/v1/schemaregistry/schemaproviders")
+
     Logger.info(registry_api)
     max_retries = 3
     success = False
@@ -44,11 +49,11 @@ class ServiceCheck(Script):
                                           path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',
                                           user=params.smokeuser,
                                           )
-      
+
     for num in range(0, max_retries):
       try:
         Logger.info(format("Making http requests to {registry_api}"))
-        if params.security_enabled:
+        if (params.security_enabled or params.registry_ssl_enabled):
           get_app_info_cmd = "curl --negotiate -u : -ks --location-trusted --connect-timeout " + CURL_CONNECTION_TIMEOUT + " " + registry_api
           return_code, stdout, _ = get_user_call_output(get_app_info_cmd, user=params.smokeuser, path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',)
           try:

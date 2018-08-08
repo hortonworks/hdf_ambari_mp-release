@@ -4,7 +4,14 @@
     "configuration": {
         "protocol":
         {
-            "type":"HTTP_ONLY"
+          "type":"https",
+          "checks":[
+            {
+              "property":"streamline.ssl.isenabled",
+              "desired":"true",
+              "site":"streamline-ssl-config"
+            }
+          ]
         },
         "links": [
             {
@@ -15,7 +22,9 @@
                 "url":"%@://%@:%@/",
                 "port":{
                     "http_property": "port",
-                    "http_default_port": "8080",
+                    "http_default_port": "7777",
+                    "https_property": "streamline.ssl.port",
+                    "https_default_port": "7779",
                     "regex": "^(\\d+)$",
                     "site": "streamline-common"
                 }
