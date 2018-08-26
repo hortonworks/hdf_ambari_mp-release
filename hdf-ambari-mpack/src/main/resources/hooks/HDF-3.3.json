@@ -9,24 +9,7 @@
     "min-ambari-version": "${minAmbariVersion}",
     "max-ambari-version": "${maxAmbariVersion}"
   },
-  "hooks": [
-    {
-      "name": "after-install",
-      "type": "python",
-      "script": "hooks/after_install.py"
-    }
-  ],
   "artifacts": [
-    {
-      "name": "hdf-service-definitions",
-      "type": "service-definitions",
-      "source_dir": "common-services"
-    },
-    {
-      "name": "hdf-stack-definitions",
-      "type": "stack-definitions",
-      "source_dir": "stacks"
-    },
     {
       "name": "hdp-addon-services-hdp26",
       "type": "stack-addon-service-definitions",
@@ -123,4 +106,3 @@
     }
   ]
 }
-
