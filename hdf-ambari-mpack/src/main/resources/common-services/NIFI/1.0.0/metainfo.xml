@@ -95,6 +95,18 @@
                   </commandScript>
                 </component>
             </components>
+
+            <themes>
+                <theme>
+                    <fileName>directories.json</fileName>
+                    <default>true</default>
+                </theme>
+                <theme>
+                    <fileName>credentials.json</fileName>
+                    <default>true</default>
+                </theme>
+            </themes>
+
             <osSpecifics>
 	          <osSpecific>
                  <osFamily>redhat7,amazon2015,suse11,suse12,amazonlinux2</osFamily>
