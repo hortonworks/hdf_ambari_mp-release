@@ -188,9 +188,9 @@ class Master(Script):
 
     if os.path.isfile(params.nifi_config_dir + '/nifi.properties'):
       nifi_current_properties = nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties')
-      if 'nifi.sensitive.props.key' in nifi_current_properties:
+      if 'nifi.sensitive.props.key' in nifi_current_properties and nifi_current_properties['nifi.sensitive.props.key']:
         params.nifi_properties['nifi.sensitive.props.key'] = nifi_current_properties['nifi.sensitive.props.key']
-      if 'nifi.sensitive.props.key.protected' in nifi_current_properties:
+      if 'nifi.sensitive.props.key.protected' in nifi_current_properties and nifi_current_properties['nifi.sensitive.props.key.protected']:
         params.nifi_properties['nifi.sensitive.props.key.protected'] = nifi_current_properties['nifi.sensitive.props.key.protected']
     else:
       nifi_current_properties = params.nifi_properties
