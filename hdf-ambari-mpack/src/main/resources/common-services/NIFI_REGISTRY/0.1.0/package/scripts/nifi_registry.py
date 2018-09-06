@@ -167,9 +167,9 @@ class Master(Script):
 
         if os.path.isfile(params.nifi_registry_config_dir + '/nifi-registry.properties'):
             nifi_registry_current_properties = nifi_toolkit_util.convert_properties_to_dict(params.nifi_registry_config_dir + '/nifi-registry.properties')
-            if 'nifi.registry.sensitive.props.key' in nifi_registry_current_properties:
+            if 'nifi.registry.sensitive.props.key' in nifi_registry_current_properties and nifi_registry_current_properties['nifi.registry.sensitive.props.key']:
                 params.nifi_registry_properties['nifi.registry.sensitive.props.key'] = nifi_registry_current_properties['nifi.registry.sensitive.props.key']
-            if 'nifi.registry.sensitive.props.key.protected' in nifi_registry_current_properties:
+            if 'nifi.registry.sensitive.props.key.protected' in nifi_registry_current_properties and nifi_registry_current_properties['nifi.registry.sensitive.props.key.protected']:
                 params.nifi_registry_properties['nifi.registry.sensitive.props.key.protected'] = nifi_registry_current_properties['nifi.registry.sensitive.props.key.protected']
         else:
             nifi_registry_current_properties = params.nifi_registry_properties
