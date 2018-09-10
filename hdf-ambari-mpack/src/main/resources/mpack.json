@@ -14,6 +14,21 @@
       "name": "after-install",
       "type": "python",
       "script": "hooks/after_install.py"
+    },
+    {
+      "name": "before-install",
+      "type": "python",
+      "script": "hooks/before_install.py"
+    },
+    {
+      "name": "before-upgrade",
+      "type": "python",
+      "script": "hooks/before_upgrade.py"
+    },
+    {
+      "name": "after-upgrade",
+      "type": "python",
+      "script": "hooks/after_upgrade.py"
     }
   ],
   "artifacts": [

@@ -21,13 +21,13 @@
   <groupId>org.apache.ambari</groupId>
   <artifactId>hdf-ambari-mpack</artifactId>
   <packaging>pom</packaging>
-  <version>3.3.0.0-1</version>
+  <version>3.3.0.0-32</version>
   <name>HDF Ambari Management Pack</name>
   <url>http://ambari.apache.org/</url>
   <properties>
     <minAmbariVersion>2.6.0</minAmbariVersion>
     <maxAmbariVersion></maxAmbariVersion>
-    <nifiversion>1.0.0</nifiversion>
+    <nifiversion>1.8.0.${version}</nifiversion>
     <buildnumber-maven-plugin-version>1.4</buildnumber-maven-plugin-version>
   </properties>
   <build>

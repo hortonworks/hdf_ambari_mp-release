@@ -1,4 +1,0 @@
-[submodule "hdp_ambari_definitions"]
-	path = hdp_ambari_definitions
-	url = https://github.com/hortonworks/hdp_ambari_definitions.git
-	branch = AMBARI-2.7.0.0

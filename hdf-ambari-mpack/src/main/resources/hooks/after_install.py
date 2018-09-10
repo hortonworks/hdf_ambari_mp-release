@@ -18,9 +18,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-import sys
 import os
+
+import mpack_backup_utils
 from switch_addon_services import switch_addon_services
+
 
 def main():
   file_path = os.path.realpath(__file__)
@@ -29,5 +31,7 @@ def main():
   switch_addon_services(hdf32_config_path)
   return 0
 
+
 if __name__ == "__main__":
-    exit (main())
+  mpack_backup_utils.do_restore()
+  exit(main())
