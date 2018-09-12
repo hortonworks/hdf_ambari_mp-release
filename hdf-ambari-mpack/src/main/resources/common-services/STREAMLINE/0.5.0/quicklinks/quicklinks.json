@@ -24,7 +24,7 @@
                     "http_property": "port",
                     "http_default_port": "7777",
                     "https_property": "streamline.ssl.port",
-                    "https_default_port": "7779",
+                    "https_default_port": "7777",
                     "regex": "^(\\d+)$",
                     "site": "streamline-common"
                 }

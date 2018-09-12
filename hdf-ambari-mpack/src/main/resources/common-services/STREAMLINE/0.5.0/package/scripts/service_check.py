@@ -21,6 +21,8 @@ limitations under the License.
 from resource_management import *
 from resource_management.libraries.script.script import Script
 from resource_management.core.logger import Logger
+from resource_management.core import shell, sudo
+from resource_management.libraries.functions.show_logs import show_logs
 from resource_management.libraries.functions.format import format
 from resource_management.libraries.functions.get_user_call_output import get_user_call_output
 
@@ -42,7 +44,7 @@ class ServiceCheck(Script):
     max_retries = 3
     success = False
 
-    if params.security_enabled:
+    if (params.security_enabled) and (not params.streamline_sso_enabled):
       kinit_cmd = format("{kinit_path_local} -kt {smoke_user_keytab} {smokeuser_principal};")
       return_code, out = shell.checked_call(kinit_cmd,
                                           path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',

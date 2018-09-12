@@ -128,6 +128,15 @@ if security_enabled:
 else:
   streamline_kerberos_params = ''
 
+#SSO related configs
+if 'streamline-sso-config' in config['configurations']:
+  streamline_sso_enabled = config['configurations']['streamline-sso-config']['streamline.sso.enabled']
+  streamline_authentication_provider_url = config['configurations']['streamline-sso-config']['streamline.authentication.provider.url']
+  streamline_public_key_pem = config['configurations']['streamline-sso-config']['streamline.public.key.pem']
+  streamline_authentication_sso_token_validity = config['configurations']['streamline-sso-config']['streamline.token.validity']
+else:
+  streamline_sso_enabled = False
+
 #SSL related configs
 if 'streamline-ssl-config' in config['configurations']:
   streamline_ssl_enabled = config['configurations']['streamline-ssl-config']['streamline.ssl.isenabled']
