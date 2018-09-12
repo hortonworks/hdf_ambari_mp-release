@@ -117,7 +117,17 @@ server:
       validatePeers: {{streamline_validatePeers}}
 {% endif %}
 
-{% if security_enabled %}
+{% if streamline_sso_enabled %}
+servletFilters:
+#Note that it is highly recommended to force ssl connections if you are using the jwt handler config below. Unsecured connections will expose jwt
+ - className: "com.hortonworks.registries.auth.server.AuthenticationFilter"
+   params:
+     type: "com.hortonworks.registries.auth.server.JWTAuthenticationHandler"
+     allowed.resources: "401.html,back-default.png,favicon.ico"
+     token.validity: {{streamline_authentication_sso_token_validity}}
+     authentication.provider.url: "{{streamline_authentication_provider_url}}"
+     public.key.pem: "{{streamline_public_key_pem}}"
+{% elif security_enabled %}
 servletFilters:
   - className: {{streamline_servlet_filter}}
     params:
@@ -128,7 +138,7 @@ servletFilters:
       token.validity: "{{streamline_servlet_token_validity}}"
       cookie.path: "/"
       allowed.resources: "401.html,back-default.png,favicon.ico"
-{%endif%}
+{% endif %}
 
 logging:
     {{streamline_log_template}}

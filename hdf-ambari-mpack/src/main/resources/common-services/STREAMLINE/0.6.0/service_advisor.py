@@ -101,6 +101,25 @@ class STREAMLINE060ServiceAdvisor(service_advisor.STREAMLINE050ServiceAdvisor):
           validationItems.append({"config-name": 'streamline.storage.connector.connectURI', "item": self.getErrorItem(url_error_message)})
 
     validationProblems = self.toConfigurationValidationProblems(validationItems, "streamline-common")
+
+    # SSO based validation
+    validationItemsSSO = []
+    sso_message = ""
+    try:
+      streamline_keytab_path = services['configurations']['streamline-env']['properties']['streamline_keytab']
+      security_enabled = True
+    except KeyError:
+      security_enabled = False
+      self.logger.info("Kerberos is disabled.")
+
+    streamline_sso_enabled = services['configurations']['streamline-sso-config']['properties']['streamline.sso.enabled']
+    if security_enabled:
+      if streamline_sso_enabled == "true":
+        sso_message += "Enabling knox based SSO for Streamline Analystics Manager would disable Kerberos based SPENGO authentication for streamline client."
+        validationItemsSSO.append({"config-name": 'streamline.sso.enabled', "item": self.getWarnItem(sso_message)})
+
+    validationProblems.extend(self.toConfigurationValidationProblems(validationItemsSSO, "streamline-sso-config"))
+
     validationProblems.extend(parentValidationProblems)
     return validationProblems
 
@@ -155,4 +174,25 @@ class STREAMLINE060ServiceAdvisor(service_advisor.STREAMLINE050ServiceAdvisor):
       putStreamlineLogSearchConfAttribute('content', 'visible', 'false')
 
     self.autopopulateSTREAMLINEJdbcUrl(configurations, services)
+
+    # Setting up KNOX SSO for Streams Messaging Manager.
+    self.getServiceConfigurationRecommendationsForSSO(configurations, clusterData, services, hosts)
     pass
+
+  def getServiceConfigurationRecommendationsForSSO(self, configurations, clusterData, services, hosts):
+    """
+    Any SSO-related configuration recommendations for the service should be defined in this function.
+    """
+    ambari_configuration = self.get_ambari_configuration(services)
+    ambari_sso_details = ambari_configuration.get_ambari_sso_details() if ambari_configuration else None
+
+    if ambari_sso_details and ambari_sso_details.is_managing_services():
+      putStreamlineSSOProperty = self.putProperty(configurations, "streamline-sso-config")
+
+      # If SSO should be enabled for this service
+      if ambari_sso_details.should_enable_sso('STREAMLINE'):
+        putStreamlineSSOProperty("streamline.sso.enabled", "true")
+        putStreamlineSSOProperty("streamline.authentication.provider.url", ambari_sso_details.get_sso_provider_url())
+        putStreamlineSSOProperty("streamline.public.key.pem", ambari_sso_details.get_sso_provider_certificate(False, True))
+      else:
+        putStreamlineSSOProperty("streamline.sso.enabled", "false")

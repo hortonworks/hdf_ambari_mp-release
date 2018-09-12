@@ -35,6 +35,7 @@ from resource_management.libraries.functions.get_user_call_output import get_use
 from resource_management.core.exceptions import ExecutionFailed
 from resource_management.core.logger import Logger
 from resource_management.core.exceptions import Fail
+from resource_management.libraries.functions.show_logs import show_logs
 from resource_management.libraries.functions.setup_atlas_hook import setup_atlas_jar_symlinks
 
 import urllib2, time, json
@@ -199,7 +200,7 @@ def wait_until_server_starts():
       try:
         Logger.info(format("Making http requests to {streamline_api}"))
 
-        if params.security_enabled:
+        if (params.security_enabled) and (not params.streamline_sso_enabled):
           get_app_info_cmd = "curl --negotiate -u : -ks --location-trusted --connect-timeout " + curl_connection_timeout + " " + streamline_api
           return_code, stdout, _ = get_user_call_output(get_app_info_cmd, user=params.streamline_user, path='/usr/sbin:/sbin:/usr/local/bin:/bin:/usr/bin',)
           try:

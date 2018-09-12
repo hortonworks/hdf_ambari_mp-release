@@ -69,6 +69,7 @@
         <config-type>streamline-logsearch-conf</config-type>
         <config-type>streamline-ssl-config</config-type>
         <config-type>streamline_jaas_conf</config-type>
+        <config-type>streamline-sso-config</config-type>
       </configuration-dependencies>
 
       <themes>
@@ -104,6 +105,11 @@
           </packages>
         </osSpecific>
       </osSpecifics>
+
+      <sso>
+        <supported>true</supported>
+        <enabledConfiguration>streamline-sso-config/streamline.sso.enabled</enabledConfiguration>
+      </sso>
 
       <quickLinksConfigurations>
         <quickLinksConfiguration>

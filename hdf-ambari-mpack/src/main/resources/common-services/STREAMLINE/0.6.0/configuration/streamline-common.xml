@@ -96,14 +96,14 @@
 
   <property>
     <name>streamline.ssl.port</name>
-    <value>7779</value>
+    <value>7777</value>
     <display-name>SAM port (SSL)</display-name>
     <description>HTTPS port SAM node runs on when SSL is enabled</description>
     <on-ambari-upgrade add="false"/>
   </property>
   <property>
     <name>streamline.ssl.adminPort</name>
-    <value>7780</value>
+    <value>7778</value>
     <display-name>SAM adminport (SSL)</display-name>
     <description>HTTPS adminport SAM node runs on when SSL is enabled</description>
     <on-ambari-upgrade add="false"/>
