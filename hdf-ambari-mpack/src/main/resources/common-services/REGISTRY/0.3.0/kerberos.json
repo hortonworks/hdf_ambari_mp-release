@@ -4,10 +4,12 @@
       "name": "REGISTRY",
       "identities": [
         {
-          "name": "/spnego"
+          "name": "registry_spnego",
+          "reference": "/spnego"
         },
         {
-          "name": "/smokeuser"
+          "name": "registry_smokeuser",
+          "reference": "/smokeuser"
         }
       ],
       "configurations": [
@@ -24,7 +26,8 @@
           "name": "REGISTRY_SERVER",
           "identities": [
             {
-              "name": "/spnego",
+              "name": "registry_master_spnego",
+              "reference": "/spnego",
               "principal": {
                 "configuration": "registry-env/registry_ui_principal_name"
               },

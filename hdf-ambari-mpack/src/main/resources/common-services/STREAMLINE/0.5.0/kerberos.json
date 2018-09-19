@@ -4,10 +4,12 @@
       "name": "STREAMLINE",
       "identities": [
         {
-          "name": "/spnego"
+          "name": "streamline_spnego",
+          "reference": "/spnego"
         },
         {
-          "name": "/smokeuser"
+          "name": "streamline_smokeuser",
+          "reference": "/smokeuser"
         },
         {
           "name": "streamline_components",
@@ -50,7 +52,8 @@
           "name": "STREAMLINE_SERVER",
           "identities": [
             {
-              "name": "/spnego",
+              "name": "streamline_server_spnego",
+              "reference": "/spnego",
               "principal": {
                 "configuration": "streamline-env/streamline_ui_principal_name"
               },
