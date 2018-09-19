@@ -7,7 +7,8 @@
           "name": "NIFI_REGISTRY_MASTER",
           "identities": [
             {
-              "name": "/spnego",
+              "name": "nifi_registry_master_spnego",
+              "reference": "/spnego",
               "principal": {
                 "configuration": "nifi-registry-properties/nifi.registry.kerberos.spnego.principal"
               },

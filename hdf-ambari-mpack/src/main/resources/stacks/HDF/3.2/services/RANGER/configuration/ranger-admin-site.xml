@@ -38,7 +38,7 @@
 
   <property>
     <name>ranger.supportedcomponents</name>
-    <value>storm,kafka,nifi</value>
+    <value>storm,kafka,nifi,knox</value>
     <on-ambari-upgrade add="true"/>
   </property>
 
