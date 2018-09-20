@@ -1,0 +1,18 @@
+<upgrade-config-changes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="upgrade-config.xsd">
+
+    <services>
+
+        <service name="RANGER">
+            <component name="RANGER_ADMIN">
+                <changes>
+                    <definition xsi:type="configure" id="hdf_3_2_ranger_admin_knox_support">
+                        <type>ranger-admin-site</type>
+                        <set key="ranger.supportedcomponents" value="storm,kafka,nifi,knox"/>
+                    </definition>
+                </changes>
+            </component>
+        </service>
+
+    </services>
+
+</upgrade-config-changes>
