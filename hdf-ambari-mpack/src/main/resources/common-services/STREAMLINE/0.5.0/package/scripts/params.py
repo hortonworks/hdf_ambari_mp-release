@@ -38,6 +38,8 @@ from resource_management.core.source import InlineTemplate
 from resource_management.core.logger import Logger
 from resource_management.core.exceptions import Fail
 from utils import get_bare_principal
+
+import config_utils
 import ambari_simplejson as json # simplejson is much faster comparing to Python 2.6 json module and has the same functions set
 
 # server configurations
@@ -99,7 +101,7 @@ streamine_managed_log_dir = "/var/log/streamline"
 
 user_group = config['configurations']['cluster-env']['user_group']
 java64_home = config['ambariLevelParams']['java_home']
-streamline_env_sh_template = config['configurations']['streamline-env']['content']
+streamline_env_sh_template = config_utils.merge_env(config['configurations']['streamline-env'])
 streamline_jaas_conf_template = default("/configurations/streamline_jaas_conf/content", None)
 
 if security_enabled:

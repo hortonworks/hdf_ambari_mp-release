@@ -29,6 +29,8 @@ from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.constants import Direction
 from resource_management.core.exceptions import Fail
 
+import config_utils
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -240,7 +242,8 @@ class Master(Script):
              mode=0400)
 
         #write out authorizers file
-        authorizers_content=InlineTemplate(params.nifi_registry_authorizers_content)
+
+        authorizers_content=config_utils.append_xml_content(params.nifi_registry_authorizers_content, params.nifi_registry_authorizers_dict)
 
         File(format("{params.nifi_registry_config_dir}/authorizers.xml"),
              content=authorizers_content,
@@ -249,7 +252,7 @@ class Master(Script):
              mode=0600)
 
         #write out identity-providers.xml
-        identity_providers_content=InlineTemplate(params.nifi_registry_identity_providers_content)
+        identity_providers_content=config_utils.append_xml_content(params.nifi_registry_identity_providers_content, params.nifi_registry_identity_providers_dict)
 
         File(format("{params.nifi_registry_config_dir}/identity-providers.xml"),
              content=identity_providers_content,
@@ -258,7 +261,7 @@ class Master(Script):
              mode=0600)
 
         #write out providers file
-        providers_content=InlineTemplate(params.nifi_registry_providers_content)
+        providers_content=config_utils.append_xml_content(params.nifi_registry_providers_content, params.nifi_registry_providers_dict)
 
         File(format("{params.nifi_registry_config_dir}/providers.xml"),
              content=providers_content,

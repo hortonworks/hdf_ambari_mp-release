@@ -35,6 +35,8 @@ from resource_management.libraries.functions import get_kinit_path
 from resource_management.libraries.functions.get_not_managed_resources import get_not_managed_resources
 import ambari_simplejson as json # simplejson is much faster comparing to Python 2.6 json module and has the same functions set
 
+import config_utils
+
 # server configurations
 config = Script.get_config()
 stack_root = Script.get_stack_root()
@@ -180,7 +182,7 @@ nifi_registry_log_dir = config['configurations']['nifi-registry-env']['nifi_regi
 nifi_registry_log_file = os.path.join(nifi_registry_log_dir,'nifi-registry-setup.log')
 
 # params from nifi-registry-boostrap
-nifi_registry_env_content = config['configurations']['nifi-registry-env']['content']
+nifi_registry_env_content = config_utils.merge_env(config['configurations']['nifi-registry-env'])
 
 # params from nifi-registry-logback
 nifi_registry_logback_content = config['configurations']['nifi-registry-logback-env']['content']
@@ -195,15 +197,15 @@ nifi_registry_kerberos_realm = default("/configurations/kerberos-env/realm", Non
 
 # params from nifi-registry-authorizers-env
 nifi_registry_authorizers_content = config['configurations']['nifi-registry-authorizers-env']['content']
-
+nifi_registry_authorizers_dict = config['configurations']['nifi-registry-authorizers-env']
 # params from nifi-registry-identity-providers-env
 nifi_registry_identity_providers_content = config['configurations']['nifi-registry-identity-providers-env']['content']
-
+nifi_registry_identity_providers_dict = config['configurations']['nifi-registry-identity-providers-env']
 # params from nifi-registry-providers-env
 nifi_registry_providers_content = config['configurations']['nifi-registry-providers-env']['content']
-
+nifi_registry_providers_dict = config['configurations']['nifi-registry-providers-env']
 # params from nifi-registry-boostrap
-nifi_registry_boostrap_content = config['configurations']['nifi-registry-bootstrap-env']['content']
+nifi_registry_boostrap_content = config_utils.merge_env(config['configurations']['nifi-registry-bootstrap-env'])
 
 # params from nifi-toolkit-env
 nifi_toolkit_java_options = config['configurations']['nifi-toolkit-env']['nifi_toolkit_java_options'] if 'nifi-toolkit-env' in config['configurations'] else '-Xms128m -Xmx256m'
