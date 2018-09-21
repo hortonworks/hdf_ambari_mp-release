@@ -21,7 +21,7 @@ git clone https://<git_userid>@github.com/hortonworks/hdf_ambari_mp.git
 ```
 cd hdf_ambari_mp/hdf-ambari-mpack
 mvn versions:set -DnewVersion=${HDF_MPACK_VERSION}
-mvn clean package -DminAmbariVersion=${MIN_AMBARI_VERSION} -DmaxAmbariVersion=${MAX_AMBARI_VERSION} -Dnifiversion={NIFI_STACK_BUILD_VERSION}
+mvn clean package -DminAmbariVersion=${MIN_AMBARI_VERSION} -DmaxAmbariVersion=${MAX_AMBARI_VERSION}
 # HDF management pack will be created at target/hdf-ambari-mpack-${HDF_MPACK_VERSION}.tar.gz
 ```
 
@@ -29,7 +29,7 @@ mvn clean package -DminAmbariVersion=${MIN_AMBARI_VERSION} -DmaxAmbariVersion=${
 ```
 cd hdf_ambari_mp/hdf-ambari-mpack
 mvn versions:set -DnewVersion=0.1.0.0-1
-mvn clean package -DminAmbariVersion=2.4.0.0 -DmaxAmbariVersion=2.5.0.0  -Dnifiversion=1.2.0.3.0.0.0-137
+mvn clean package -DminAmbariVersion=2.4.0.0 -DmaxAmbariVersion=2.5.0.0
 
 #this will build the below tarball
 ls -la target/hdf-ambari-mpack-0.1.0.0-1.tar.gz

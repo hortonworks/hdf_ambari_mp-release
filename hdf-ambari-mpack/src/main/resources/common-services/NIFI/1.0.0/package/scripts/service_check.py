@@ -21,7 +21,7 @@ limitations under the License.
 import os
 import urllib2
 import httplib
-import nifi_toolkit_util
+import nifi_toolkit_util_common
 from resource_management.core import shell
 
 from resource_management.core.logger import Logger
@@ -84,7 +84,7 @@ class NifiServiceCheck(Script):
   @retry(times=30, sleep_time=5, max_sleep_time=20, backoff_factor=2, err_class=Fail)
   def check_nifi_portal_with_toolkit(urls,jdk64_home,nifi_dir,nifi_bootstrap,toolkit_tmp_dir,stack_version_buildnum):
 
-    node_manager_script = nifi_toolkit_util.get_toolkit_script('node-manager.sh', toolkit_tmp_dir, stack_version_buildnum)
+    node_manager_script = nifi_toolkit_util_common.get_toolkit_script('node-manager.sh', toolkit_tmp_dir, stack_version_buildnum)
     File(node_manager_script, mode=0755)
     command =  'ambari-sudo.sh JAVA_HOME='+jdk64_home+' '+ node_manager_script + ' -d ' + nifi_dir +' -b ' + nifi_bootstrap +' -o status -u "' + ','.join(urls) + '"'
     code, out = shell.call(command,quiet=True,logoutput=False)

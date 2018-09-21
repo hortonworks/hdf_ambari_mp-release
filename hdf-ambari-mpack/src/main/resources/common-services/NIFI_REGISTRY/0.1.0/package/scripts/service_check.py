@@ -21,7 +21,7 @@ limitations under the License.
 import os
 import urllib2
 import httplib
-import nifi_toolkit_util
+import nifi_toolkit_util_common
 from resource_management.core import shell
 
 from resource_management.core.logger import Logger
@@ -84,7 +84,7 @@ class NifiRegistryServiceCheck(Script):
     def check_nifi_registry_portal_with_toolkit(url, jdk64_home, nifi_registry_dir, nifi_registry_bootstrap, toolkit_tmp_dir, stack_version_buildnum):
         Logger.info("Checking Nifi Registry portal with toolkit")
 
-        tls_toolkit_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh', toolkit_tmp_dir, stack_version_buildnum)
+        tls_toolkit_script = nifi_toolkit_util_common.get_toolkit_script('tls-toolkit.sh', toolkit_tmp_dir, stack_version_buildnum)
         File(tls_toolkit_script, mode=0755)
 
         nifi_registry_props_file = nifi_registry_dir + '/conf/nifi-registry.properties'
@@ -124,7 +124,7 @@ class NifiRegistryServiceCheck(Script):
     def convert_properties_to_dict(jdk64_home, nifi_registry_props_file, nifi_registry_bootstrap, toolkit_tmp_dir, stack_version_buildnum):
         dict = {}
         if sudo.path_isfile(nifi_registry_props_file):
-            encrypt_tool_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh', toolkit_tmp_dir, stack_version_buildnum)
+            encrypt_tool_script = nifi_toolkit_util_common.get_toolkit_script('encrypt-config.sh', toolkit_tmp_dir, stack_version_buildnum)
             File(encrypt_tool_script, mode=0755)
 
             command =  'ambari-sudo.sh JAVA_HOME=' + jdk64_home + ' '+ encrypt_tool_script + ' --nifiRegistry --decrypt -r ' + nifi_registry_props_file + ' -b ' + nifi_registry_bootstrap

@@ -25,9 +25,9 @@
   <name>HDF Ambari Management Pack</name>
   <url>http://ambari.apache.org/</url>
   <properties>
-    <minAmbariVersion>2.6.0</minAmbariVersion>
-    <maxAmbariVersion></maxAmbariVersion>
-    <nifiversion>1.8.0.${version}</nifiversion>
+    <minAmbariVersion>2.7.0</minAmbariVersion>
+    <maxAmbariVersion>2.7.1</maxAmbariVersion>
+    <nifiversion>1.7.0.3.2.0.0-520</nifiversion>
     <buildnumber-maven-plugin-version>1.4</buildnumber-maven-plugin-version>
   </properties>
   <build>

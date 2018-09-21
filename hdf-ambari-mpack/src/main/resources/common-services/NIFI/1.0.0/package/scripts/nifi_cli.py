@@ -6,7 +6,7 @@ from resource_management.core.exceptions import Fail
 from resource_management.core.logger import Logger
 from resource_management.libraries.functions import format
 
-import nifi_toolkit_util
+import nifi_toolkit_util_common
 
 
 def nifi_cli(command=None, subcommand=None, errors_retries=12, retries_pause=10, acceptable_errors=None,
@@ -29,7 +29,7 @@ def nifi_cli(command=None, subcommand=None, errors_retries=12, retries_pause=10,
   """
   import params
   cli_env = {"JAVA_HOME": params.java_home}
-  cli_script = nifi_toolkit_util.get_toolkit_script("cli.sh", params.toolkit_tmp_dir, params.stack_version_buildnum)
+  cli_script = nifi_toolkit_util_common.get_toolkit_script("cli.sh", params.toolkit_tmp_dir, params.stack_version_buildnum)
 
   if errors_retries < 1:
     errors_retries = 1
@@ -48,9 +48,9 @@ def nifi_cli(command=None, subcommand=None, errors_retries=12, retries_pause=10,
   if subcommand is not None:
     cmd.append(subcommand)
 
-  client_opts = nifi_toolkit_util.get_client_opts()
+  client_opts = nifi_toolkit_util_common.get_client_opts()
   if params.nifi_ssl_enabled:
-    command_args.update(nifi_toolkit_util.get_client_opts())
+    command_args.update(nifi_toolkit_util_common.get_client_opts())
     command_args["proxiedEntity"] = params.nifi_initial_admin_id
   else:
     command_args["baseUrl"] = client_opts["baseUrl"]

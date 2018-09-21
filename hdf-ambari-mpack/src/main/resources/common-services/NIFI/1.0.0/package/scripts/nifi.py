@@ -18,7 +18,7 @@ limitations under the License.
 
 """
 
-import sys, nifi_toolkit_util, os, pwd, grp, signal, time, glob, socket
+import sys, nifi_toolkit_util_common, os, pwd, grp, signal, time, glob, socket
 from resource_management import *
 from resource_management.core import sudo
 from resource_management.libraries.functions import conf_select
@@ -73,7 +73,7 @@ class Master(Script):
             cd_access='a'
     )
 
-    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type=None)
+    nifi_toolkit_util_common.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type=None, service=nifi_toolkit_util_common.NIFI)
     Execute('touch ' +  params.nifi_node_log_file, user=params.nifi_user)
 
 
@@ -104,7 +104,7 @@ class Master(Script):
 
     #determine whether or not a cluster already exists based on zookeeper entries and determine if this is the first start of this node
     #if so authorizations and flow file will not be writen
-    if not sudo.path_isfile(params.nifi_flow_config_dir+'/flow.xml.gz') and nifi_toolkit_util.existing_cluster(params):
+    if not sudo.path_isfile(params.nifi_flow_config_dir+'/flow.xml.gz') and nifi_toolkit_util_common.existing_cluster(params):
       params.is_additional_node = True
 
     #write configurations
@@ -139,7 +139,7 @@ class Master(Script):
     import params
     import status_params
 
-    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type)
+    nifi_toolkit_util_common.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type, service=nifi_toolkit_util_common.NIFI)
     self.configure(env, is_starting = True)
     setup_ranger_nifi(upgrade_type=None)
 
@@ -182,13 +182,13 @@ class Master(Script):
   def write_configurations(self, params, is_starting):
 
     if os.path.isfile(params.nifi_config_dir + '/bootstrap.conf'):
-      bootstrap_current_conf = nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/bootstrap.conf')
+      bootstrap_current_conf = nifi_toolkit_util_common.convert_properties_to_dict(params.nifi_config_dir + '/bootstrap.conf')
       master_key = bootstrap_current_conf['nifi.bootstrap.sensitive.key'] if 'nifi.bootstrap.sensitive.key' in bootstrap_current_conf else None
     else:
       master_key = None
 
     if os.path.isfile(params.nifi_config_dir + '/nifi.properties'):
-      nifi_current_properties = nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties')
+      nifi_current_properties = nifi_toolkit_util_common.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties')
       if 'nifi.sensitive.props.key' in nifi_current_properties and nifi_current_properties['nifi.sensitive.props.key']:
         params.nifi_properties['nifi.sensitive.props.key'] = nifi_current_properties['nifi.sensitive.props.key']
       if 'nifi.sensitive.props.key.protected' in nifi_current_properties and nifi_current_properties['nifi.sensitive.props.key.protected']:
@@ -198,20 +198,27 @@ class Master(Script):
       params.nifi_toolkit_tls_regenerate = True
 
     #Resolve and populate required security values and hashes
-    params.nifi_properties = nifi_toolkit_util.update_nifi_ssl_properties(params.nifi_properties, params.nifi_truststore, params.nifi_node_host,
-                               params.nifi_config_dir, params.nifi_truststoreType, params.nifi_truststorePasswd,
-                               params.nifi_keystore, params.nifi_keystoreType, params.nifi_keystorePasswd, params.nifi_keyPasswd)
+    params.nifi_properties = nifi_toolkit_util_common.update_nifi_ssl_properties(params.nifi_properties, params.nifi_truststore, params.nifi_truststoreType, params.nifi_truststorePasswd,
+                               params.nifi_keystore, params.nifi_keystoreType, params.nifi_keystorePasswd, params.nifi_keyPasswd, nifi_toolkit_util_common.NIFI)
 
     #determine whether new keystore/truststore should be regenerated
-    run_tls = (params.nifi_ca_host and params.nifi_ssl_enabled) and (params.nifi_toolkit_tls_regenerate or nifi_toolkit_util.generate_keystore_truststore(nifi_current_properties,params.nifi_properties, master_key))
+    run_tls = (params.nifi_ca_host and params.nifi_ssl_enabled) and (params.nifi_toolkit_tls_regenerate or nifi_toolkit_util_common.generate_keystore_truststore(nifi_current_properties,params.nifi_properties, master_key, nifi_toolkit_util_common.NIFI))
 
     if run_tls:
-      nifi_toolkit_util.move_keystore_truststore(nifi_current_properties)
-      params.nifi_properties = nifi_toolkit_util.create_keystore_truststore(is_starting, params)
+      nifi_toolkit_util_common.move_keystore_truststore(nifi_current_properties, nifi_toolkit_util_common.NIFI)
+      params.nifi_properties = nifi_toolkit_util_common.create_keystore_truststore(
+        params.nifi_properties,
+        is_starting,
+        params.nifi_toolkit_java_options,
+        params.nifi_config_dir,
+        params.nifi_user,
+        params.nifi_group,
+        nifi_toolkit_util_common.NIFI
+      )
     elif not params.nifi_ssl_enabled:
-      params.nifi_properties = nifi_toolkit_util.clean_toolkit_client_files(nifi_current_properties, params.nifi_properties)
+      params.nifi_properties = nifi_toolkit_util_common.clean_toolkit_client_files(nifi_current_properties, params.nifi_properties, nifi_toolkit_util_common.NIFI)
     elif params.nifi_ssl_enabled and not run_tls and os.path.isfile(params.nifi_config_dir + '/nifi.properties'):
-      params.nifi_properties = nifi_toolkit_util.populate_ssl_properties(nifi_toolkit_util.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties'),params.nifi_properties,params)
+      params.nifi_properties = nifi_toolkit_util_common.populate_ssl_properties(nifi_toolkit_util_common.convert_properties_to_dict(params.nifi_config_dir + '/nifi.properties'),params.nifi_properties,params, nifi_toolkit_util_common.NIFI)
 
     #if this is an additional node being added to an existing cluster do not include the node identity information
     if params.is_additional_node:
@@ -224,17 +231,32 @@ class Master(Script):
     self.write_files(params)
 
     #Encrypt files
-    nifi_toolkit_util.encrypt_sensitive_properties(params.nifi_config_dir,params.jdk64_home,
-                                                   params.nifi_toolkit_java_options,params.nifi_user,
-                                                   master_key, params.nifi_security_encrypt_configuration_password,
-                                                   params.nifi_flow_config_dir,params.nifi_sensitive_props_key, is_starting, params.toolkit_tmp_dir,
-                                                   params.stack_support_encrypt_authorizers, params.stack_version_buildnum)
+    nifi_toolkit_util_common.encrypt_sensitive_properties(
+      params.nifi_config_dir,
+      params.jdk64_home,
+      params.nifi_toolkit_java_options,
+      params.nifi_user,
+      master_key,
+      params.nifi_security_encrypt_configuration_password,
+      is_starting,
+      params.toolkit_tmp_dir,
+      params.stack_version_buildnum,
+      nifi_toolkit_util_common.NIFI,
+      nifi_flow_config_dir=params.nifi_flow_config_dir,
+      nifi_sensitive_props_key=params.nifi_sensitive_props_key,
+      support_encrypt_authorizers=params.stack_support_encrypt_authorizers
+    )
 
     #Apply Hashed Ambari parameters by retrieving new master key and hashing required parameters for Ambari
-    bootstrap_current_conf = nifi_toolkit_util.convert_properties_to_dict(format("{params.nifi_bootstrap_file}"))
+    bootstrap_current_conf = nifi_toolkit_util_common.convert_properties_to_dict(format("{params.nifi_bootstrap_file}"))
     new_master_key = bootstrap_current_conf['nifi.bootstrap.sensitive.key'] if 'nifi.bootstrap.sensitive.key' in bootstrap_current_conf else None
     if new_master_key:
-      nifi_hashed_params = nifi_toolkit_util.update_nifi_ambari_hash_properties(params.nifi_truststorePasswd, params.nifi_keystorePasswd, params.nifi_keyPasswd, new_master_key)
+      nifi_hashed_params = nifi_toolkit_util_common.update_nifi_ambari_hash_properties(
+        params.nifi_truststorePasswd,
+        params.nifi_keystorePasswd, params.nifi_keyPasswd,
+        new_master_key,
+        nifi_toolkit_util_common.NIFI
+      )
       ModifyPropertiesFile(format("{params.nifi_config_dir}/nifi.properties"), properties = nifi_hashed_params, owner = params.nifi_user)
     else:
       raise Fail("Unable to persist ambari hashes due to no master key! Please validate this was written to bootstrap.conf file.")
