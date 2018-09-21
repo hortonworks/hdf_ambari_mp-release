@@ -36,6 +36,8 @@ from resource_management.core.logger import Logger
 from resource_management.core.exceptions import Fail
 import ambari_simplejson as json # simplejson is much faster comparing to Python 2.6 json module and has the same functions set
 
+import config_utils
+
 # server configurations
 config = Script.get_config()
 tmp_dir = Script.get_tmp_dir()
@@ -96,7 +98,7 @@ streamine_managed_log_dir = "/var/log/registry"
 
 user_group = config['configurations']['cluster-env']['user_group']
 java64_home = config['ambariLevelParams']['java_home']
-registry_env_sh_template = config['configurations']['registry-env']['content']
+registry_env_sh_template = config_utils.merge_env(config['configurations']['registry-env'])
 
 if security_enabled:
   _hostname_lowercase = config['agentLevelParams']['hostname'].lower()

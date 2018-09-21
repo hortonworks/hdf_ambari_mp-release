@@ -34,7 +34,9 @@ from resource_management.libraries.functions import conf_select
 from resource_management.libraries.functions import get_kinit_path
 from resource_management.libraries.functions.get_not_managed_resources import get_not_managed_resources
 import ambari_simplejson as json # simplejson is much faster comparing to Python 2.6 json module and has the same functions set
-    
+
+import config_utils
+
 # server configurations
 config = Script.get_config()
 stack_root = Script.get_stack_root()
@@ -245,7 +247,7 @@ nifi_user_nofile_limit = config['configurations']['nifi-env']['nifi_user_nofile_
 nifi_user_nproc_limit = config['configurations']['nifi-env']['nifi_user_nproc_limit']
 
 # params from nifi-boostrap
-nifi_env_content = config['configurations']['nifi-env']['content']
+nifi_env_content = config_utils.merge_env(config['configurations']['nifi-env'])
 
 
 # params from nifi-logback
@@ -268,16 +270,16 @@ nifi_state_management_content = config['configurations']['nifi-state-management-
 
 # params from nifi-authorizers-env
 nifi_authorizers_content = config['configurations']['nifi-authorizers-env']['content']
-
+nifi_authorizers_dict = config['configurations']['nifi-authorizers-env']
 # params from nifi-login-identity-providers-env
 nifi_login_identity_providers_content = config['configurations']['nifi-login-identity-providers-env']['content']
-
+nifi_login_identity_providers_dict = config['configurations']['nifi-login-identity-providers-env']
 # params from nifi-boostrap
-nifi_boostrap_content = config['configurations']['nifi-bootstrap-env']['content']
+nifi_boostrap_content = config_utils.merge_env(config['configurations']['nifi-bootstrap-env'])
 
 # params from nifi-bootstrap-notification-services-env
 nifi_boostrap_notification_content = config['configurations']['nifi-bootstrap-notification-services-env']['content']
-
+nifi_boostrap_notification_dict = config['configurations']['nifi-bootstrap-notification-services-env']
 # params from nifi-toolkit-env
 nifi_toolkit_java_options = config['configurations']['nifi-toolkit-env']['nifi_toolkit_java_options'] if 'nifi-toolkit-env' in config['configurations'] else '-Xms128m -Xmx256m'
 

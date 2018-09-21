@@ -35,6 +35,7 @@ from resource_management.core.logger import Logger
 from resource_management.core.source import Template
 
 import nifi_cli
+import config_utils
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -257,11 +258,11 @@ class Master(Script):
     File(format("{params.nifi_config_dir}/state-management.xml"), content=statemgmt_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
     #write out authorizers file
-    authorizers_content=InlineTemplate(params.nifi_authorizers_content)
+    authorizers_content=config_utils.append_xml_content(params.nifi_authorizers_content, params.nifi_authorizers_dict)
     File(format("{params.nifi_config_dir}/authorizers.xml"), content=authorizers_content, owner=params.nifi_user, group=params.nifi_group, mode=0600)
 
     #write out login-identity-providers.xml
-    login_identity_providers_content=InlineTemplate(params.nifi_login_identity_providers_content)
+    login_identity_providers_content=config_utils.append_xml_content(params.nifi_login_identity_providers_content, params.nifi_login_identity_providers_dict)
     File(format("{params.nifi_config_dir}/login-identity-providers.xml"), content=login_identity_providers_content, owner=params.nifi_user, group=params.nifi_group, mode=0600)
 
     #write out nifi-env in bin as 0755 (see BUG-61769)
@@ -269,7 +270,7 @@ class Master(Script):
     File(format("{params.bin_dir}/nifi-env.sh"), content=env_content, owner=params.nifi_user, group=params.nifi_group, mode=0755)
 
     #write out bootstrap-notification-services.xml
-    boostrap_notification_content=InlineTemplate(params.nifi_boostrap_notification_content)
+    boostrap_notification_content=config_utils.append_xml_content(params.nifi_boostrap_notification_content, params.nifi_boostrap_notification_dict)
     File(format("{params.nifi_config_dir}/bootstrap-notification-services.xml"), content=boostrap_notification_content, owner=params.nifi_user, group=params.nifi_group, mode=0400)
 
     #if security is enabled for kerberos create the nifi_jaas.conf file
