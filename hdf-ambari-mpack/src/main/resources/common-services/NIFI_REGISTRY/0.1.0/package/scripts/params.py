@@ -224,6 +224,7 @@ kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executab
 
 stack_support_toolkit_update = check_stack_feature('toolkit_config_update', version_for_stack_feature_checks)
 stack_support_admin_toolkit = check_stack_feature('admin_toolkit_support', version_for_stack_feature_checks)
+stack_support_nifi_toolkit_package = check_stack_feature('nifi_toolkit_package', version_for_stack_feature_checks)
 
 if security_enabled:
     _hostname_lowercase = nifi_registry_host.lower()

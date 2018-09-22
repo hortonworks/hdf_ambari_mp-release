@@ -18,7 +18,7 @@ limitations under the License.
 
 """
 
-import nifi_toolkit_util, os, time
+import nifi_toolkit_util_common, os, time
 
 from resource_management.core.exceptions import ComponentIsNotRunning
 from resource_management.core.resources.system import Directory, Execute
@@ -39,7 +39,7 @@ class CertificateAuthority(Script):
     self.install_packages(env)
 
     #Be sure ca script is in cache
-    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type=None)
+    nifi_toolkit_util_common.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type=None, service=nifi_toolkit_util_common.NIFI)
 
   def configure(self, env):
     import params
@@ -55,9 +55,9 @@ class CertificateAuthority(Script):
     )
 
     ca_json = os.path.join(params.nifi_config_dir, 'nifi-certificate-authority.json')
-    ca_dict = nifi_toolkit_util.load(ca_json)
-    nifi_toolkit_util.overlay(ca_dict, params.nifi_ca_config)
-    nifi_toolkit_util.dump(ca_json, ca_dict, params.nifi_user, params.nifi_group)
+    ca_dict = nifi_toolkit_util_common.load(ca_json)
+    nifi_toolkit_util_common.overlay(ca_dict, params.nifi_ca_config)
+    nifi_toolkit_util_common.dump(ca_json, ca_dict, params.nifi_user, params.nifi_group)
 
     generate_logfeeder_input_config('nifi', Template("input.config-nifi.json.j2", extra_imports=[default]))
 
@@ -71,7 +71,7 @@ class CertificateAuthority(Script):
   def invalidate_ca_server(self, env):
     import params
     ca_json = os.path.join(params.nifi_config_dir, 'nifi-certificate-authority.json')
-    nifi_toolkit_util.move_store(nifi_toolkit_util.load(ca_json), 'keyStore')
+    nifi_toolkit_util_common.move_store(nifi_toolkit_util_common.load(ca_json), 'keyStore')
     unlink(ca_json)
 
   def status(self, env):
@@ -82,10 +82,10 @@ class CertificateAuthority(Script):
     import params
     import status_params
 
-    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type)
+    nifi_toolkit_util_common.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type, service=nifi_toolkit_util_common.NIFI)
 
     self.configure(env)
-    ca_server_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',params.toolkit_tmp_dir, params.stack_version_buildnum)
+    ca_server_script = nifi_toolkit_util_common.get_toolkit_script('tls-toolkit.sh',params.toolkit_tmp_dir, params.stack_version_buildnum)
     run_ca_script = os.path.join(params.toolkit_tmp_dir, 'run_ca.sh')
     Directory([params.nifi_config_dir],
         owner=params.nifi_user,
@@ -118,9 +118,9 @@ class CertificateAuthority(Script):
     import params
     import status_params
 
-    nifi_toolkit_util.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type)
+    nifi_toolkit_util_common.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type, service=nifi_toolkit_util_common.NIFI)
     run_ca_script = os.path.join(params.toolkit_tmp_dir, 'run_ca.sh')
-    ca_server_script = nifi_toolkit_util.get_toolkit_script('tls-toolkit.sh',params.toolkit_tmp_dir, params.stack_version_buildnum)
+    ca_server_script = nifi_toolkit_util_common.get_toolkit_script('tls-toolkit.sh',params.toolkit_tmp_dir, params.stack_version_buildnum)
     File(ca_server_script, mode=0755)
     File(run_ca_script, mode=0755)
 

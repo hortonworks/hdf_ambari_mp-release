@@ -19,15 +19,16 @@
     <schemaVersion>2.0</schemaVersion>
     <services>
         <service>
-            <name>NIFI_REGISTRY</name>
-            <version>0.2.0</version>
+            <name>NIFI</name>
+            <version>1.8.0</version>
+            <extends>common-services/NIFI/1.7.0</extends>
 
             <osSpecifics>
                 <osSpecific>
                     <osFamily>redhat7,amazon2015,suse11,suse12,amazonlinux2</osFamily>
                     <packages>
                         <package>
-                            <name>nifi-registry_${stack_version}</name>
+                            <name>nifi_${stack_version}</name>
                         </package>
                         <package>
                             <name>nifi_${stack_version}-toolkit</name>
@@ -38,7 +39,7 @@
                     <osFamily>debian9,ubuntu14,ubuntu16</osFamily>
                     <packages>
                         <package>
-                            <name>nifi-registry-${stack_version}</name>
+                            <name>nifi-${stack_version}</name>
                         </package>
                         <package>
                             <name>nifi-${stack_version}-toolkit</name>
@@ -46,7 +47,6 @@
                     </packages>
                 </osSpecific>
             </osSpecifics>
-
         </service>
     </services>
 </metainfo>
