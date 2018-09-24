@@ -8,6 +8,7 @@
                         <type>kafka-broker</type>
                         <set key="security.inter.broker.protocol" value="SASL_PLAINTEXT"
                              if-type="kafka-broker" if-key="security.inter.broker.protocol" if-value="PLAINTEXTSASL"/>
+                        <replace key="listeners" find="PLAINTEXTSASL" replace-with="SASL_PLAINTEXT" match-all="true"/>
                     </definition>
                 </changes>
             </component>

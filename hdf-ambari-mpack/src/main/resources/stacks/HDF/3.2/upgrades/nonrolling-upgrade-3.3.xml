@@ -70,6 +70,10 @@
                 <component>NIMBUS</component>
             </service>
 
+            <service name="KNOX">
+                <component>KNOX_GATEWAY</component>
+            </service>
+
             <service name="NIFI">
                 <component>NIFI_MASTER</component>
             </service>
@@ -265,6 +269,15 @@
             </priority>
         </group>
 
+        <group xsi:type="restart" name="KNOX" title="Knox">
+            <service-check>false</service-check>
+            <skippable>true</skippable>
+            <parallel-scheduler/>
+            <service name="KNOX">
+                <component>KNOX_GATEWAY</component>
+            </service>
+        </group>
+
         <group xsi:type="restart" name="STORM" title="Storm">
             <service-check>false</service-check>
             <skippable>true</skippable>
@@ -317,6 +330,7 @@
             <direction>UPGRADE</direction>
             <skippable>true</skippable>
             <priority>
+                <service>KNOX</service>
                 <service>STORM</service>
                 <service>NIFI</service>
                 <service>NIFI_REGISTRY</service>
@@ -413,6 +427,14 @@
 
         <service name="KAFKA">
             <component name="KAFKA_BROKER">
+                <upgrade>
+                    <task xsi:type="restart-task"/>
+                </upgrade>
+            </component>
+        </service>
+
+        <service name="KNOX">
+            <component name="KNOX_GATEWAY">
                 <upgrade>
                     <task xsi:type="restart-task"/>
                 </upgrade>
