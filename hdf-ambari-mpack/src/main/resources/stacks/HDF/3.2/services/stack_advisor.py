@@ -380,7 +380,8 @@ class HDF32StackAdvisor(DefaultStackAdvisor):
 
     required_services = [
       {'service_name': 'KAFKA', 'config_type': 'ranger-kafka-security'},
-      {'service_name': 'STORM', 'config_type': 'ranger-storm-security'}
+      {'service_name': 'STORM', 'config_type': 'ranger-storm-security'},
+      {'service_name': 'KNOX', 'config_type': 'ranger-knox-security'}
     ]
 
     # recommendation for ranger url for ranger-supported plugins
