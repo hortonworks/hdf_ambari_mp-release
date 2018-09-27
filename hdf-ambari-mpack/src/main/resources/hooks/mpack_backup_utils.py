@@ -29,16 +29,7 @@ RESTORE_FAIL_MESSAGE = """Failed to restore backup '{0}'. Possible reasons:
 #   action "copy":
 #      bool: indicates if restore path need to be cleaned up
 BACKUP_LIST = [
-  ("stacks/HDP/3.0/services/AMBARI_INFRA_SOLR", ("copy", False), "stacks/HDF/3.2.b/services/AMBARI_INFRA_SOLR"),
-  ("stacks/HDP/3.0/services/AMBARI_METRICS", ("copy", False), "stacks/HDF/3.2.b/services/AMBARI_METRICS"),
-  ("stacks/HDP/3.0/services/KAFKA", ("copy", False), "stacks/HDF/3.2.b/services/KAFKA"),
-  ("stacks/HDP/3.0/services/KERBEROS", ("copy", False), "stacks/HDF/3.2.b/services/KERBEROS"),
-  ("stacks/HDP/3.0/services/KNOX", ("copy", False), "stacks/HDF/3.2.b/services/KNOX"),
-  ("stacks/HDP/3.0/services/LOGSEARCH", ("copy", False), "stacks/HDF/3.2.b/services/LOGSEARCH"),
-  ("stacks/HDP/3.0/services/RANGER", ("copy", False), "stacks/HDF/3.2.b/services/RANGER"),
-  ("stacks/HDP/3.0/services/SMARTSENSE", ("copy", False), "stacks/HDF/3.2.b/services/SMARTSENSE"),
-  ("stacks/HDP/3.0/services/STORM", ("copy", False), "stacks/HDF/3.2.b/services/STORM"),
-  ("stacks/HDP/3.0/services/ZOOKEEPER", ("copy", False), "stacks/HDF/3.2.b/services/ZOOKEEPER"),
+  ("stacks/HDP/3.0/services/SMARTSENSE", ("copy", False), "stacks/HDF/3.2.b/services/SMARTSENSE")
 ]
 
 

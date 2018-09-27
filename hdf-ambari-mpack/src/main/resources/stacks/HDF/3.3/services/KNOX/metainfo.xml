@@ -16,11 +16,113 @@
    limitations under the License.
 -->
 <metainfo>
-  <schemaVersion>2.0</schemaVersion>
-  <services>
-    <service>
-      <name>KNOX</name>
-      <version>1.0.0</version>
-    </service>
-  </services>
+    <schemaVersion>2.0</schemaVersion>
+    <services>
+        <service>
+            <name>KNOX</name>
+            <displayName>Knox</displayName>
+            <comment>Provides a single point of authentication and access for Apache Hadoop services in a cluster</comment>
+            <version>0.5.0.3.3</version>
+            <components>
+                <component>
+                    <name>KNOX_GATEWAY</name>
+                    <displayName>Knox Gateway</displayName>
+                    <category>MASTER</category>
+                    <cardinality>1+</cardinality>
+                    <versionAdvertised>true</versionAdvertised>
+                    <commandScript>
+                        <script>scripts/knox_gateway.py</script>
+                        <scriptType>PYTHON</scriptType>
+                        <timeout>1200</timeout>
+                    </commandScript>
+                    <logs>
+                        <log>
+                            <logId>knox_gateway</logId>
+                            <primary>true</primary>
+                        </log>
+                        <log>
+                            <logId>knox_cli</logId>
+                        </log>
+                        <log>
+                            <logId>knox_ldap</logId>
+                        </log>
+                    </logs>
+                    <customCommands>
+                        <customCommand>
+                            <name>STARTDEMOLDAP</name>
+                            <commandScript>
+                                <script>scripts/knox_gateway.py</script>
+                                <scriptType>PYTHON</scriptType>
+                                <timeout>600</timeout>
+                            </commandScript>
+                        </customCommand>
+                        <customCommand>
+                            <name>STOPDEMOLDAP</name>
+                            <commandScript>
+                                <script>scripts/knox_gateway.py</script>
+                                <scriptType>PYTHON</scriptType>
+                                <timeout>600</timeout>
+                            </commandScript>
+                        </customCommand>
+                    </customCommands>
+                </component>
+            </components>
+
+            <osSpecifics>
+                <osSpecific>
+                    <osFamily>redhat7,amazonlinux2,redhat6,suse11,suse12</osFamily>
+                    <packages>
+                        <package>
+                            <name>knox_${stack_version}</name>
+                        </package>
+                    </packages>
+                </osSpecific>
+                <osSpecific>
+                    <osFamily>debian7,debian9,ubuntu12,ubuntu14,ubuntu16</osFamily>
+                    <packages>
+                        <package>
+                            <name>knox-${stack_version}</name>
+                        </package>
+                    </packages>
+                </osSpecific>
+            </osSpecifics>
+
+            <commandScript>
+                <script>scripts/service_check.py</script>
+                <scriptType>PYTHON</scriptType>
+                <timeout>300</timeout>
+            </commandScript>
+
+            <configuration-dependencies>
+                <config-type>gateway-site</config-type>
+                <config-type>gateway-log4j</config-type>
+                <config-type>topology</config-type>
+                <config-type>admin-topology</config-type>
+                <config-type>knoxsso-topology</config-type>
+                <config-type>ranger-knox-plugin-properties</config-type>
+                <config-type>ranger-knox-audit</config-type>
+                <config-type>ranger-knox-policymgr-ssl</config-type>
+                <config-type>ranger-knox-security</config-type>
+            </configuration-dependencies>
+
+            <themes>
+                <theme>
+                    <fileName>credentials.json</fileName>
+                    <default>true</default>
+                </theme>
+                <theme>
+                    <fileName>directories.json</fileName>
+                    <default>true</default>
+                </theme>
+            </themes>
+
+            <quickLinksConfigurations>
+                <quickLinksConfiguration>
+                    <fileName>quicklinks.json</fileName>
+                    <default>true</default>
+                </quickLinksConfiguration>
+            </quickLinksConfigurations>
+
+        </service>
+    </services>
 </metainfo>
