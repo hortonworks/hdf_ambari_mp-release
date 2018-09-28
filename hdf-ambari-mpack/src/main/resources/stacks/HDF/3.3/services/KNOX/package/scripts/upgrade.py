@@ -139,7 +139,7 @@ def _get_directory_mappings_during_upgrade():
 
     # the data directory is always a symlink to the "correct" data directory in /var/lib/knox
     # such as /var/lib/knox/data or /var/lib/knox/data-2.4.0.0-1234
-    knox_data_dir = STACK_ROOT_DEFAULT + '/current/knox-server/data'
+    knox_data_dir = params.stack_root + '/current/knox-server/data'
 
     directories = { knox_data_dir: BACKUP_DATA_ARCHIVE }
 
