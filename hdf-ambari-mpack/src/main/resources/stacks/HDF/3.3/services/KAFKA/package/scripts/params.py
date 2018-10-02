@@ -195,6 +195,12 @@ else:
     kafka_jaas_principal = None
     kafka_keytab_path = None
 
+if kerberos_security_enabled:
+  # zookeeper principal
+  zookeeper_principal = default("/configurations/zookeeper-env/zookeeper_principal_name", "zookeeper@EXAMPLE.COM")
+  zookeeper_principal_primary = get_bare_principal(zookeeper_principal)
+  kafka_kerberos_params += format(" -Dzookeeper.sasl.client.username={zookeeper_principal_primary} ")
+
 # for curl command in ranger plugin to get db connector
 jdk_location = config['ambariLevelParams']['jdk_location']
 
