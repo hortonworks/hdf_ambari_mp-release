@@ -317,7 +317,8 @@ class HDF32StackAdvisor(DefaultStackAdvisor):
     # Recommend Ranger supported service's audit properties
     ranger_services = [
       {'service_name': 'KAFKA', 'audit_file': 'ranger-kafka-audit'},
-      {'service_name': 'STORM', 'audit_file': 'ranger-storm-audit'}
+      {'service_name': 'STORM', 'audit_file': 'ranger-storm-audit'},
+      {'service_name': 'KNOX', 'audit_file': 'ranger-knox-audit'}
     ]
 
     for item in range(len(ranger_services)):
@@ -341,7 +342,8 @@ class HDF32StackAdvisor(DefaultStackAdvisor):
 
     ranger_plugins_serviceuser = [
       {'service_name': 'STORM', 'file_name': 'storm-env', 'config_name': 'storm_user', 'target_configname': 'ranger.plugins.storm.serviceuser'},
-      {'service_name': 'KAFKA', 'file_name': 'kafka-env', 'config_name': 'kafka_user', 'target_configname': 'ranger.plugins.kafka.serviceuser'}
+      {'service_name': 'KAFKA', 'file_name': 'kafka-env', 'config_name': 'kafka_user', 'target_configname': 'ranger.plugins.kafka.serviceuser'},
+      {'service_name': 'KNOX', 'file_name': 'knox-env', 'config_name': 'knox_user', 'target_configname': 'ranger.plugins.knox.serviceuser'}
     ]
 
     for item in range(len(ranger_plugins_serviceuser)):
