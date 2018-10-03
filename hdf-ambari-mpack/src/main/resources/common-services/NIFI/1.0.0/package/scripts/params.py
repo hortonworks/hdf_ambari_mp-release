@@ -19,6 +19,7 @@ limitations under the License.
 """
 
 from resource_management import *
+from resource_management import get_bare_principal
 from resource_management.libraries.script.script import Script
 import sys, os, glob, socket, re
 from resource_management.libraries.functions import format
@@ -348,6 +349,9 @@ if security_enabled:
     nifi_service_keytab = nifi_properties['nifi.kerberos.service.keytab.location']
     nifi_jaas_conf_template = config['configurations']['nifi-jaas-conf']['content']
     nifi_jaas_conf= nifi_config_dir +"/nifi_jaas.conf"
+
+  zookeeper_principal = default("/configurations/zookeeper-env/zookeeper_principal_name", "zookeeper/_HOST@EXAMPLE.COM")
+  zookeeper_principal_primary = get_bare_principal(zookeeper_principal)
 
 # ranger host
 # E.g., 2.3
