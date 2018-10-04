@@ -177,6 +177,10 @@ if security_enabled:
     _kafka_principal_name = default("/configurations/kafka-env/kafka_principal_name", None)
     kafka_bare_jaas_principal = get_bare_principal(_kafka_principal_name)
 
+    # zookeeper principal
+    zookeeper_principal = default("/configurations/zookeeper-env/zookeeper_principal_name", "zookeeper@EXAMPLE.COM")
+    zookeeper_principal_primary = get_bare_principal(zookeeper_principal)
+
 set_instanceId = "false"
 if 'cluster-env' in config['configurations'] and \
         'metrics_collector_external_hosts' in config['configurations']['cluster-env']:
