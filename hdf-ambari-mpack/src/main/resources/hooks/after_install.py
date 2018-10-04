@@ -20,7 +20,7 @@ limitations under the License.
 
 import os
 
-import mpack_backup_utils
+import smartsense_versioner
 from switch_addon_services import switch_addon_services
 
 
@@ -33,5 +33,5 @@ def main():
 
 
 if __name__ == "__main__":
-  mpack_backup_utils.do_restore()
+  smartsense_versioner.fix_smartsense_versions()
   exit(main())
