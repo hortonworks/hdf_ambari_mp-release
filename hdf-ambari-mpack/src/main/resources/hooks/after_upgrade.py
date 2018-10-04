@@ -1,4 +1,4 @@
-import mpack_backup_utils
+import smartsense_versioner
 
 if __name__ == "__main__":
-  mpack_backup_utils.do_restore()
+  smartsense_versioner.fix_smartsense_versions()
