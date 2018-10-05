@@ -59,7 +59,8 @@ def kafka(upgrade_type=None):
          Logger.info("Kafka kerberos security is enabled.")
 
          if "SASL" not in listeners:
-             listeners = kafka_server_config['listeners'].replace("PLAINTEXT", "SASL_PLAINTEXT")
+             listeners = kafka_server_config['listeners'].replace("PLAINTEXT://", "SASL_PLAINTEXT://")
+             listeners = listeners.replace("PLAINTEXTSASL://", "SASL_PLAINTEXT://")
              kafka_server_config['listeners'] = listeners
 
          kafka_server_config['advertised.listeners'] = listeners
