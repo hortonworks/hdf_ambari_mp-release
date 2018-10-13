@@ -57,6 +57,7 @@
         <config-type>registry-log4j</config-type>
         <config-type>registry-logsearch-conf</config-type>
         <config-type>registry-ssl-config</config-type>
+        <config-type>registry-sso-config</config-type>
       </configuration-dependencies>
 
       <themes>
@@ -92,6 +93,12 @@
           </packages>
         </osSpecific>
       </osSpecifics>
+
+      <sso>
+        <supported>true</supported>
+        <enabledConfiguration>registry-sso-config/registry.sso.enabled</enabledConfiguration>
+      </sso>
+
       <quickLinksConfigurations>
         <quickLinksConfiguration>
           <fileName>quicklinks.json</fileName>
