@@ -10,6 +10,12 @@
                 <set key="ranger.plugin.kafka.ambari.cluster.name" value="{{cluster_name}}"
                   if-type="ranger-kafka-plugin-properties" if-key="ranger-kafka-plugin-enabled" if-key-state="present"/>
               </definition>
+              <definition xsi:type="configure" id="hdf_3_1_kafka_plaintext_sasl_config_change">
+                <type>kafka-broker</type>
+                <set key="security.inter.broker.protocol" value="SASL_PLAINTEXT"
+                       if-type="kafka-broker" if-key="security.inter.broker.protocol" if-value="PLAINTEXTSASL"/>
+                <replace key="listeners" find="PLAINTEXTSASL://" replace-with="SASL_PLAINTEXT://"/>
+              </definition>
             </changes>
           </component>
         </service>
