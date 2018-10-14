@@ -40,9 +40,33 @@ modules:
       # inmemory schema version cache entry expiry interval after access
       schemaCacheExpiryInterval: {{registry_schema_cache_expiry_interval}}
 
-{% if security_enabled or stack_support_rewrite_uri or stack_support_remove_rootpath %}
+{% if security_enabled or registry_sso_enabled or stack_support_rewrite_uri or stack_support_remove_rootpath %}
 servletFilters:
 {% endif %}
+{% if registry_sso_enabled %}
+  - className: {{registry_servlet_filter}}
+    params:
+      type: "com.hortonworks.registries.auth.server.JWTAuthenticationHandler"
+      token.validity: {{registry_authentication_sso_token_validity}}
+      authentication.provider.url: "{{registry_authentication_provider_url}}"
+      public.key.pem: "{{registry_public_key_pem}}"
+{% if registry_sso_non_brower_user_agents %}
+      registry.non-browser.user-agents : "{{registry_sso_non_brower_user_agents}}"
+{% endif %}
+{% if registry_sso_expected_jwt_audiences %}
+      registry.expected.jwt.audiences: "{{registry_sso_expected_jwt_audiences}}"
+{% endif %}
+{% if registry_sso_jwt_cookie_name %}
+      registry.jwt.cookie.name: "{{registry_sso_jwt_cookie_name}}"
+{% endif %}
+{% if registry_sso_cookie_path %}
+      registry.cookie.path: "{{registry_sso_cookie_path}}"
+{% endif %}
+{% if registry_sso_cookie_domain %}
+      registry.cookie.domain: "{{registry_sso_cookie_domain}}"
+{% endif %}
+{% endif %}
+
 {% if security_enabled %}
   - className: {{registry_servlet_filter}}
     params:
@@ -51,10 +75,14 @@ servletFilters:
       kerberos.keytab: "{{registry_ui_keytab_path}}"
       kerberos.name.rules: "{{registry_servlet_kerberos_name_rules}}"
       token.validity: "{{registry_servlet_token_validity}}"
+{% if registry_kerberos_non_browser_user_agents %}
+      registry.non-browser.user-agents : "{{registry_kerberos_non_browser_user_agents}}"
+{% endif %}
 {% if stack_support_allowed_resources %}
       allowed.resources: "401.html,back-default.png,favicon.ico,/invalidate,/node/debut"
 {% endif %}
-{%endif%}
+{% endif %}
+
 {% if stack_support_rewrite_uri or stack_support_remove_rootpath %}
   - className: "com.hortonworks.registries.schemaregistry.webservice.RewriteUriFilter"
     params:

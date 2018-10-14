@@ -94,7 +94,6 @@ registry_log_dir = config['configurations']['registry-env']['registry_log_dir']
 
 # This is hardcoded on the registry bash process lifecycle on which we have no control over
 registry_managed_pid_dir = "/var/run/registry"
-streamine_managed_log_dir = "/var/log/registry"
 
 user_group = config['configurations']['cluster-env']['user_group']
 java64_home = config['ambariLevelParams']['java_home']
@@ -110,6 +109,7 @@ if security_enabled:
   registry_servlet_kerberos_name_rules = config['configurations']['registry-common']['kerberos.name.rules']
   #registry_servlet_token_validity = (config['configurations']['registry-common']['token.validity'])
   registry_servlet_token_validity = 36000
+  registry_kerberos_non_browser_user_agents = config['configurations']['registry-common']['registry.kerberos.non-browser.user-agents']
 
 #SSL related configs
 if 'registry-ssl-config' in config['configurations']:
@@ -126,6 +126,23 @@ if 'registry-ssl-config' in config['configurations']:
   registry_validatePeers = config['configurations']['registry-ssl-config']['registry.validatePeers']
 else:
   registry_ssl_enabled = False
+
+#SSO related configs
+if 'registry-sso-config' in config['configurations']:
+  registry_sso_enabled = config['configurations']['registry-sso-config']['registry.sso.enabled']
+  registry_authentication_provider_url = config['configurations']['registry-sso-config']['registry.authentication.provider.url']
+  registry_public_key_pem = config['configurations']['registry-sso-config']['registry.public.key.pem']
+  registry_authentication_sso_token_validity = config['configurations']['registry-sso-config']['registry.token.validity']
+  registry_servlet_filter = "com.hortonworks.registries.auth.server.AuthenticationFilter"
+
+  #JWT cookie params
+  registry_sso_expected_jwt_audiences = config['configurations']['registry-sso-config']['registry.expected.jwt.audiences']
+  registry_sso_jwt_cookie_name = config['configurations']['registry-sso-config']['registry.jwt.cookie.name']
+  registry_sso_cookie_path = config['configurations']['registry-sso-config']['registry.cookie.path']
+  registry_sso_cookie_domain = config['configurations']['registry-sso-config']['registry.cookie.domain']
+  registry_sso_non_brower_user_agents = config['configurations']['registry-sso-config']['registry.sso.non-browser.user-agents']
+else:
+  registry_sso_enabled = False
 
 registry_log_dir = config['configurations']['registry-env']['registry_log_dir']
 registry_log_maxbackupindex = config['configurations']['registry-log4j']['registry_log_maxbackupindex']
