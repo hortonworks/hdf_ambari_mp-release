@@ -13,15 +13,17 @@ import traceback
 from urlparse import urlparse
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-STACKS_DIR = os.path.join(SCRIPT_DIR, '../../../../')
+STACKS_DIR = os.path.join(SCRIPT_DIR, '../../../../../stacks/')
 PARENT_FILE = os.path.join(STACKS_DIR, 'service_advisor.py')
 
 try:
-  with open(PARENT_FILE, 'rb') as fp:
-    service_advisor = imp.load_module('service_advisor', fp, PARENT_FILE, ('.py', 'rb', imp.PY_SOURCE))
+    if "BASE_SERVICE_ADVISOR" in os.environ:
+        PARENT_FILE = os.environ["BASE_SERVICE_ADVISOR"]
+    with open(PARENT_FILE, 'rb') as fp:
+        service_advisor = imp.load_module('service_advisor', fp, PARENT_FILE, ('.py', 'rb', imp.PY_SOURCE))
 except Exception as e:
-  traceback.print_exc()
-  print "Failed to load parent"
+    traceback.print_exc()
+    print "Failed to load parent"
 
 class HDP21SMARTSENSEServiceAdvisor(service_advisor.ServiceAdvisor):
 
@@ -41,12 +43,12 @@ class HDP21SMARTSENSEServiceAdvisor(service_advisor.ServiceAdvisor):
 
         if 'hst-server-conf' in services['configurations'] and 'properties' in services['configurations']['hst-server-conf']:
             if 'server.ssl_enabled' in services['configurations']['hst-server-conf']['properties'] \
-                and (services['configurations']['hst-server-conf']['properties']['server.ssl_enabled'] == True \
-                      or str(services['configurations']['hst-server-conf']['properties']['server.ssl_enabled']).lower()) == 'true':
-                    protocol = "https"
+                    and (services['configurations']['hst-server-conf']['properties']['server.ssl_enabled'] == True \
+                         or str(services['configurations']['hst-server-conf']['properties']['server.ssl_enabled']).lower()) == 'true':
+                protocol = "https"
 
             if 'server.port' in services['configurations']['hst-server-conf']['properties']:
-                    port = services['configurations']['hst-server-conf']['properties']['server.port']
+                port = services['configurations']['hst-server-conf']['properties']['server.port']
 
             hst_server_hostnames = self.getComponentHostNames(services, "SMARTSENSE", "HST_SERVER")
             if hst_server_hostnames :
@@ -81,69 +83,69 @@ class HDP21SMARTSENSEServiceAdvisor(service_advisor.ServiceAdvisor):
         # If activity-conf/global.activity.analyzer.user is available, append it to the set of users
         # listed in yarn-site/yarn.admin.acl
         if global_activity_analyzer_user is not None and global_activity_analyzer_user != '':
-          if ('yarn-site' in services['configurations']) and ('properties' in services['configurations']['yarn-site']):
-            yarn_site_properties = services["configurations"]["yarn-site"]["properties"]
+            if ('yarn-site' in services['configurations']) and ('properties' in services['configurations']['yarn-site']):
+                yarn_site_properties = services["configurations"]["yarn-site"]["properties"]
 
-            if 'yarn-site' in configurations and 'properties' in configurations['yarn-site'] \
-              and 'yarn.admin.acl' in configurations['yarn-site']['properties']:
-              yarn_admin_acl = configurations['yarn-site']['properties']['yarn.admin.acl']
-            elif 'yarn.admin.acl' in yarn_site_properties:
-              yarn_admin_acl = yarn_site_properties['yarn.admin.acl']
-            else:
-              yarn_admin_acl = None
+                if 'yarn-site' in configurations and 'properties' in configurations['yarn-site'] \
+                        and 'yarn.admin.acl' in configurations['yarn-site']['properties']:
+                    yarn_admin_acl = configurations['yarn-site']['properties']['yarn.admin.acl']
+                elif 'yarn.admin.acl' in yarn_site_properties:
+                    yarn_admin_acl = yarn_site_properties['yarn.admin.acl']
+                else:
+                    yarn_admin_acl = None
 
-            # Create a unique set of user names for the new yarn.admin.acl
-            user_names = set()
-            user_names.add(global_activity_analyzer_user)
+                # Create a unique set of user names for the new yarn.admin.acl
+                user_names = set()
+                user_names.add(global_activity_analyzer_user)
 
-            if yarn_admin_acl is not None and yarn_admin_acl != '':
-              # Parse yarn_admin_acl to get a set of unique user names
-              for user_name in yarn_admin_acl.split(','):
-                user_name = user_name.strip()
-                if user_name:
-                  user_names.add(user_name)
+                if yarn_admin_acl is not None and yarn_admin_acl != '':
+                    # Parse yarn_admin_acl to get a set of unique user names
+                    for user_name in yarn_admin_acl.split(','):
+                        user_name = user_name.strip()
+                        if user_name:
+                            user_names.add(user_name)
 
-            yarn_admin_acl = ','.join(user_names)
+                yarn_admin_acl = ','.join(user_names)
 
-            putYarnSiteProperty = self.putProperty(configurations, "yarn-site", services)
-            putYarnSiteProperty('yarn.admin.acl', yarn_admin_acl)
+                putYarnSiteProperty = self.putProperty(configurations, "yarn-site", services)
+                putYarnSiteProperty('yarn.admin.acl', yarn_admin_acl)
 
 
         # If activity-conf/global.activity.analyzer.user or activity-conf/activity.explorer.user are
         # available, append them to the set of users listed in ams-hbase-site/hbase.superuser
         if (global_activity_analyzer_user is not None and global_activity_analyzer_user != '') \
-          or (activity_explorer_user is not None and activity_explorer_user != ''):
+                or (activity_explorer_user is not None and activity_explorer_user != ''):
 
-          if ('ams-hbase-site' in services['configurations']) and ('properties' in services['configurations']['ams-hbase-site']):
-            ams_hbase_site_properties = services["configurations"]["ams-hbase-site"]["properties"]
+            if ('ams-hbase-site' in services['configurations']) and ('properties' in services['configurations']['ams-hbase-site']):
+                ams_hbase_site_properties = services["configurations"]["ams-hbase-site"]["properties"]
 
-            if 'ams-hbase-site' in configurations and 'properties' in configurations['ams-hbase-site'] \
-              and 'hbase.superuser' in configurations['ams-hbase-site']['properties']:
-              hbase_superuser = configurations['ams-hbase-site']['properties']['hbase.superuse']
-            elif 'hbase.superuser' in ams_hbase_site_properties:
-              hbase_superuser = ams_hbase_site_properties['hbase.superuser']
-            else:
-              hbase_superuser = None
+                if 'ams-hbase-site' in configurations and 'properties' in configurations['ams-hbase-site'] \
+                        and 'hbase.superuser' in configurations['ams-hbase-site']['properties']:
+                    hbase_superuser = configurations['ams-hbase-site']['properties']['hbase.superuse']
+                elif 'hbase.superuser' in ams_hbase_site_properties:
+                    hbase_superuser = ams_hbase_site_properties['hbase.superuser']
+                else:
+                    hbase_superuser = None
 
-            # Create a unique set of user names for the new hbase.superuser value
-            user_names = set()
-            if global_activity_analyzer_user is not None and global_activity_analyzer_user != '':
-              user_names.add(global_activity_analyzer_user)
+                # Create a unique set of user names for the new hbase.superuser value
+                user_names = set()
+                if global_activity_analyzer_user is not None and global_activity_analyzer_user != '':
+                    user_names.add(global_activity_analyzer_user)
 
-            if activity_explorer_user is not None and activity_explorer_user != '':
-              user_names.add(activity_explorer_user)
+                if activity_explorer_user is not None and activity_explorer_user != '':
+                    user_names.add(activity_explorer_user)
 
-            # Parse hbase_superuser to get a set of unique user names
-            if hbase_superuser is not None and hbase_superuser != '':
-              for user_name in hbase_superuser.split(','):
-                user_name = user_name.strip()
-                if user_name:
-                  user_names.add(user_name)
+                # Parse hbase_superuser to get a set of unique user names
+                if hbase_superuser is not None and hbase_superuser != '':
+                    for user_name in hbase_superuser.split(','):
+                        user_name = user_name.strip()
+                        if user_name:
+                            user_names.add(user_name)
 
-            hbase_superuser = ','.join(user_names)
+                hbase_superuser = ','.join(user_names)
 
-            putAmsHbaseSiteProperty = self.putProperty(configurations, "ams-hbase-site", services)
-            putAmsHbaseSiteProperty('hbase.superuser', hbase_superuser)
+                putAmsHbaseSiteProperty = self.putProperty(configurations, "ams-hbase-site", services)
+                putAmsHbaseSiteProperty('hbase.superuser', hbase_superuser)
 
     def getServiceComponentLayoutValidations(self, services, hosts):
         return []
@@ -156,8 +158,7 @@ class HDP30SMARTSENSEServiceAdvisor(HDP21SMARTSENSEServiceAdvisor):
         self.as_super = super(HDP30SMARTSENSEServiceAdvisor, self)
         self.as_super.__init__(*args, **kwargs)
 
-class HDF32SMARTSENSEServiceAdvisor(HDP21SMARTSENSEServiceAdvisor):
+class HDF32bSMARTSENSEServiceAdvisor(HDP21SMARTSENSEServiceAdvisor):
     def __init__(self, *args, **kwargs):
-        self.as_super = super(HDF32SMARTSENSEServiceAdvisor, self)
+        self.as_super = super(HDF32bSMARTSENSEServiceAdvisor, self)
         self.as_super.__init__(*args, **kwargs)
-
