@@ -75,7 +75,7 @@ authorizerConfiguration:
 loginConfiguration:
   className: "com.hortonworks.registries.auth.KerberosLogin"
   params:
-    kinit.cmd: {{streamline_kinit_cmd}}
+    kinit.cmd: {{kinit_path_local}}
     ticket.renew.window.factor: {{streamline_ticket_renew_window_factor}}
     ticket.renew.jitter: {{streamline_ticket_renew_jitter}}
     min.time.before.relogin: {{streamline_min_time_before_login}}
