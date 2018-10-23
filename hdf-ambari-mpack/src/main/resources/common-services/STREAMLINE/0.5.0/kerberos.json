@@ -42,8 +42,7 @@
               "admin.principals": "['{{streamline_bare_principal}}']",
               "ticket.renew.window.factor": "0.8",
               "ticket.renew.jitter": "0.05",
-              "min.time.before.login": "60000",
-              "kinit.cmd": "/usr/bin/kinit"
+              "min.time.before.login": "60000"
           }
         }
       ],

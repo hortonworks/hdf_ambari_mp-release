@@ -123,7 +123,6 @@ if security_enabled:
   streamline_kerberos_params = "-Djava.security.auth.login.config="+ conf_dir +"/streamline_jaas.conf"
   streamline_authorizer_class = config['configurations']['streamline-common']['authorizer.class.name']
   streamline_admin_principals = config['configurations']['streamline-common']['admin.principals'].replace("{{streamline_bare_principal}}", streamline_bare_principal)
-  streamline_kinit_cmd = config['configurations']['streamline-common']['kinit.cmd']
   streamline_ticket_renew_window_factor = config['configurations']['streamline-common']['ticket.renew.window.factor']
   streamline_ticket_renew_jitter = config['configurations']['streamline-common']['ticket.renew.jitter']
   streamline_min_time_before_login = config['configurations']['streamline-common']['min.time.before.login']
