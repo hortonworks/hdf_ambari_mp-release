@@ -23,6 +23,19 @@
                         <type>nifi-properties</type>
                         <set key="nifi.version" value="1.8.0.{{stack_version_buildnum}}"/>
                     </definition>
+
+                    <!-- Remove configuration from nifi-properties -->
+                    <definition xsi:type="configure" id="hdf_3_3_remove_need_client_auth_nifi_properties">
+                        <type>nifi-properties</type>
+                        <transfer operation="delete" delete-key="nifi.security.needClientAuth" />
+                    </definition>
+
+                    <!-- Remove configuration from nifi-ambari-ssl-config -->
+                    <definition xsi:type="configure" id="hdf_3_3_remove_need_client_auth_nifi_ambari_ssl_config">
+                        <type>nifi-ambari-ssl-config</type>
+                        <transfer operation="delete" delete-key="nifi.security.needClientAuth" />
+                    </definition>
+
                 </changes>
             </component>
         </service>
