@@ -167,10 +167,13 @@ nifi_keyPasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.securi
 nifi_truststore = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststore']
 nifi_truststoreType = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststoreType']
 nifi_truststorePasswd = config['configurations']['nifi-ambari-ssl-config']['nifi.security.truststorePasswd']
-nifi_needClientAuth = config['configurations']['nifi-ambari-ssl-config']['nifi.security.needClientAuth']
 nifi_initial_admin_id = config['configurations']['nifi-ambari-ssl-config']['nifi.initial.admin.identity']
 nifi_ssl_config_content = config['configurations']['nifi-ambari-ssl-config']['content']
 
+if 'nifi.security.needClientAuth' in config['configurations']['nifi-ambari-ssl-config']:
+  nifi_needClientAuth = config['configurations']['nifi-ambari-ssl-config']['nifi.security.needClientAuth']
+else:
+  nifi_needClientAuth = ""
 
 #default keystore/truststore type if empty
 nifi_keystoreType = 'jks' if len(nifi_keystoreType) == 0 else nifi_keystoreType

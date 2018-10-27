@@ -213,15 +213,6 @@
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Update NiFi Properties">
                 <task xsi:type="configure" id="hdf_3_3_0_0_update_nifi_properties_configs"/>
             </execute-stage>
-
-            <execute-stage service="NIFI" component="NIFI_MASTER" title="Remove Need Client Auth - NiFi Properties">
-                <task xsi:type="configure" id="hdf_3_3_remove_need_client_auth_nifi_properties"/>
-            </execute-stage>
-
-            <execute-stage service="NIFI" component="NIFI_MASTER" title="Remove Need Client Auth - NiFi Ambari SSL Config">
-                <task xsi:type="configure" id="hdf_3_3_remove_need_client_auth_nifi_ambari_ssl_config"/>
-            </execute-stage>
-
         </group>
 
         <!--
