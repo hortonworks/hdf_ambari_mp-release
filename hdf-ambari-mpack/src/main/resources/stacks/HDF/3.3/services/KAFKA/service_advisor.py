@@ -312,11 +312,11 @@ class KafkaRecommender(service_advisor.ServiceAdvisor):
   def update_listeners_to_sasl(self, services, putKafkaBrokerProperty):
     try:
       listeners = services['configurations']['kafka-broker']['properties']['listeners']
-      if listeners and "PLAINTEXTSASL://" in listeners:
-        listeners = listeners.replace("PLAINTEXTSASL://", "SASL_PLAINTEXT://")
-      if listeners and "PLAINTEXT://" in listeners:
-        listeners = listeners.replace('PLAINTEXT://', 'SASL_PLAINTEXT://')
-      putKafkaBrokerProperty('listeners', listeners)
+      if listeners:
+        listeners = re.sub(r"(^|\b)PLAINTEXT://", "SASL_PLAINTEXT://", listeners)
+        listeners = re.sub(r"(^|\b)PLAINTEXTSASL://", "SASL_PLAINTEXT://", listeners)
+        listeners = re.sub(r"(^|\b)SSL://", "SASL_SSL://", listeners)
+        putKafkaBrokerProperty('listeners', listeners)
     except KeyError as e:
       self.logger.info('Cannot replace PLAINTEXT to SASL_PLAINTEXT in listeners. KeyError: %s' % e)
 
