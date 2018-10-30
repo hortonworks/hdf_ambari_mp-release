@@ -31,7 +31,7 @@ from resource_management.libraries.functions.generate_logfeeder_input_config imp
 from resource_management.libraries.functions.stack_features import check_stack_feature
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions import Direction
-
+import re
 
 from resource_management.core.logger import Logger
 
@@ -58,10 +58,11 @@ def kafka(upgrade_type=None):
        if params.kerberos_security_enabled and params.kafka_kerberos_enabled:
          Logger.info("Kafka kerberos security is enabled.")
 
-         if "SASL" not in listeners:
-             listeners = kafka_server_config['listeners'].replace("PLAINTEXT://", "SASL_PLAINTEXT://")
-             listeners = listeners.replace("PLAINTEXTSASL://", "SASL_PLAINTEXT://")
-             kafka_server_config['listeners'] = listeners
+         listeners = kafka_server_config['listeners']
+         listeners = re.sub(r"(^|\b)PLAINTEXT://", "SASL_PLAINTEXT://", listeners)
+         listeners = re.sub(r"(^|\b)PLAINTEXTSASL://", "SASL_PLAINTEXT://", listeners)
+         listeners = re.sub(r"(^|\b)SSL://", "SASL_SSL://", listeners)
+         kafka_server_config['listeners'] = listeners
 
          kafka_server_config['advertised.listeners'] = listeners
          Logger.info(format("Kafka advertised listeners: {listeners}"))
