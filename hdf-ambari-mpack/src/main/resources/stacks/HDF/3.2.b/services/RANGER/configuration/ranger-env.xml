@@ -83,7 +83,7 @@
     <description>This is the ambari user created for creating repositories and policies in Ranger Admin for each plugin</description>
     <on-ambari-upgrade add="false"/>
   </property>
-  <property>
+  <property require-input="true">
     <name>ranger_admin_password</name>
     <value/>
     <property-type>PASSWORD</property-type>
@@ -102,7 +102,7 @@
     <description>This is the username for default admin user that is used for creating ambari user in Ranger Admin</description>
     <on-ambari-upgrade add="false"/>
   </property>
-  <property>
+  <property require-input="true">
     <name>admin_password</name>
     <value></value>
     <property-type>PASSWORD</property-type>
@@ -550,7 +550,7 @@
     </value-attributes>
     <on-ambari-upgrade add="false"/>
   </property>
-  <property>
+  <property require-input="true">
     <name>rangerusersync_user_password</name>
     <value></value>
     <property-type>PASSWORD</property-type>
@@ -562,7 +562,7 @@
     </value-attributes>
     <on-ambari-upgrade add="false"/>
   </property>
-  <property>
+  <property require-input="true">
     <name>rangertagsync_user_password</name>
     <value></value>
     <property-type>PASSWORD</property-type>
@@ -574,7 +574,7 @@
     </value-attributes>
     <on-ambari-upgrade add="false"/>
   </property>
-  <property>
+  <property require-input="true">
     <name>keyadmin_user_password</name>
     <value></value>
     <property-type>PASSWORD</property-type>
@@ -584,6 +584,27 @@
       <type>password</type>
       <overridable>false</overridable>
     </value-attributes>
+    <on-ambari-upgrade add="false"/>
+  </property>
+  <property>
+    <name>ranger_admin_max_heap_size</name>
+    <value>1g</value>
+    <display-name>Ranger Admin heap size.</display-name>
+    <description>Ranger Admin maximum heap size limit.</description>
+    <on-ambari-upgrade add="false"/>
+  </property>
+  <property>
+    <name>ranger_usersync_max_heap_size</name>
+    <value>1g</value>
+    <display-name>Ranger Usersync max heap size.</display-name>
+    <description>Ranger Usersync maximum heap size limit.</description>
+    <on-ambari-upgrade add="false"/>
+  </property>
+  <property>
+    <name>ranger_tagsync_max_heap_size</name>
+    <value>1g</value>
+    <display-name>Ranger Tagsync max heap size.</display-name>
+    <description>Ranger Tagsync maximum heap size limit.</description>
     <on-ambari-upgrade add="false"/>
   </property>
 </configuration>

@@ -253,6 +253,11 @@ def setup_ranger_db(stack_version=None):
     owner = params.unix_user,
   )
 
+  ModifyPropertiesFile(format("{ranger_home}/install.properties"),
+    properties = {'ranger_admin_max_heap_size': params.ranger_admin_max_heap_size},
+    owner = params.unix_user,
+  )
+
   env_dict = {'RANGER_ADMIN_HOME':ranger_home, 'JAVA_HOME':params.java_home}
   if params.db_flavor.lower() == 'sqla':
     env_dict = {'RANGER_ADMIN_HOME':ranger_home, 'JAVA_HOME':params.java_home, 'LD_LIBRARY_PATH':params.ld_lib_path}
@@ -460,7 +465,10 @@ def setup_usersync(upgrade_type=None):
     File(params.usgsync_log4j_file, owner=params.unix_user, group=params.unix_group)
 
   if os.path.isfile(params.cred_validator_file):
-    File(params.cred_validator_file, group=params.unix_group, mode=04555)
+    File(params.cred_validator_file, group=params.unix_group, mode=0750)
+
+  if os.path.isfile(params.pam_cred_validator_file):
+    File(params.pam_cred_validator_file, group=params.unix_group, mode=0750)
 
   ranger_credential_helper(params.ugsync_cred_lib, 'usersync.ssl.key.password', params.ranger_usersync_keystore_password, params.ugsync_jceks_path)
 
@@ -487,11 +495,12 @@ def setup_usersync(upgrade_type=None):
 
     Execute(cmd, logoutput=True, user = params.unix_user)
 
-    File(params.ranger_usersync_keystore_file,
-        owner = params.unix_user,
-        group = params.unix_group,
-        mode = 0640
-    )
+  File(params.ranger_usersync_keystore_file,
+      owner = params.unix_user,
+      group = params.unix_group,
+      only_if = format("test -e {ranger_usersync_keystore_file}"),
+      mode = 0640
+  )
 
   create_core_site_xml(ranger_ugsync_conf)
 

@@ -126,6 +126,7 @@ usgsync_log4j_file = format('{ranger_ugsync_conf}/log4j.xml')
 if stack_supports_ranger_log4j:
   usgsync_log4j_file = format('{ranger_ugsync_conf}/log4j.properties')
 cred_validator_file = format('{usersync_home}/native/credValidator.uexe')
+pam_cred_validator_file = format('{usersync_home}/native/pamCredValidator.uexe')
 
 db_flavor =  (config['configurations']['admin-properties']['DB_FLAVOR']).lower()
 usersync_exturl =  config['configurations']['admin-properties']['policymgr_external_url']
@@ -472,3 +473,8 @@ if 'viewfs-mount-table' in config['configurations']:
 
   if 'content' in mount_table and mount_table['content'].strip():
     mount_table_content = mount_table['content']
+
+# Ranger Services maximum heap size configurations
+ranger_admin_max_heap_size = default('/configurations/ranger-env/ranger_admin_max_heap_size','1g')
+ranger_usersync_max_heap_size = default('/configurations/ranger-env/ranger_usersync_max_heap_size','1g')
+ranger_tagsync_max_heap_size = default('/configurations/ranger-env/ranger_tagsync_max_heap_size','1g')

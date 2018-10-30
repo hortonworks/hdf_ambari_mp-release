@@ -448,6 +448,7 @@
         <service name="RANGER">
             <component name="RANGER_ADMIN">
                 <pre-upgrade>
+                    <task xsi:type="configure" id="hdf_3_3_0_0_ranger_services_heap_size_configuration"/>
                     <task xsi:type="execute" hosts="all">
                         <summary>Stop Ranger Admin</summary>
                         <script>scripts/ranger_admin.py</script>
@@ -467,6 +468,13 @@
 
                     <task xsi:type="configure_function" hosts="all" />
 
+                    <task xsi:type="manual">
+                      <summary>Run Ranger JAVA patches</summary>
+                      <message>Please follow below steps on any Ranger Admin hosts:</message>
+                      <message> - Export RANGER_ADMIN_HOME=/usr/hdf/{{version}}/ranger-admin and JAVA_HOME environment variables.</message>
+                      <message> - Run JAVA patches command using Ranger service process user: /usr/hdf/{{version}}/ranger-admin/db_setup.py -javapatch</message>
+                    </task>
+
                     <task xsi:type="execute" hosts="any">
                         <summary>Applying Ranger java patches</summary>
                         <script>scripts/ranger_admin.py</script>
@@ -474,7 +482,7 @@
                     </task>
                 </pre-upgrade>
 
-                <pre-downgrade copy-upgrade="true" />
+                <pre-downgrade />
 
                 <upgrade>
                     <task xsi:type="restart-task" />

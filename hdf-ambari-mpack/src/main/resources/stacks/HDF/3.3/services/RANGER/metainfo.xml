@@ -23,7 +23,7 @@
   <services>
     <service>
       <name>RANGER</name>
-      <version>1.1.0</version>
+      <version>1.2.0</version>
       <components>
         <component>
           <name>RANGER_TAGSYNC</name>
