@@ -39,6 +39,19 @@
                 </changes>
             </component>
         </service>
+
+        <service name="RANGER">
+          <component name="RANGER_ADMIN">
+            <changes>
+              <definition xsi:type="configure" id="hdf_3_3_0_0_ranger_services_heap_size_configuration" summary="Upgrading ranger-env configurations for Ranger service components">
+                <type>ranger-env</type>
+                <set key="ranger_admin_max_heap_size" value="1g" if-type="ranger-env" if-key="ranger_admin_max_heap_size" if-key-state="absent"/>
+                <set key="ranger_usersync_max_heap_size" value="1g" if-type="ranger-env" if-key="ranger_usersync_max_heap_size" if-key-state="absent"/>
+                <set key="ranger_tagsync_max_heap_size" value="1g" if-type="ranger-env" if-key="ranger_tagsync_max_heap_size" if-key-state="absent"/>
+              </definition>
+            </changes>
+          </component>
+        </service>
     </services>
 
 </upgrade-config-changes>

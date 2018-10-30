@@ -100,10 +100,7 @@
 
             <execute-stage service="RANGER" component="RANGER_ADMIN" title="Backup Ranger Database">
                 <task xsi:type="manual">
-                    <message>Before continuing, please backup the Ranger Admin database and Ranger Audit database on the following host(s): {{hosts.all}}. If audit database size is too large (greater than 3GB) then follow the below instructions:
-                        1. Backup the audit table from audit database.
-                        2. Truncate audit table.
-                        3. Follow upgrade process and once completed then restore audit data to audit table.</message>
+                    <message>Before continuing, please backup the Ranger Admin database on the following host(s): {{hosts.all}}.</message>
                 </task>
             </execute-stage>
 
@@ -169,7 +166,7 @@
 
             <execute-stage service="RANGER" component="RANGER_ADMIN" title="Restore Ranger Database">
                 <task xsi:type="manual">
-                    <message>Before continuing, please restore the Ranger Admin database and Ranger Audit database on the following host(s): {{hosts.all}}.</message>
+                    <message>Before continuing, please restore the Ranger Admin database on the following host(s): {{hosts.all}}.</message>
                 </task>
             </execute-stage>
 
@@ -222,6 +219,10 @@
                 <task xsi:type="configure" id="hdf_3_3_remove_need_client_auth_nifi_ambari_ssl_config"/>
             </execute-stage>
 
+            <!-- RANGER -->
+            <execute-stage service="RANGER" component="RANGER_ADMIN" title="Upgrading ranger-env configurations for Ranger service components.">
+              <task xsi:type="configure" id="hdf_3_3_0_0_ranger_services_heap_size_configuration" />
+            </execute-stage>
         </group>
 
         <!--
@@ -407,13 +408,20 @@
 
                     <task xsi:type="configure_function" hosts="all" />
 
+                    <task xsi:type="manual">
+                      <summary>Run Ranger JAVA patches</summary>
+                      <message>Please follow below steps on any Ranger Admin hosts:</message>
+                      <message> - Export RANGER_ADMIN_HOME=/usr/hdf/{{version}}/ranger-admin and JAVA_HOME environment variables.</message>
+                      <message> - Run JAVA patches command using Ranger service process user: /usr/hdf/{{version}}/ranger-admin/db_setup.py -javapatch</message>
+                    </task>
+
                     <task xsi:type="execute" hosts="any">
                         <summary>Applying Ranger java patches</summary>
                         <script>scripts/ranger_admin.py</script>
                         <function>setup_ranger_java_patches</function>
                     </task>
                 </pre-upgrade>
-                <pre-downgrade copy-upgrade="true" />
+                <pre-downgrade />
 
                 <upgrade>
                     <task xsi:type="restart-task"/>
