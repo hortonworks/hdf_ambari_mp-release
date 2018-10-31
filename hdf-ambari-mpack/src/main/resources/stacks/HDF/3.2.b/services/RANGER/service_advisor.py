@@ -130,6 +130,7 @@ class RangerServiceAdvisor(service_advisor.ServiceAdvisor):
     recommender.recommendRangerConfigurationsFromHDP26(configurations, clusterData, services, hosts)
     recommender.recommendConfigurationsForSSO(configurations, clusterData, services, hosts)
     recommender.recommendConfigurationsForHDP30(configurations, clusterData, services, hosts)
+    recommender.recommendConfigurationsForLDAP(configurations, clusterData, services, hosts)
 
 
   def getServiceConfigurationRecommendationsForSSO(self, configurations, clusterData, services, hosts):
@@ -242,27 +243,6 @@ class RangerRecommender(service_advisor.ServiceAdvisor):
 
     rangerServiceVersion = [service['StackServices']['service_version'] for service in services["services"] if service['StackServices']['service_name'] == 'RANGER'][0]
     if rangerServiceVersion == '0.4.0':
-      # Recommend ldap settings based on ambari.properties configuration
-      # If 'ambari.ldap.isConfigured' == true
-      # For Ranger version 0.4.0
-      if 'ambari-server-properties' in services and \
-                      'ambari.ldap.isConfigured' in services['ambari-server-properties'] and \
-                      services['ambari-server-properties']['ambari.ldap.isConfigured'].lower() == "true":
-        putUserSyncProperty = self.putProperty(configurations, "usersync-properties", services)
-        serverProperties = services['ambari-server-properties']
-        if 'authentication.ldap.managerDn' in serverProperties:
-          putUserSyncProperty('SYNC_LDAP_BIND_DN', serverProperties['authentication.ldap.managerDn'])
-        if 'authentication.ldap.primaryUrl' in serverProperties:
-          ldap_protocol =  'ldap://'
-          if 'authentication.ldap.useSSL' in serverProperties and serverProperties['authentication.ldap.useSSL'] == 'true':
-            ldap_protocol =  'ldaps://'
-          ldapUrl = ldap_protocol + serverProperties['authentication.ldap.primaryUrl'] if serverProperties['authentication.ldap.primaryUrl'] else serverProperties['authentication.ldap.primaryUrl']
-          putUserSyncProperty('SYNC_LDAP_URL', ldapUrl)
-        if 'authentication.ldap.userObjectClass' in serverProperties:
-          putUserSyncProperty('SYNC_LDAP_USER_OBJECT_CLASS', serverProperties['authentication.ldap.userObjectClass'])
-        if 'authentication.ldap.usernameAttribute' in serverProperties:
-          putUserSyncProperty('SYNC_LDAP_USER_NAME_ATTRIBUTE', serverProperties['authentication.ldap.usernameAttribute'])
-
 
       # Set Ranger Admin Authentication method
       if 'admin-properties' in services['configurations'] and 'usersync-properties' in services['configurations'] and \
@@ -412,32 +392,6 @@ class RangerRecommender(service_advisor.ServiceAdvisor):
         rangerPrivelegeDbProperties = ranger_db_privelege_url_dict.get(rangerDbFlavor, ranger_db_privelege_url_dict['MYSQL'])
         for key in rangerPrivelegeDbProperties:
           putRangerEnvProperty(key, rangerPrivelegeDbProperties.get(key))
-
-    # Recommend ldap settings based on ambari.properties configuration
-    if 'ambari-server-properties' in services and \
-        'ambari.ldap.isConfigured' in services['ambari-server-properties'] and \
-        services['ambari-server-properties']['ambari.ldap.isConfigured'].lower() == "true":
-      serverProperties = services['ambari-server-properties']
-      if 'authentication.ldap.baseDn' in serverProperties:
-        putRangerUgsyncSite('ranger.usersync.ldap.searchBase', serverProperties['authentication.ldap.baseDn'])
-      if 'authentication.ldap.groupMembershipAttr' in serverProperties:
-        putRangerUgsyncSite('ranger.usersync.group.memberattributename', serverProperties['authentication.ldap.groupMembershipAttr'])
-      if 'authentication.ldap.groupNamingAttr' in serverProperties:
-        putRangerUgsyncSite('ranger.usersync.group.nameattribute', serverProperties['authentication.ldap.groupNamingAttr'])
-      if 'authentication.ldap.groupObjectClass' in serverProperties:
-        putRangerUgsyncSite('ranger.usersync.group.objectclass', serverProperties['authentication.ldap.groupObjectClass'])
-      if 'authentication.ldap.managerDn' in serverProperties:
-        putRangerUgsyncSite('ranger.usersync.ldap.binddn', serverProperties['authentication.ldap.managerDn'])
-      if 'authentication.ldap.primaryUrl' in serverProperties:
-        ldap_protocol =  'ldap://'
-        if 'authentication.ldap.useSSL' in serverProperties and serverProperties['authentication.ldap.useSSL'] == 'true':
-          ldap_protocol =  'ldaps://'
-        ldapUrl = ldap_protocol + serverProperties['authentication.ldap.primaryUrl'] if serverProperties['authentication.ldap.primaryUrl'] else serverProperties['authentication.ldap.primaryUrl']
-        putRangerUgsyncSite('ranger.usersync.ldap.url', ldapUrl)
-      if 'authentication.ldap.userObjectClass' in serverProperties:
-        putRangerUgsyncSite('ranger.usersync.ldap.user.objectclass', serverProperties['authentication.ldap.userObjectClass'])
-      if 'authentication.ldap.usernameAttribute' in serverProperties:
-        putRangerUgsyncSite('ranger.usersync.ldap.user.nameattribute', serverProperties['authentication.ldap.usernameAttribute'])
 
     # Recommend Ranger Authentication method
     authMap = {
@@ -758,6 +712,37 @@ class RangerRecommender(service_advisor.ServiceAdvisor):
     else:
       putRangerAdminProperty("ranger.ldap.starttls", "false")
 
+  def recommendConfigurationsForLDAP(self, configurations, clusterData, services, hosts):
+    ambari_configuration = self.get_ambari_configuration(services)
+    ldap_properties = ambari_configuration.get_ambari_server_configuration_category("ldap-configuration")
+
+    if ldap_properties and 'ambari.ldap.authentication.enabled' in ldap_properties and ldap_properties['ambari.ldap.authentication.enabled'].lower() == "true":
+
+      putRangerUgsyncSite = self.putProperty(configurations, "ranger-ugsync-site", services)
+
+      if 'ambari.ldap.attributes.user.search_base' in ldap_properties:
+        putRangerUgsyncSite('ranger.usersync.ldap.searchBase', ldap_properties['ambari.ldap.attributes.user.search_base'])
+      if 'ambari.ldap.attributes.group.member_attr' in ldap_properties:
+        putRangerUgsyncSite('ranger.usersync.group.memberattributename', ldap_properties['ambari.ldap.attributes.group.member_attr'])
+      if 'ambari.ldap.attributes.group.name_attr' in ldap_properties:
+        putRangerUgsyncSite('ranger.usersync.group.nameattribute', ldap_properties['ambari.ldap.attributes.group.name_attr'])
+      if 'ambari.ldap.attributes.group.object_class' in ldap_properties:
+        putRangerUgsyncSite('ranger.usersync.group.objectclass', ldap_properties['ambari.ldap.attributes.group.object_class'])
+      if 'ambari.ldap.connectivity.bind_dn' in ldap_properties:
+        putRangerUgsyncSite('ranger.usersync.ldap.binddn', ldap_properties['ambari.ldap.connectivity.bind_dn'])
+      if 'ambari.ldap.connectivity.server.host' in ldap_properties:
+        ldap_protocol =  'ldap://'
+        if 'ambari.ldap.connectivity.use_ssl' in ldap_properties and ldap_properties['ambari.ldap.connectivity.use_ssl'] == 'true':
+          ldap_protocol =  'ldaps://'
+        ldap_port = '389'
+        if 'ambari.ldap.connectivity.server.port' in ldap_properties:
+          ldap_port = ldap_properties['ambari.ldap.connectivity.server.port']
+        ldapUrl = ldap_protocol + ldap_properties['ambari.ldap.connectivity.server.host'] + ":" + ldap_port
+        putRangerUgsyncSite('ranger.usersync.ldap.url', ldapUrl)
+      if 'ambari.ldap.attributes.user.object_class' in ldap_properties:
+        putRangerUgsyncSite('ranger.usersync.ldap.user.objectclass', ldap_properties['ambari.ldap.attributes.user.object_class'])
+      if 'ambari.ldap.attributes.user.name_attr' in ldap_properties:
+        putRangerUgsyncSite('ranger.usersync.ldap.user.nameattribute', ldap_properties['ambari.ldap.attributes.user.name_attr'])
 
 class RangerValidator(service_advisor.ServiceAdvisor):
   """
