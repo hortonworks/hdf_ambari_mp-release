@@ -10,7 +10,7 @@ from resource_management.core.logger import Logger
 
 Logger.initialize_logger()
 
-SMARTSENSE_VERSION_TEMPLATE = "1.5.0.{AMBARI_VERSION}"
+SMARTSENSE_VERSION_TEMPLATE = "{BASE_VERSION}.{AMBARI_VERSION}"
 VERSION_RE = r"^(([0-9]+)\.([0-9]+)\.([0-9]+))\.([0-9]+)((\.|-).*)?$"
 FILES_LIST = [
   "metainfo.xml",
@@ -36,7 +36,11 @@ def get_ambari_version():
 
 def fix_smartsense_versions():
   ambari_version, _3_digit_ambari_version = get_ambari_version()
-  desired_version = SMARTSENSE_VERSION_TEMPLATE.format(AMBARI_VERSION=ambari_version)
+  if _3_digit_ambari_version == "2.7.3":
+    base_version = "1.5.1"
+  else:
+    base_version = "1.5.0"
+  desired_version = SMARTSENSE_VERSION_TEMPLATE.format(BASE_VERSION=base_version, AMBARI_VERSION=ambari_version)
   for _file in FILES_LIST:
     file_path = os.path.join(SMARTSENSE_DIRECTORY, _file)
     file_content = sudo.read_file(file_path, "utf8")
