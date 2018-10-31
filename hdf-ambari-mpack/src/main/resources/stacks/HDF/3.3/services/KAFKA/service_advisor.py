@@ -312,7 +312,7 @@ class KafkaRecommender(service_advisor.ServiceAdvisor):
   def update_listeners_to_sasl(self, services, putKafkaBrokerProperty):
     try:
       listeners = services['configurations']['kafka-broker']['properties']['listeners']
-      if listeners:
+      if listeners and "SASL" not in listeners:
         listeners = re.sub(r"(^|\b)PLAINTEXT://", "SASL_PLAINTEXT://", listeners)
         listeners = re.sub(r"(^|\b)PLAINTEXTSASL://", "SASL_PLAINTEXT://", listeners)
         listeners = re.sub(r"(^|\b)SSL://", "SASL_SSL://", listeners)
