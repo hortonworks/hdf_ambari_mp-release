@@ -58,11 +58,12 @@ def kafka(upgrade_type=None):
        if params.kerberos_security_enabled and params.kafka_kerberos_enabled:
          Logger.info("Kafka kerberos security is enabled.")
 
-         listeners = kafka_server_config['listeners']
-         listeners = re.sub(r"(^|\b)PLAINTEXT://", "SASL_PLAINTEXT://", listeners)
-         listeners = re.sub(r"(^|\b)PLAINTEXTSASL://", "SASL_PLAINTEXT://", listeners)
-         listeners = re.sub(r"(^|\b)SSL://", "SASL_SSL://", listeners)
-         kafka_server_config['listeners'] = listeners
+         if "SASL" not in listeners:
+           listeners = kafka_server_config['listeners']
+           listeners = re.sub(r"(^|\b)PLAINTEXT://", "SASL_PLAINTEXT://", listeners)
+           listeners = re.sub(r"(^|\b)PLAINTEXTSASL://", "SASL_PLAINTEXT://", listeners)
+           listeners = re.sub(r"(^|\b)SSL://", "SASL_SSL://", listeners)
+           kafka_server_config['listeners'] = listeners
 
          kafka_server_config['advertised.listeners'] = listeners
          Logger.info(format("Kafka advertised listeners: {listeners}"))
