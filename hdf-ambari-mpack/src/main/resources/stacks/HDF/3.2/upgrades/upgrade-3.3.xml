@@ -449,6 +449,7 @@
             <component name="RANGER_ADMIN">
                 <pre-upgrade>
                     <task xsi:type="configure" id="hdf_3_3_0_0_ranger_services_heap_size_configuration"/>
+                    <task xsi:type="configure" id="hdf_3_3_0_0_ranger_patch_retry_configuration"/>
                     <task xsi:type="execute" hosts="all">
                         <summary>Stop Ranger Admin</summary>
                         <script>scripts/ranger_admin.py</script>

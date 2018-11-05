@@ -49,6 +49,10 @@
                 <set key="ranger_usersync_max_heap_size" value="1g" if-type="ranger-env" if-key="ranger_usersync_max_heap_size" if-key-state="absent"/>
                 <set key="ranger_tagsync_max_heap_size" value="1g" if-type="ranger-env" if-key="ranger_tagsync_max_heap_size" if-key-state="absent"/>
               </definition>
+              <definition xsi:type="configure" id="hdf_3_3_0_0_ranger_patch_retry_configuration" summary="Upgrading admin-properties configurations for Ranger service components">
+                <type>admin-properties</type>
+                <set key="PATCH_RETRY_INTERVAL" value="120" if-type="admin-properties" if-key="PATCH_RETRY_INTERVAL" if-key-state="absent"/>
+              </definition>
             </changes>
           </component>
         </service>
