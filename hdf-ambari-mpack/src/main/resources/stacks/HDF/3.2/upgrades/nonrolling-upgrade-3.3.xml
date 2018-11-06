@@ -223,6 +223,9 @@
             <execute-stage service="RANGER" component="RANGER_ADMIN" title="Upgrading ranger-env configurations for Ranger service components.">
               <task xsi:type="configure" id="hdf_3_3_0_0_ranger_services_heap_size_configuration" />
             </execute-stage>
+            <execute-stage service="RANGER" component="RANGER_ADMIN" title="Upgrading admin-properties configurations for Ranger service components">
+              <task xsi:type="configure" id="hdf_3_3_0_0_ranger_patch_retry_configuration" />
+            </execute-stage>
         </group>
 
         <!--

@@ -158,4 +158,10 @@
     </depends-on>
     <on-ambari-upgrade add="false"/>
   </property>
+  <property>
+    <name>PATCH_RETRY_INTERVAL</name>
+    <value>120</value>
+    <display-name>Retry Interval</display-name>
+    <description>Retry interval to apply database patches in seconds.</description>
+  </property>
 </configuration>
