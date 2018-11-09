@@ -380,7 +380,9 @@
 
         <service name="REGISTRY">
             <component name="REGISTRY_SERVER">
-                <pre-upgrade/>
+                <pre-upgrade>
+                    <task xsi:type="configure" id="hdf_3_3_0_0_kerberos_non_browser_user_agents"/>
+                </pre-upgrade>
                 <pre-downgrade>
                     <task xsi:type="execute" hosts="all">
                         <summary>Stop Registry Server</summary>
