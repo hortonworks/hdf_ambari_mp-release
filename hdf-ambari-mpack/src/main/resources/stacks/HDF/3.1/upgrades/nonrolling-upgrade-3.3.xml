@@ -207,6 +207,10 @@
                 <task xsi:type="configure" id="hdf_3_2_0_0_add_httpProxy_params"/>
             </execute-stage>
 
+            <execute-stage service="REGISTRY" component="REGISTRY_SERVER" title="Introducing kerberos non-browser.user-agents parameters in Schema Registry">
+                <task xsi:type="configure" id="hdf_3_3_0_0_kerberos_non_browser_user_agents"/>
+            </execute-stage>
+
             <!-- NIFI -->
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Update NiFi Properties">
                 <task xsi:type="configure" id="hdf_3_2_0_0_update_nifi_properties_configs"/>
