@@ -219,6 +219,11 @@
                 <task xsi:type="configure" id="hdf_3_3_remove_need_client_auth_nifi_ambari_ssl_config"/>
             </execute-stage>
 
+            <!-- REGISTRY -->
+            <execute-stage service="REGISTRY" component="REGISTRY_SERVER" title="Introducing kerberos non-browser.user-agents parameters in Schema Registry">
+                <task xsi:type="configure" id="hdf_3_3_0_0_kerberos_non_browser_user_agents"/>
+            </execute-stage>
+
             <!-- RANGER -->
             <execute-stage service="RANGER" component="RANGER_ADMIN" title="Upgrading ranger-env configurations for Ranger service components.">
               <task xsi:type="configure" id="hdf_3_3_0_0_ranger_services_heap_size_configuration" />

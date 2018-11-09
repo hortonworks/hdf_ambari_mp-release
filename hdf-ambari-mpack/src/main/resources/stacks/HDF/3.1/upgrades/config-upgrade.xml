@@ -111,6 +111,12 @@
                         <set key="httpProxyUsername" value=""/>
                         <set key="httpProxyPassword" value=""/>
                     </definition>
+
+                    <definition xsi:type="configure" id="hdf_3_3_0_0_kerberos_non_browser_user_agents">
+                    <type>registry-common</type>
+                        <set key="registry.kerberos.non-browser.user-agents" value=""/>
+                    </definition>
+
                 </changes>
             </component>
         </service>

@@ -109,7 +109,10 @@ if security_enabled:
   registry_servlet_kerberos_name_rules = config['configurations']['registry-common']['kerberos.name.rules']
   #registry_servlet_token_validity = (config['configurations']['registry-common']['token.validity'])
   registry_servlet_token_validity = 36000
-  registry_kerberos_non_browser_user_agents = config['configurations']['registry-common']['registry.kerberos.non-browser.user-agents']
+  if 'registry.kerberos.non-browser.user-agents' in config['configurations']['registry-common']:
+    registry_kerberos_non_browser_user_agents = config['configurations']['registry-common']['registry.kerberos.non-browser.user-agents']
+  else:
+    registry_kerberos_non_browser_user_agents = None
 
 #SSL related configs
 if 'registry-ssl-config' in config['configurations']:
