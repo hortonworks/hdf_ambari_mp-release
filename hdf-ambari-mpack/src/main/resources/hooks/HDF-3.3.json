@@ -111,7 +111,7 @@
       "service_versions_map": [
         {
           "service_name": "NIFI",
-          "service_version": "1.7.0",
+          "service_version": "1.8.0",
           "applicable_stacks": [
             {
               "stack_name": "HDP",
@@ -121,7 +121,7 @@
         },
         {
           "service_name": "NIFI_REGISTRY",
-          "service_version": "0.2.0",
+          "service_version": "0.3.0",
           "applicable_stacks": [
             {
               "stack_name": "HDP",
@@ -131,7 +131,7 @@
         },
         {
           "service_name": "REGISTRY",
-          "service_version": "0.5.2",
+          "service_version": "0.5.4",
           "applicable_stacks": [
             {
               "stack_name": "HDP",
