@@ -119,7 +119,7 @@ class StreamlineServer(Script):
     import status_params
     env.set_params(params)
     self.configure(env)
-
+    self.chown_old_mysql_connector_jar()
     self.kerberos_server_start()
 
     if params.stack_sam_support_schema_migrate:
@@ -221,6 +221,22 @@ class StreamlineServer(Script):
           cp_cmd = as_sudo(["cp","-r",files,conf_dir])
           Execute(cp_cmd,logoutput = True)
         conf_select.convert_conf_directories_to_symlinks(package_name, stack_version, directories)
+
+  def chown_old_mysql_connector_jar(self):
+    import os, glob, params
+    import pwd, grp
+    from pwd import getpwuid
+    file_names = glob.glob("/tmp/mysql-connector-java*")
+    if len(file_names) > 0:
+      for each_file in file_names:
+        owner_name = getpwuid(os.stat(each_file).st_uid).pw_name
+        if owner_name != params.streamline_user:
+          Logger.info("Found different owner for " + each_file + " i.e. " + owner_name + ". Changing owner to " + params.streamline_user)
+          uid = pwd.getpwnam(params.streamline_user).pw_uid
+          gid = grp.getgrnam("hadoop").gr_gid
+          os.chown(each_file, uid, gid)
+        else:
+          Logger.info("Owner of " + each_file + " is " + params.streamline_user + ". Skipping it.")
 
 if __name__ == "__main__":
   StreamlineServer().execute()
