@@ -20,6 +20,7 @@ limitations under the License.
 
 from resource_management import *
 from resource_management.libraries.script.script import Script
+from resource_management.core import sudo
 import sys, os, glob, socket, re
 from resource_management.libraries.functions import format
 from resource_management.libraries.functions.default import default
@@ -225,6 +226,11 @@ kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executab
 stack_support_toolkit_update = check_stack_feature('toolkit_config_update', version_for_stack_feature_checks)
 stack_support_admin_toolkit = check_stack_feature('admin_toolkit_support', version_for_stack_feature_checks)
 stack_support_nifi_toolkit_package = check_stack_feature('nifi_toolkit_package', version_for_stack_feature_checks)
+#some released HDP stacks will not have this stack feature, manually check
+if stack_name == "HDP":
+    marker_script = os.path.join(stack_root, "current/nifi-toolkit/bin/tls-toolkit.sh")
+    if sudo.path_isfile(marker_script):
+        stack_support_nifi_toolkit_package = True
 
 if security_enabled:
     _hostname_lowercase = nifi_registry_host.lower()
