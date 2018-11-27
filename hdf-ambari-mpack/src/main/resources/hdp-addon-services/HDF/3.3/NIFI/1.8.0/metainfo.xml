@@ -35,7 +35,7 @@
       </components>
       <osSpecifics>
         <osSpecific>
-          <osFamily>redhat7,amazon2015,suse11,suse12,amazonlinux2</osFamily>
+          <osFamily>redhat7,centos7-ppc,amazon2015,suse11,suse12,amazonlinux2</osFamily>
           <packages>
             <package>
               <name>nifi_3_3_*</name>
