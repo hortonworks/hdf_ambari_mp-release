@@ -21,20 +21,36 @@
     <services>
         <service>
             <name>NIFI_REGISTRY</name>
-            <version>0.2.0</version>
+            <version>0.3.0</version>
             <extends>common-services/NIFI_REGISTRY/0.2.0</extends>
+
             <components>
                 <component>
                     <name>NIFI_REGISTRY_MASTER</name>
                     <versionAdvertised>false</versionAdvertised>
-                </component></components>
+                </component>
+            </components>
 
             <osSpecifics>
                 <osSpecific>
-                    <osFamily>redhat7,centos7-ppc,sles12,debian9,amazonlinux2,ubuntu12,ubuntu14,ubuntu16</osFamily>
+                    <osFamily>redhat7,centos7-ppc,amazon2015,suse11,suse12,amazonlinux2</osFamily>
                     <packages>
                         <package>
                             <name>nifi-registry_3_3_*</name>
+                        </package>
+                        <package>
+                            <name>nifi_3_3_*-toolkit</name>
+                        </package>
+                    </packages>
+                </osSpecific>
+                <osSpecific>
+                    <osFamily>debian9,ubuntu14,ubuntu16</osFamily>
+                    <packages>
+                        <package>
+                            <name>nifi-registry-3_3_*</name>
+                        </package>
+                        <package>
+                            <name>nifi-3_3_*-toolkit</name>
                         </package>
                     </packages>
                 </osSpecific>
