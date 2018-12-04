@@ -337,7 +337,7 @@ smoke_user_keytab = config['configurations']['cluster-env']['smokeuser_keytab']
 kinit_path_local = get_kinit_path(default('/configurations/kerberos-env/executable_search_paths', None))
 stack_support_nifi_toolkit_package = check_stack_feature('nifi_toolkit_package', version_for_stack_feature_checks)
 #some released HDP stacks will not have this stack feature, manually check
-if stack_name == "HDP":
+if not stack_support_nifi_toolkit_package and stack_name == "HDP":
   marker_script = os.path.join(stack_root, "current/nifi-toolkit/bin/tls-toolkit.sh")
   if sudo.path_isfile(marker_script):
     stack_support_nifi_toolkit_package = True

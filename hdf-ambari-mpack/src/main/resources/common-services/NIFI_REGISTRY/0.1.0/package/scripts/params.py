@@ -227,7 +227,7 @@ stack_support_toolkit_update = check_stack_feature('toolkit_config_update', vers
 stack_support_admin_toolkit = check_stack_feature('admin_toolkit_support', version_for_stack_feature_checks)
 stack_support_nifi_toolkit_package = check_stack_feature('nifi_toolkit_package', version_for_stack_feature_checks)
 #some released HDP stacks will not have this stack feature, manually check
-if stack_name == "HDP":
+if not stack_support_nifi_toolkit_package and stack_name == "HDP":
     marker_script = os.path.join(stack_root, "current/nifi-toolkit/bin/tls-toolkit.sh")
     if sudo.path_isfile(marker_script):
         stack_support_nifi_toolkit_package = True
