@@ -10,8 +10,16 @@ from resource_management.core.logger import Logger
 
 Logger.initialize_logger()
 
-SMARTSENSE_VERSION_TEMPLATE = "{BASE_VERSION}.{AMBARI_VERSION}"
+SMARTSENSE_VERSION_TEMPLATE = "{BASE_VERSION}.{AMBARI_VERSION}{SUFFIX}"
 VERSION_RE = r"^(([0-9]+)\.([0-9]+)\.([0-9]+))\.([0-9]+)((\.|-).*)?$"
+
+VERSION_REPLACEMENT_PROPERTY = {
+  "2.7.100": "${SmartSenseVersion}",
+  "2.7.0": "${project.version}",
+  "2.7.1": "${project.version}",
+  "2.7.2": "${project.version}",
+  "2.7.3": "${project.version}"
+}
 FILES_LIST = [
   "metainfo.xml",
   "configuration/hst-agent-conf.xml",
@@ -19,10 +27,12 @@ FILES_LIST = [
   "package/scripts/params.py"
 ]
 
-STACKS_PATH, _, _, _, _ = get_mpack_properties()
-SMARTSENSE_DIRECTORY = os.path.join(STACKS_PATH, "HDF", "3.2.b", "services", "SMARTSENSE")
-VIEW_JAR_FOLDER = os.path.join(SMARTSENSE_DIRECTORY, "package", "files", "view")
-
+STACKS_PATH, _, COMMON_SERVICES_PATH, _, _ = get_mpack_properties()
+SMARTSENSE_METAINFO_PATH = os.path.join(STACKS_PATH, "HDF", "3.2.b", "services", "SMARTSENSE", "metainfo.xml")
+VIEW_JAR_FOLDER_TEMPLATE = os.path.join(COMMON_SERVICES_PATH, "SMARTSENSE", "{_3_DIGIT_VERSION}", "package", "files",
+                                        "view")
+SMARTSENSE_FOLDER_TEMPLATE = os.path.join(COMMON_SERVICES_PATH, "SMARTSENSE", "{_3_DIGIT_VERSION}")
+SMARTSENSE_COMMON_FOLDER_RELATIVE_TEMPLATE = "common-services/SMARTSENSE/{_3_DIGIT_VERSION}"
 
 def get_ambari_version():
   code, out = shell.checked_call(["ambari-server", "--version"], sudo=True)
@@ -34,25 +44,48 @@ def get_ambari_version():
     raise Exception("Failed to get ambari-server version")
 
 
+def replace_in_file(file_path, what, to):
+  file_content = sudo.read_file(file_path, "utf8")
+  file_content = file_content.replace(what, to)
+  sudo.create_file(file_path, file_content, "utf8")
+
+
 def fix_smartsense_versions():
   ambari_version, _3_digit_ambari_version = get_ambari_version()
   if _3_digit_ambari_version == "2.7.3":
     base_version = "1.5.1"
+    suffix = ""
+  elif _3_digit_ambari_version == "2.7.100":
+    base_version = "2.0.0"
+    suffix = "-1"
   else:
     base_version = "1.5.0"
-  desired_version = SMARTSENSE_VERSION_TEMPLATE.format(BASE_VERSION=base_version, AMBARI_VERSION=ambari_version)
-  for _file in FILES_LIST:
-    file_path = os.path.join(SMARTSENSE_DIRECTORY, _file)
-    file_content = sudo.read_file(file_path, "utf8")
-    file_content = file_content.replace("${project.version}", desired_version)
-    sudo.create_file(file_path, file_content, "utf8")
+    suffix = ""
+  desired_version = SMARTSENSE_VERSION_TEMPLATE.format(
+    BASE_VERSION=base_version,
+    AMBARI_VERSION=ambari_version,
+    SUFFIX=suffix
+  )
 
+  smartsense_directory = SMARTSENSE_FOLDER_TEMPLATE.format(_3_DIGIT_VERSION=_3_digit_ambari_version)
+  for _file in FILES_LIST:
+    file_path = os.path.join(smartsense_directory, _file)
+    replace_in_file(file_path, VERSION_REPLACEMENT_PROPERTY[_3_digit_ambari_version], desired_version)
+
+  view_jar_folder = VIEW_JAR_FOLDER_TEMPLATE.format(_3_DIGIT_VERSION=_3_digit_ambari_version)
   source_view_jar_file_path = os.path.join(
-    VIEW_JAR_FOLDER,
+    view_jar_folder,
     "smartsense-ambari-view-{version}.jar".format(version=_3_digit_ambari_version)
   )
   new_view_jar_file_path = os.path.join(
-    VIEW_JAR_FOLDER,
+    view_jar_folder,
     "smartsense-ambari-view-{version}.jar".format(version=desired_version)
   )
   shell.checked_call(["cp", "-f", source_view_jar_file_path, new_view_jar_file_path], sudo=True)
+
+  replace_in_file(
+    SMARTSENSE_METAINFO_PATH,
+    "${SMARTSENSE_PLACEHOLDER}",
+    SMARTSENSE_COMMON_FOLDER_RELATIVE_TEMPLATE.format(_3_DIGIT_VERSION=_3_digit_ambari_version)
+  )
+  replace_in_file(SMARTSENSE_METAINFO_PATH, "${VERSION_PLACEHOLDER}", desired_version)
