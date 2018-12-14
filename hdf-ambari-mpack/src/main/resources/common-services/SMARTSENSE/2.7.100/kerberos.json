@@ -1,0 +1,281 @@
+{
+   "services":[
+      {
+         "name":"SMARTSENSE",
+         "components":[
+            {
+               "name":"ACTIVITY_ANALYZER",
+               "identities":[
+                  {
+                     "name":"activity_analyzer",
+                     "principal":{
+                        "value":"${activity-conf/global.activity.analyzer.user}/_HOST@${realm}",
+                        "type":"service",
+                        "local_username": "${activity-conf/global.activity.analyzer.user}",
+                        "configuration":"activity-conf/global.activity.analyzer.user.principal"
+                     },
+                     "keytab": {
+                        "file": "${keytab_dir}/activity-analyzer.headless.keytab",
+                        "owner": {
+                           "name": "root",
+                           "access": "r"
+                        },
+                        "group": {
+                           "name": "${cluster-env/user_group}",
+                           "access": ""
+                        },
+                        "configuration":"activity-conf/global.activity.analyzer.user.keytab"
+                     }
+                  }
+               ],
+               "configurations":[
+                  {
+                     "yarn-site":{
+                        "yarn.admin.acl":"${activity-conf/global.activity.analyzer.user},dr.who,${yarn-env/yarn_user}"
+                     }
+                  },
+                  {
+                     "ams-hbase-site":{
+                        "hbase.superuser":"${activity-conf/global.activity.analyzer.user},${activity-conf/activity.explorer.user},${ams-env/ambari_metrics_user}"
+                     }
+                  }
+               ]
+            },
+            {
+               "name":"HDFS_ANALYZER",
+               "identities":[
+                  {
+                     "name":"hdfs_analyzer",
+                     "principal":{
+                        "value":"${activity-conf/global.activity.analyzer.user}/_HOST@${realm}",
+                        "type":"service",
+                        "local_username": "${activity-conf/global.activity.analyzer.user}",
+                        "configuration":"activity-conf/global.activity.analyzer.user.principal"
+                     },
+                     "keytab": {
+                        "file": "${keytab_dir}/activity-analyzer.headless.keytab",
+                        "owner": {
+                           "name": "root",
+                           "access": "r"
+                        },
+                        "group": {
+                           "name": "${cluster-env/user_group}",
+                           "access": ""
+                        },
+                        "configuration":"activity-conf/global.activity.analyzer.user.keytab"
+                     }
+                  }
+               ],
+               "configurations":[
+                  {
+                     "yarn-site":{
+                        "yarn.admin.acl":"${activity-conf/global.activity.analyzer.user},dr.who,${yarn-env/yarn_user}"
+                     }
+                  },
+                  {
+                     "ams-hbase-site":{
+                        "hbase.superuser":"${activity-conf/global.activity.analyzer.user},${activity-conf/activity.explorer.user},${ams-env/ambari_metrics_user}"
+                     }
+                  }
+               ]
+            },
+            {
+               "name":"MAPREDUCE_ANALYZER",
+               "identities":[
+                  {
+                     "name":"mapreduce_analyzer",
+                     "principal":{
+                        "value":"${activity-conf/global.activity.analyzer.user}/_HOST@${realm}",
+                        "type":"service",
+                        "local_username": "${activity-conf/global.activity.analyzer.user}",
+                        "configuration":"activity-conf/global.activity.analyzer.user.principal"
+                     },
+                     "keytab": {
+                        "file": "${keytab_dir}/activity-analyzer.headless.keytab",
+                        "owner": {
+                           "name": "root",
+                           "access": "r"
+                        },
+                        "group": {
+                           "name": "${cluster-env/user_group}",
+                           "access": ""
+                        },
+                        "configuration":"activity-conf/global.activity.analyzer.user.keytab"
+                     }
+                  }
+               ],
+               "configurations":[
+                  {
+                     "yarn-site":{
+                        "yarn.admin.acl":"${activity-conf/global.activity.analyzer.user},dr.who,${yarn-env/yarn_user}"
+                     }
+                  },
+                  {
+                     "ams-hbase-site":{
+                        "hbase.superuser":"${activity-conf/global.activity.analyzer.user},${activity-conf/activity.explorer.user},${ams-env/ambari_metrics_user}"
+                     }
+                  }
+               ]
+            },
+            {
+               "name":"YARN_ANALYZER",
+               "identities":[
+                  {
+                     "name":"yarn_analyzer",
+                     "principal":{
+                        "value":"${activity-conf/global.activity.analyzer.user}/_HOST@${realm}",
+                        "type":"service",
+                        "local_username": "${activity-conf/global.activity.analyzer.user}",
+                        "configuration":"activity-conf/global.activity.analyzer.user.principal"
+                     },
+                     "keytab": {
+                        "file": "${keytab_dir}/activity-analyzer.headless.keytab",
+                        "owner": {
+                           "name": "root",
+                           "access": "r"
+                        },
+                        "group": {
+                           "name": "${cluster-env/user_group}",
+                           "access": ""
+                        },
+                        "configuration":"activity-conf/global.activity.analyzer.user.keytab"
+                     }
+                  }
+               ],
+               "configurations":[
+                  {
+                     "yarn-site":{
+                        "yarn.admin.acl":"${activity-conf/global.activity.analyzer.user},dr.who,${yarn-env/yarn_user}"
+                     }
+                  },
+                  {
+                     "ams-hbase-site":{
+                        "hbase.superuser":"${activity-conf/global.activity.analyzer.user},${activity-conf/activity.explorer.user},${ams-env/ambari_metrics_user}"
+                     }
+                  }
+               ]
+            },
+            {
+               "name":"HIVE_ANALYZER",
+               "identities":[
+                  {
+                     "name":"hive_analyzer",
+                     "principal":{
+                        "value":"${activity-conf/global.activity.analyzer.user}/_HOST@${realm}",
+                        "type":"service",
+                        "local_username": "${activity-conf/global.activity.analyzer.user}",
+                        "configuration":"activity-conf/global.activity.analyzer.user.principal"
+                     },
+                     "keytab": {
+                        "file": "${keytab_dir}/activity-analyzer.headless.keytab",
+                        "owner": {
+                           "name": "root",
+                           "access": "r"
+                        },
+                        "group": {
+                           "name": "${cluster-env/user_group}",
+                           "access": ""
+                        },
+                        "configuration":"activity-conf/global.activity.analyzer.user.keytab"
+                     }
+                  }
+               ],
+               "configurations":[
+                  {
+                     "yarn-site":{
+                        "yarn.admin.acl":"${activity-conf/global.activity.analyzer.user},dr.who,${yarn-env/yarn_user}"
+                     }
+                  },
+                  {
+                     "ams-hbase-site":{
+                        "hbase.superuser":"${activity-conf/global.activity.analyzer.user},${activity-conf/activity.explorer.user},${ams-env/ambari_metrics_user}"
+                     }
+                  }
+               ]
+            },
+            {
+               "name":"SPARK_ANALYZER",
+               "identities":[
+                  {
+                     "name":"spark_analyzer",
+                     "principal":{
+                        "value":"${activity-conf/global.activity.analyzer.user}/_HOST@${realm}",
+                        "type":"service",
+                        "local_username": "${activity-conf/global.activity.analyzer.user}",
+                        "configuration":"activity-conf/global.activity.analyzer.user.principal"
+                     },
+                     "keytab": {
+                        "file": "${keytab_dir}/activity-analyzer.headless.keytab",
+                        "owner": {
+                           "name": "root",
+                           "access": "r"
+                        },
+                        "group": {
+                           "name": "${cluster-env/user_group}",
+                           "access": ""
+                        },
+                        "configuration":"activity-conf/global.activity.analyzer.user.keytab"
+                     }
+                  }
+               ],
+               "configurations":[
+                  {
+                     "yarn-site":{
+                        "yarn.admin.acl":"${activity-conf/global.activity.analyzer.user},dr.who,${yarn-env/yarn_user}"
+                     }
+                  },
+                  {
+                     "ams-hbase-site":{
+                        "hbase.superuser":"${activity-conf/global.activity.analyzer.user},${activity-conf/activity.explorer.user},${ams-env/ambari_metrics_user}"
+                     }
+                  }
+               ]
+            },
+            {
+               "name":"ACTIVITY_EXPLORER",
+               "identities":[
+                  {
+                     "name":"activity_explorer",
+                     "principal":{
+                        "value":"${activity-conf/activity.explorer.user}/_HOST@${realm}",
+                        "type":"service",
+                        "local_username": "${activity-conf/activity.explorer.user}",
+                        "configuration":"activity-conf/activity.explorer.user.principal"
+                     },
+                     "keytab":{
+                        "file":"${keytab_dir}/activity-explorer.headless.keytab",
+                        "owner":{
+                           "name":"root",
+                           "access":"r"
+                        },
+                        "group": {
+                           "name": "${cluster-env/user_group}",
+                           "access": ""
+                        },
+                        "configuration":"activity-conf/activity.explorer.user.keytab"
+                     }
+                  }
+               ],
+               "configurations":[
+                  {
+                     "activity-zeppelin-site":{
+                        "zeppelin.server.kerberos.principal":"${activity-conf/activity.explorer.user}/_HOST@${realm}",
+                        "zeppelin.server.kerberos.keytab": "${keytab_dir}/activity-explorer.headless.keytab"
+                     }
+                  },
+                  {
+                     "yarn-site":{
+                        "yarn.admin.acl":"${activity-conf/global.activity.analyzer.user},dr.who,${yarn-env/yarn_user}"
+                     }
+                  },
+                  {
+                     "ams-hbase-site":{
+                        "hbase.superuser":"${activity-conf/global.activity.analyzer.user},${activity-conf/activity.explorer.user},${ams-env/ambari_metrics_user}"
+                     }
+                  }
+               ]
+            }
+         ]
+      }
+   ]
+}
