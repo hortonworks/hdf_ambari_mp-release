@@ -20,8 +20,8 @@
   <services>
     <service>
       <name>LOGSEARCH</name>
-      <extends>common-services/LOGSEARCH/0.5.0</extends>
-      <selection>TECH_PREVIEW</selection>
+      <version>0.5.0</version>
+      <extends>${LOGSEARCH_PLACEHOLDER}</extends>
     </service>
   </services>
 </metainfo>

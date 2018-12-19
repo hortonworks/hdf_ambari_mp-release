@@ -28,11 +28,22 @@ FILES_LIST = [
 ]
 
 STACKS_PATH, _, COMMON_SERVICES_PATH, _, _ = get_mpack_properties()
+
 SMARTSENSE_METAINFO_PATH = os.path.join(STACKS_PATH, "HDF", "3.2.b", "services", "SMARTSENSE", "metainfo.xml")
 VIEW_JAR_FOLDER_TEMPLATE = os.path.join(COMMON_SERVICES_PATH, "SMARTSENSE", "{_3_DIGIT_VERSION}", "package", "files",
                                         "view")
 SMARTSENSE_FOLDER_TEMPLATE = os.path.join(COMMON_SERVICES_PATH, "SMARTSENSE", "{_3_DIGIT_VERSION}")
 SMARTSENSE_COMMON_FOLDER_RELATIVE_TEMPLATE = "common-services/SMARTSENSE/{_3_DIGIT_VERSION}"
+
+LOGSEARCH_COMMON_PATH = {
+  "2.7.0": "common-services/LOGSEARCH/0.5.0",
+  "2.7.1": "common-services/LOGSEARCH/0.5.0",
+  "2.7.2": "common-services/LOGSEARCH/0.5.0",
+  "2.7.3": "common-services/LOGSEARCH/0.5.0",
+  "2.7.100": "common-services/LOGSEARCH/2.7.100",
+}
+LOGSEARCH_METAINFO_PATH = os.path.join(STACKS_PATH, "HDF", "3.2.b", "services", "LOGSEARCH", "metainfo.xml")
+
 
 def get_ambari_version():
   code, out = shell.checked_call(["ambari-server", "--version"], sudo=True)
@@ -50,7 +61,7 @@ def replace_in_file(file_path, what, to):
   sudo.create_file(file_path, file_content, "utf8")
 
 
-def fix_smartsense_versions():
+def select_versions():
   ambari_version, _3_digit_ambari_version = get_ambari_version()
   if _3_digit_ambari_version == "2.7.3":
     base_version = "1.5.1"
@@ -89,3 +100,10 @@ def fix_smartsense_versions():
     SMARTSENSE_COMMON_FOLDER_RELATIVE_TEMPLATE.format(_3_DIGIT_VERSION=_3_digit_ambari_version)
   )
   replace_in_file(SMARTSENSE_METAINFO_PATH, "${VERSION_PLACEHOLDER}", desired_version)
+
+  # select proper logsearch version
+  replace_in_file(
+    LOGSEARCH_METAINFO_PATH,
+    "${LOGSEARCH_PLACEHOLDER}",
+    LOGSEARCH_COMMON_PATH[_3_digit_ambari_version]
+  )

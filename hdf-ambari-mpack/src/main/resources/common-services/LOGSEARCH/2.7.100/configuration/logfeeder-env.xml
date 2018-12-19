@@ -1,0 +1,216 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<!-- This is a special config file for properties used to monitor status of the service -->
+<configuration supports_adding_forbidden="true">
+  <property>
+    <name>logfeeder_pid_dir</name>
+    <value>/var/run/ambari-logsearch-logfeeder</value>
+    <description>Log Feeder Process ID Directory</description>
+    <display-name>Log Feeder Pid Dir</display-name>
+    <value-attributes>
+      <type>directory</type>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_log_dir</name>
+    <value>/var/log/ambari-logsearch-logfeeder</value>
+    <description>Log dir for Log Feeder</description>
+    <display-name>Log Feeder Log Dir</display-name>
+    <value-attributes>
+      <type>directory</type>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_max_mem</name>
+    <value>512</value>
+    <description>Max Memory for Logfeeder</description>
+    <display-name>Log Feeder Max Memory</display-name>
+    <value-attributes>
+      <type>int</type>
+      <minimum>256</minimum>
+      <maximum>4096</maximum>
+      <unit>MB</unit>
+      <increment-step>256</increment-step>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_solr_service_logs_enable</name>
+    <value>true</value>
+    <display-name>Service Logs Enabled</display-name>
+    <description>Enable service logs to Solr</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_solr_audit_logs_enable</name>
+    <value>true</value>
+    <display-name>Audit Logs Enabled</display-name>
+    <description>Enable audit logs to Solr</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_use_solr_cloud_client</name>
+    <value>true</value>
+    <display-name>Use Solr Cloud Client</display-name>
+    <description>Use Solr client in cloud mode. It opens a zookeeper connection and watchers on every node (where you have Log Feeders), which can mean issues on large clusters. If it is disabled, monitoring the Solr nodes states will be more static (Log Feeders will figure out the available Solr nodes on startup, if a new node has been added or removed, Log Feeders should be restarted)</description>
+    <value-attributes>
+      <type>value-list</type>
+      <overridable>false</overridable>
+      <entries>
+        <entry>
+          <value>true</value>
+          <label>ON</label>
+        </entry>
+        <entry>
+          <value>false</value>
+          <label>OFF</label>
+        </entry>
+      </entries>
+      <selection-cardinality>1</selection-cardinality>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_truststore_location</name>
+    <value>/etc/security/serverKeys/logsearch.trustStore.jks</value>
+    <display-name>Log Feeder Trust Store Location</display-name>
+    <description>Location of the trust store file.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_truststore_type</name>
+    <value>jks</value>
+    <display-name>Log Feeder Trust Store Type</display-name>
+    <description>Type of the trust store file.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_truststore_password</name>
+    <value>bigdata</value>
+    <display-name>Log Feeder Trust Store Password</display-name>
+    <property-type>PASSWORD</property-type>
+    <description>Password to open the trust store file.</description>
+    <value-attributes>
+      <type>password</type>
+      <keystore>true</keystore>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_keystore_location</name>
+    <value>/etc/security/serverKeys/logsearch.keyStore.jks</value>
+    <display-name>Log Feeder Key Store Location</display-name>
+    <description>Location of the key store file.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_keystore_type</name>
+    <value>jks</value>
+    <display-name>Log Feeder Store Type</display-name>
+    <description>Type of the key store file.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_keystore_password</name>
+    <value>bigdata</value>
+    <display-name>Log Feeder Key Store Password</display-name>
+    <property-type>PASSWORD</property-type>
+    <description>Password to open the key store file.</description>
+    <value-attributes>
+      <type>password</type>
+      <keystore>true</keystore>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_external_solr_kerberos_keytab</name>
+    <value></value>
+    <display-name>Log Feeder External Solr Keytab</display-name>
+    <description>The path to the Kerberos Keytab file containing service principal of Log Feeder e.g. /etc/security/keytabs/logfeeder.service.keytab</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_external_solr_kerberos_principal</name>
+    <value></value>
+    <display-name>Log Feeder External Solr Principal</display-name>
+    <description>The service principal for Log Feeder which will be used to access SolrClient e.g. logfeeder/_HOST@REALM</description>
+    <property-type>KERBEROS_PRINCIPAL</property-type>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_kerberos_keytab</name>
+    <value>/etc/security/keytabs/logfeeder.service.keytab</value>
+    <display-name>Log Feeder Solr Keytab</display-name>
+    <description>The path to the Kerberos Keytab file containing service principal of the Log Feeder.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>logfeeder_kerberos_principal</name>
+    <value>logfeeder</value>
+    <display-name>Log Feeder Solr Principal</display-name>
+    <description>The service principal for Log Feeder which will be used to access Log Search Solr.</description>
+    <property-type>KERBEROS_PRINCIPAL</property-type>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>ambari_server_log_dir</name>
+    <value>/var/log/ambari-server</value>
+    <description>Log dir of Ambari Server. Use this property when bootstrapping Logsearch only.</description>
+    <display-name>Ambari Server Log Dir</display-name>
+    <value-attributes>
+      <type>directory</type>
+      <editable-only-at-install>true</editable-only-at-install>
+    </value-attributes>
+    <on-ambari-upgrade add="false"/>
+  </property>
+  <property>
+    <name>ambari_agent_log_dir</name>
+    <value>/var/log/ambari-agent</value>
+    <description>Log dir of Ambari Agent. Use this property when bootstrapping Logsearch only.</description>
+    <display-name>Ambari Agent Log Dir</display-name>
+    <value-attributes>
+      <type>directory</type>
+      <editable-only-at-install>true</editable-only-at-install>
+    </value-attributes>
+    <on-ambari-upgrade add="false"/>
+  </property>
+  <property>
+    <name>content</name>
+    <display-name>logfeeder-env template</display-name>
+    <description>This is the jinja template for logfeeder-env.sh file</description>
+    <value/>
+    <property-type>VALUE_FROM_PROPERTY_FILE</property-type>
+    <value-attributes>
+      <property-file-name>logfeeder-env.sh.j2</property-file-name>
+      <property-file-type>text</property-file-type>
+    </value-attributes>
+    <on-ambari-upgrade add="true" update="true"/>
+  </property>
+</configuration>
