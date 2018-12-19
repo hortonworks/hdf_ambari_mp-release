@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-'''
+"""
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
 distributed with this work for additional information
@@ -16,22 +14,28 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-'''
 
-import os
+"""
 
-import smartsense_versioner
-from switch_addon_services import switch_addon_services
+from resource_management.libraries.script.script import Script
+from resource_management.core.logger import Logger
+from resource_management.core.resources.system import Execute
 
+class LogSearchServiceCheck(Script):
+  def service_check(self, env):
+    import params
+    env.set_params(params)
 
-def main():
-  file_path = os.path.realpath(__file__)
-  hooks_dir = os.path.dirname(file_path)
-  hdf32_config_path = os.path.join(hooks_dir, "HDF-3.3.json")
-  switch_addon_services(hdf32_config_path)
-  return 0
-
+    try:
+      if params.logsearch_server_host:
+        Execute(params.smoke_logsearch_cmd, user=params.logsearch_user,
+                tries=15, try_sleep=5, timeout=10)
+        Logger.info('Log Search Server up and running')
+      else:
+        Logger.info('No portal is installed on the cluster thus no service check is required')
+    except:
+      Logger.error('Log Search Server not running')
+      raise
 
 if __name__ == "__main__":
-  smartsense_versioner.select_versions()
-  exit(main())
+  LogSearchServiceCheck().execute()

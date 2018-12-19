@@ -161,3 +161,7 @@ class HDF32SMARTSENSEServiceAdvisor(HDP21SMARTSENSEServiceAdvisor):
         self.as_super = super(HDF32SMARTSENSEServiceAdvisor, self)
         self.as_super.__init__(*args, **kwargs)
 
+class SMARTSENSE272ServiceAdvisor(HDP21SMARTSENSEServiceAdvisor):
+  def __init__(self, *args, **kwargs):
+    self.as_super = super(SMARTSENSE272ServiceAdvisor, self)
+    self.as_super.__init__(*args, **kwargs)
