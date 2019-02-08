@@ -205,6 +205,8 @@ nifi_toolkit_tls_regenerate = nifi_ca_parent_config['nifi.toolkit.tls.regenerate
 nifi_ca_log_file_stdout = config['configurations']['nifi-env']['nifi_node_log_dir'] + '/nifi-ca.stdout'
 nifi_ca_log_file_stderr = config['configurations']['nifi-env']['nifi_node_log_dir'] + '/nifi-ca.stderr'
 
+force_skip_registry_registration = default('/configurations/nifi-env/skip_registry_registration', False)
+
 nifi_ca_config = { 
   "days" : int(nifi_ca_parent_config['nifi.toolkit.tls.helper.days']),
   "keyStore" : nifi_config_dir + '/nifi-certificate-authority-keystore.jks',

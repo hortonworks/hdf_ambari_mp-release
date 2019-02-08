@@ -148,7 +148,7 @@ class Master(Script):
     if not os.path.isfile(status_params.nifi_pid_dir+'/nifi.pid'):
       Execute ('sleep 5')
 
-    if params.nifi_registry_url and params.stack_support_nifi_auto_client_registration:
+    if params.nifi_registry_url and params.stack_support_nifi_auto_client_registration and not params.force_skip_registry_registration:
       Logger.info("Trying to register NIFI Registry. This can take up to several minutes. Please, wait...")
       try:
         nifi_cli.create_or_update_reg_client(params.nifi_registry_host, params.nifi_registry_url)
