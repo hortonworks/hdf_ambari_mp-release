@@ -173,7 +173,10 @@ def update_reg_client(client_name=None, client_id=None, client_url=None):
 
 def create_or_update_reg_client(client_name, client_url):
   existing_clients = list_reg_clients()
-  for _, name, uuid, _ in existing_clients:
+  for _, name, uuid, uri in existing_clients:
+    if uri == client_url:
+      Logger.info("Skipping registering '{0}', already registered.".format(uri))
+      return uuid
     if name == client_name:
       return _update_impl(
         client_id=uuid,

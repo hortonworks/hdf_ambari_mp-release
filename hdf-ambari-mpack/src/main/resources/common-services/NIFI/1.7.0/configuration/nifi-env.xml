@@ -80,6 +80,17 @@
     </property>
 
     <property>
+        <name>skip_registry_registration</name>
+        <value>false</value>
+        <value-attributes>
+            <type>boolean</type>
+        </value-attributes>
+        <display-name>Skip automatic client registration</display-name>
+        <description>Enables or disables NiFi's client registration on startup.</description>
+        <on-ambari-upgrade add="true"/>
+    </property>
+
+    <property>
         <name>content</name>
         <display-name>Template for nifi-env.sh</display-name>
         <value>
