@@ -105,7 +105,9 @@ class NIFI100ServiceAdvisor(service_advisor.ServiceAdvisor):
                 putNifiRangerAuditProperty = self.putProperty(configurations, "ranger-nifi-audit", services)
                 putNifiRangerAuditProperty(item['target_configname'], rangerAuditProperty)
 
-        if 'ranger-admin-site' in services['configurations'] and 'ranger.plugins.nifi.serviceuser' in services['configurations']['ranger-admin-site']['properties']:
+        servicesList = [service['StackServices']['service_name'] for service in services['services']]
+
+        if "RANGER" in servicesList and "ranger-admin-site" in services['configurations']:
             nifi_user = services['configurations']['nifi-env']['properties']['nifi_user']
             putRangerAdminSiteProperty = self.putProperty(configurations, "ranger-admin-site", services)
             putRangerAdminSiteProperty("ranger.plugins.nifi.serviceuser", nifi_user)
