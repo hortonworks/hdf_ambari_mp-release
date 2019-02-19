@@ -22,7 +22,7 @@
         <service>
             <name>NIFI_REGISTRY</name>
             <version>0.3.0</version>
-            <extends>common-services/NIFI_REGISTRY/0.2.0</extends>
+            <extends>common-services/NIFI_REGISTRY/0.3.0</extends>
 
             <components>
                 <component>

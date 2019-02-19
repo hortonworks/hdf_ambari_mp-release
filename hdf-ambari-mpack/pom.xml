@@ -26,7 +26,7 @@
   <url>http://ambari.apache.org/</url>
   <properties>
     <minAmbariVersion>2.7.0</minAmbariVersion>
-    <maxAmbariVersion>2.7.1</maxAmbariVersion>
+    <maxAmbariVersion>2.7.3</maxAmbariVersion>
     <nifiversion>1.7.0.3.2.0.0-520</nifiversion>
     <buildnumber-maven-plugin-version>1.4</buildnumber-maven-plugin-version>
   </properties>

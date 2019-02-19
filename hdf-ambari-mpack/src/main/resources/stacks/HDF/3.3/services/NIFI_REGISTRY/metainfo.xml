@@ -21,7 +21,7 @@
         <service>
             <name>NIFI_REGISTRY</name>
             <version>0.3.0.3.3</version>
-
+            <extends>common-services/NIFI_REGISTRY/0.3.0</extends>
             <osSpecifics>
                 <osSpecific>
                     <osFamily>redhat7,amazon2015,suse11,suse12,amazonlinux2</osFamily>
