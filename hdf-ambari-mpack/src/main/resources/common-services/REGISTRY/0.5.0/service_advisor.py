@@ -131,7 +131,7 @@ class REGISTRY050ServiceAdvisor(service_advisor.REGISTRY030ServiceAdvisor):
       registryPrivilegeDbProperties = db_root_jdbc_url_dict.get(registry_storage_type, db_root_jdbc_url_dict['mysql'])
 
       if 'oracle' in registry_storage_type:
-        putRegistryEnvProperty("create_db_user", "false")
+        putRegistryEnvProperty("create_db_dbuser", "false")
 
       for key in registryPrivilegeDbProperties:
         putRegistryCommonProperty(key, registryPrivilegeDbProperties.get(key))
