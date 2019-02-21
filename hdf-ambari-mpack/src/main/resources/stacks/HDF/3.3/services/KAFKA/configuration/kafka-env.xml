@@ -105,9 +105,13 @@ if [ -e "/usr/lib/ambari-metrics-kafka-sink/ambari-metrics-kafka-sink.jar" ]; th
   export CLASSPATH=$CLASSPATH:/usr/lib/ambari-metrics-kafka-sink/ambari-metrics-kafka-sink.jar
   export CLASSPATH=$CLASSPATH:/usr/lib/ambari-metrics-kafka-sink/lib/*
 fi
+{% if stack_supports_kafka_env_include_ranger_script %}
 if [ -f /etc/kafka/conf/kafka-ranger-env.sh ]; then
 . /etc/kafka/conf/kafka-ranger-env.sh
 fi
+{% else %}
+export CLASSPATH=$CLASSPATH:{{conf_dir}}
+{% endif %}
     </value>
     <value-attributes>
       <type>content</type>

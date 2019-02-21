@@ -402,6 +402,11 @@
         "name": "nifi_toolkit_package",
         "description": "Supports NiFi Toolkit package from repository",
         "min_version": "3.3.0.0"
+      },
+      {
+        "name": "kafka_env_include_ranger_script",
+        "description": "Need to include Ranger Kafka plugin script if stack version is lower than 3.1.0.0",
+        "max_version": "3.4.0.0"
       }
     ]
   }
