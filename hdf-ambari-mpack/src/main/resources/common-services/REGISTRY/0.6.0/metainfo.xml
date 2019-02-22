@@ -21,13 +21,7 @@
         <service>
             <name>REGISTRY</name>
             <version>0.6.0</version>
-            <extends>common-services/REGISTRY/0.6.0</extends>
-            <themes>
-                <theme>
-                    <fileName>theme_version_4.json</fileName>
-                    <default>true</default>
-                </theme>
-            </themes>
+            <extends>common-services/REGISTRY/0.5.4</extends>
         </service>
     </services>
 </metainfo>

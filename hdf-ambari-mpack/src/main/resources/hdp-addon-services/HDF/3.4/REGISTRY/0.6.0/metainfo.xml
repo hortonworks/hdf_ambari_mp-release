@@ -20,8 +20,8 @@
     <services>
         <service>
             <name>REGISTRY</name>
-            <version>0.5.4</version>
-            <extends>common-services/REGISTRY/0.5.4</extends>
+            <version>0.6.0</version>
+            <extends>common-services/REGISTRY/0.6.0</extends>
             <themes>
                 <theme>
                     <fileName>theme_version_4.json</fileName>
