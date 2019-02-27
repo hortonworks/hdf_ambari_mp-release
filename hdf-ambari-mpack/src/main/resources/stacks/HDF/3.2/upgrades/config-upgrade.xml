@@ -10,6 +10,16 @@
                              if-type="kafka-broker" if-key="security.inter.broker.protocol" if-value="PLAINTEXTSASL"/>
                         <replace key="listeners" find="PLAINTEXTSASL://" replace-with="SASL_PLAINTEXT://"/>
                     </definition>
+
+                    <!-- upgrade kafka version to 2.1 in case of HDF-3.4 -->
+                    <definition xsi:type="configure" id="hdf_3_4_add_inter_broker_protocol_version">
+                        <type>kafka-broker</type>
+                            <set key="inter.broker.protocol.version" value="2.1" />
+                    </definition>
+                    <definition xsi:type="configure" id="hdf_3_4_add_skip_log_message_format_version">
+                        <type>kafka-broker</type>
+                            <set key="log.message.format.version" value="2.1" if-type="kafka-broker" if-key="log.message.format.version" if-key-state="absent"/>
+                    </definition>
                 </changes>
             </component>
         </service>
@@ -22,6 +32,16 @@
                     <definition xsi:type="configure" id="hdf_3_3_0_0_update_nifi_properties_configs">
                         <type>nifi-properties</type>
                         <set key="nifi.version" value="1.8.0.{{stack_version_buildnum}}"/>
+                    </definition>
+
+                    <definition xsi:type="configure" id="hdf_3_4_0_0_update_nifi_properties_version_configs">
+                        <type>nifi-properties</type>
+                        <set key="nifi.version" value="1.9.0.{{stack_version_buildnum}}"/>
+                    </definition>
+
+                    <definition xsi:type="configure" id="hdf_3_4_0_0_update_nifi_properties_autoloaddir_configs">
+                        <type>nifi-properties</type>
+                        <set key="nifi.nar.library.autoload.directory" value="{{nifi_internal_dir}}/work/extensions"/>
                     </definition>
 
                     <!-- Remove configuration from nifi-properties -->
@@ -67,6 +87,17 @@
                     </definition>
                 </changes>
             </component>
+        </service>
+
+        <service name="STORM">
+          <component name="NIMBUS">
+            <changes>
+              <definition xsi:type="configure" id="hdf_3_4_remove_storm_transformer" summary="Remove Storm Client JAR Transformer">
+                <type>storm-site</type>
+                  <transfer operation="delete" delete-key="client.jartransformer.class" />
+              </definition>
+            </changes>
+          </component>
         </service>
 
     </services>
