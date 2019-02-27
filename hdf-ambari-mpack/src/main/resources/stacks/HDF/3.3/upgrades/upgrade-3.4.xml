@@ -178,6 +178,7 @@
 
             <service name="NIFI">
                 <component>NIFI_MASTER</component>
+                <component>NIFI_CA</component>
             </service>
 
             <service name="NIFI_REGISTRY">
@@ -187,14 +188,39 @@
         </group>
 
 
-        <!-- <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
+        <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
             <direction>UPGRADE</direction>
-            <skippable>true</skippable> -->
+            <skippable>true</skippable>
             <!-- NIFI -->
-            <!-- <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
-                <task xsi:type="configure" id="hdf_3_3_0_0_update_nifi_properties_configs"/>
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
+                <task xsi:type="configure" id="hdf_3_4_0_0_update_nifi_properties_version_configs"/>
             </execute-stage>
-        </group> -->
+
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Update Autoload Dir config changes for Nifi Master">
+                <task xsi:type="configure" id="hdf_3_4_0_0_update_nifi_properties_autoloaddir_configs"/>
+            </execute-stage>
+
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Add if absent - NiFi Properties - cluster load balancer host">
+                <task xsi:type="configure" id="hdf_3_4_0_0_add_nifi_cluster_load_balance_host"/>
+            </execute-stage>
+
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Add if absent - NiFi Properties - cluster load balancer port">
+                <task xsi:type="configure" id="hdf_3_4_0_0_add_nifi_cluster_load_balance_port"/>
+            </execute-stage>
+
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Add if absent - NiFi Properties - cluster load balancer connections per node">
+                <task xsi:type="configure" id="hdf_3_4_0_0_add_nifi_cluster_load_balance_connections_per_node"/>
+            </execute-stage>
+
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Add if absent - NiFi Properties - cluster load balancer max thread count">
+                <task xsi:type="configure" id="hdf_3_4_0_0_add_nifi_cluster_load_balance_max_thread_count"/>
+            </execute-stage>
+
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Add if absent - NiFi Properties - cluster load balancer connection timeout">
+                <task xsi:type="configure" id="hdf_3_4_0_0_add_nifi_cluster_load_balance_comms_timeout"/>
+            </execute-stage>
+
+        </group>
 
         <group xsi:type="restart" name="NIFI_REGISTRY" title="NIFI_REGISTRY">
             <service-check>false</service-check>
@@ -210,6 +236,7 @@
             <skippable>true</skippable>
             <parallel-scheduler/>
             <service name="NIFI">
+                <component>NIFI_CA</component>
                 <component>NIFI_MASTER</component>
             </service>
         </group>
@@ -328,7 +355,10 @@
 
         <service name="KAFKA">
             <component name="KAFKA_BROKER">
-                <pre-upgrade />
+                <pre-upgrade>
+                    <task xsi:type="configure" id="hdf_3_4_add_inter_broker_protocol_version" />
+                    <task xsi:type="configure" id="hdf_3_4_add_skip_log_message_format_version" />
+                </pre-upgrade>
                 <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
                 <upgrade>
                     <task xsi:type="restart-task" />
@@ -346,6 +376,10 @@
 
         <service name="STORM">
             <component name="NIMBUS">
+                <pre-upgrade>
+                    <task xsi:type="configure" id="hdf_3_4_remove_storm_transformer"/>
+                </pre-upgrade>
+                <pre-downgrade/>
                 <upgrade>
                     <task xsi:type="restart-task" />
                 </upgrade>
@@ -370,7 +404,16 @@
         <service name="REGISTRY">
             <component name="REGISTRY_SERVER">
                 <pre-upgrade/>
-                <pre-downgrade/>
+                <pre-downgrade>
+                    <task xsi:type="execute" hosts="all">
+                        <summary>Stop Registry Server</summary>
+                        <script>scripts/registry_server.py</script>
+                        <function>stop</function>
+                    </task>
+                    <task xsi:type="manual">
+                        <message>Please restore Schema Registry database.</message>
+                    </task>
+                </pre-downgrade>
                 <upgrade>
                     <task xsi:type="restart-task" />
                 </upgrade>
@@ -380,7 +423,16 @@
         <service name="STREAMLINE">
             <component name="STREAMLINE_SERVER">
                 <pre-upgrade/>
-                <pre-downgrade/>
+                <pre-downgrade>
+                    <task xsi:type="execute" hosts="all">
+                        <summary>Stop Streamline Server</summary>
+                        <script>scripts/streamline_server.py</script>
+                        <function>stop</function>
+                    </task>
+                    <task xsi:type="manual">
+                        <message>Please restore Streamline Analytics Manager database.</message>
+                    </task>
+                </pre-downgrade>
                 <upgrade>
                     <task xsi:type="restart-task" />
                 </upgrade>
@@ -395,12 +447,28 @@
                     <task xsi:type="restart-task" />
                 </upgrade>
             </component>
+            <component name="NIFI_CA">
+                <pre-upgrade/>
+                <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
+                <upgrade>
+                    <task xsi:type="restart-task" />
+                </upgrade>
+            </component>
         </service>
 
         <service name="NIFI_REGISTRY">
             <component name="NIFI_REGISTRY_MASTER">
                 <pre-upgrade/>
-                <pre-downgrade/>
+                <pre-downgrade>
+                    <task xsi:type="execute" hosts="all">
+                        <summary>Stop NiFi Registry Server</summary>
+                        <script>scripts/nifi_registry.py</script>
+                        <function>stop</function>
+                    </task>
+                    <task xsi:type="manual">
+                        <message>Please restore NiFi Registry database.</message>
+                    </task>
+                </pre-downgrade>
                 <upgrade>
                     <task xsi:type="restart-task" />
                 </upgrade>

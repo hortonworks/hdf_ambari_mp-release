@@ -26,12 +26,38 @@ from resource_management.core.sudo import kill, read_file, path_isfile, unlink
 from resource_management.libraries.functions.check_process_status import check_process_status
 from resource_management.libraries.functions.default import default
 from resource_management.libraries.functions.generate_logfeeder_input_config import generate_logfeeder_input_config
+from resource_management.libraries.functions import conf_select
+from resource_management.libraries.functions import stack_select
+from resource_management.libraries.functions.stack_features import check_stack_feature
+from resource_management.libraries.functions.version import format_stack_version
+from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.script.script import Script
 from resource_management.core.resources import File
 from resource_management.core.source import Template
+from resource_management.core.logger import Logger
 from signal import SIGTERM, SIGKILL
 
 class CertificateAuthority(Script):
+
+  def get_component_name(self):
+    stack_name = default("/clusterLevelParams/stack_name", None)
+    if stack_name == "HDP":
+        return None
+    return "nifi-toolkit"
+
+  def pre_upgrade_restart(self, env, upgrade_type=None):
+    Logger.info("Executing Stack Upgrade pre-restart")
+    import params
+    env.set_params(params)
+
+    if params.version and check_stack_feature(StackFeature.ROLLING_UPGRADE, format_stack_version(params.version)):
+        stack_select.select("nifi-toolkit", params.version)
+    if params.version and check_stack_feature(StackFeature.CONFIG_VERSIONING, params.version):
+        conf_select.select(params.stack_name, "nifi-toolkit", params.version)
+
+  def post_upgrade_restart(self, env, upgrade_type=None):
+    pass
+
   def install(self, env):
     import params
     import status_params
