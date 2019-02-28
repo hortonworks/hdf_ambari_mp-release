@@ -107,7 +107,14 @@ class NifiRegistryServiceCheck(Script):
             truststoreType = nifi_registry_props['nifi.registry.security.truststoreType']
             truststorePasswd = nifi_registry_props['nifi.registry.security.truststorePasswd']
 
-            command =  'ambari-sudo.sh JAVA_HOME=' + jdk64_home + ' '+ tls_toolkit_script + ' status -u ' + url + ' -ks ' + keystore + ' -kst ' + keystoreType + ' -ksp ' + keystorePasswd + ' -kp ' + keyPasswd + ' -ts ' + truststore + ' -tst ' + truststoreType + ' -tsp ' + truststorePasswd
+            args = ['status', '-u', url, '-ks', keystore, '-kst', keystoreType, '-ts', truststore, '-tst', truststoreType]
+
+            for pwd_key, pwd_value in (('-ksp', keystorePasswd), ('-kp', keyPasswd), ('-tsp', truststorePasswd)):
+                if pwd_value:  # omit empty and None passwords
+                    args.append(pwd_key)
+                    args.append(pwd_value)
+
+            command = 'ambari-sudo.sh JAVA_HOME=' + jdk64_home + ' ' + tls_toolkit_script + ' ' + ' '.join(args)
 
             # Only uncomment for debugging, otherwise the passwords will get logged
             #Logger.info("Executing: " + command)
