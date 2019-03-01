@@ -32,7 +32,7 @@ def setup_ranger_nifi(upgrade_type=None):
              mode=0750
              )
 
-        cred_lib_prefix_path = format('{stack_root}/{stack_version}/{service_name}/ext/ranger/install/lib/*')
+        cred_lib_prefix_path = format('{stack_root}/{stack_version}/{service_name}/ext/ranger/lib/*:{stack_root}/{stack_version}/{service_name}/lib/slf4j-api-1.7.12.jar')
         cred_setup_prefix_path = (format('{stack_root}/{stack_version}/{service_name}/ext/ranger/scripts/ranger_credential_helper.py'), '-l', cred_lib_prefix_path)
 
         if params.retryAble:
