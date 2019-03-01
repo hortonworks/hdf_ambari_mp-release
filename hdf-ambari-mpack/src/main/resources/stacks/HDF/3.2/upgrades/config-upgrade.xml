@@ -60,6 +60,28 @@
             </component>
         </service>
 
+        <service name="NIFI_REGISTRY">
+            <component name="NIFI_REGISTRY_MASTER">
+                <changes>
+                    <!-- Update these configs in nifi-registry-properties. -->
+                    <definition xsi:type="configure" id="hdf_3_4_0_0_update_nifi_registry_properties_ranger_ext">
+                        <type>nifi-registry-properties</type>
+                        <set key="nifi.registry.extension.dir.ranger" value="{{nifi_registry_install_dir}}/ext/ranger/lib"/>
+                    </definition>
+
+                    <definition xsi:type="configure" id="hdf_3_4_0_0_update_nifi_registry_properties_service_principal">
+                        <type>nifi-registry-properties</type>
+                        <set key="nifi.registry.kerberos.service.principal" value=""/>
+                    </definition>
+
+                    <definition xsi:type="configure" id="hdf_3_4_0_0_update_nifi_registry_properties_service_keytab">
+                        <type>nifi-registry-properties</type>
+                        <set key="nifi.registry.kerberos.service.keytab.location" value=""/>
+                    </definition>
+                </changes>
+            </component>
+        </service>
+
         <service name="RANGER">
           <component name="RANGER_ADMIN">
             <changes>

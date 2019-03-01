@@ -28,6 +28,7 @@ from resource_management.libraries.resources.modify_properties_file import Modif
 from resource_management.libraries.functions import StackFeature
 from resource_management.libraries.functions.constants import Direction
 from resource_management.core.exceptions import Fail
+from setup_ranger_nifi_registry import setup_ranger_nifi_registry
 
 import config_utils
 
@@ -128,7 +129,7 @@ class Master(Script):
 
         nifi_toolkit_util_common.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_registry_user, params.nifi_registry_group, upgrade_type=None, service=nifi_toolkit_util_common.NIFI_REGISTRY)
         self.configure(env, is_starting = True)
-        #setup_ranger_nifi(upgrade_type=None)
+        setup_ranger_nifi_registry(upgrade_type=None)
 
         Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi-registry.sh start >> ' + params.nifi_registry_log_file, user=params.nifi_registry_user)
         #If nifi pid file not created yet, wait a bit

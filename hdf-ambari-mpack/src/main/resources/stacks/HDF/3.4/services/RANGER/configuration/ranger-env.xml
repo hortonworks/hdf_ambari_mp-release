@@ -1,4 +1,5 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <!--
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -18,18 +19,29 @@
  * limitations under the License.
  */
 -->
-<metainfo>
-  <schemaVersion>2.0</schemaVersion>
-  <services>
-    <service>
-      <name>RANGER</name>
-      <version>1.2.0.3.4</version>
-      <themes>
-        <theme>
-            <fileName>theme_version_5.json</fileName>
-            <default>true</default>
-        </theme>
-      </themes>
-    </service>
-  </services>
-</metainfo>
+
+<configuration supports_final="true" supports_adding_forbidden="true">
+
+  <property>
+    <name>ranger-nifi-registry-plugin-enabled</name>
+    <value>No</value>
+    <display-name>NiFi Registry Ranger Plugin</display-name>
+    <description>Enable NiFi Registry Ranger plugin</description>
+    <value-attributes>
+      <overridable>false</overridable>
+      <type>value-list</type>
+      <entries>
+        <entry>
+          <value>Yes</value>
+          <label>ON</label>
+        </entry>
+        <entry>
+          <value>No</value>
+          <label>OFF</label>
+        </entry>
+      </entries>
+      <selection-cardinality>1</selection-cardinality>
+    </value-attributes>
+  </property>
+
+</configuration>
