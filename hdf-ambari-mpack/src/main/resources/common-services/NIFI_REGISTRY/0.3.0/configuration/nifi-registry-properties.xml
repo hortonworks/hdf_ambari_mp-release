@@ -17,6 +17,7 @@
    limitations under the License.
 -->
 <configuration>
+
     <!-- kerb example identity mapping transform -->
     <property>
         <name>nifi.registry.security.identity.mapping.transform.kerb</name>
@@ -58,4 +59,29 @@
         <on-ambari-upgrade add="true"/>
         <description>Transform to apply to mapped group name for this mapping. Valid options are NONE, UPPER, and LOWER and defaults to NONE if not specified.</description>
     </property>
+
+    <property>
+        <name>nifi.registry.extension.dir.ranger</name>
+        <value>{{nifi_registry_install_dir}}/ext/ranger/lib</value>
+        <description>A full path to a directory containing JARs for the NiFi Registry Ranger extension.</description>
+    </property>
+
+    <property>
+        <name>nifi.registry.kerberos.service.principal</name>
+        <value/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description>The name of the NiFi Registry Kerberos service principal, if used. It is blank by default. Note that this property is used to authenticate NiFi Registry users. Example: HTTP/nifi-registry.example.com or HTTP/nifi-registry.example.com@EXAMPLE.COM</description>
+    </property>
+
+    <property>
+        <name>nifi.registry.kerberos.service.keytab.location</name>
+        <value/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description>The file path of the NiFi Registry Kerberos keytab, if used. It is blank by default. Note that this property is used to authenticate NiFi Registry users.</description>
+    </property>
+
 </configuration>

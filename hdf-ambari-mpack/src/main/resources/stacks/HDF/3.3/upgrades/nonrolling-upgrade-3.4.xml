@@ -247,6 +247,19 @@
                 <task xsi:type="configure" id="hdf_3_4_0_0_add_nifi_cluster_load_balance_comms_timeout"/>
             </execute-stage>
 
+            <!-- NIFI_REGISTRY -->
+            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Update config changes for Nifi Registry Ranger extension dir">
+                <task xsi:type="configure" id="hdf_3_4_0_0_update_nifi_registry_properties_ranger_ext"/>
+            </execute-stage>
+
+            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Update config changes for Nifi Registry service principal">
+                <task xsi:type="configure" id="hdf_3_4_0_0_update_nifi_registry_properties_service_principal"/>
+            </execute-stage>
+
+            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Update config changes for Nifi Registry service keytab">
+                <task xsi:type="configure" id="hdf_3_4_0_0_update_nifi_registry_properties_service_keytab"/>
+            </execute-stage>
+
             <!-- STORM -->
             <execute-stage service="STORM" component="NIMBUS" title="Remove Storm Client JAR Transformer">
                 <task xsi:type="configure" id="hdf_3_4_remove_storm_transformer"/>

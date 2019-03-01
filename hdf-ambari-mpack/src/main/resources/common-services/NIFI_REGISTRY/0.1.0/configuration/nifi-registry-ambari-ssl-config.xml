@@ -146,7 +146,7 @@
         <description>
             The identity of an initial admin user that will be granted access to the UI and
             given the ability to create additional users, groups, and policies. Must be specified when Ranger plugin for
-            Nifi will not be used for authorization.
+            Nifi Registry will not be used for authorization.
             Before changing value of this field, note that it will only take effect if authorizations.xml does not contain any existing policies.
             The value of this property could be
             a DN when using certificates or LDAP, or a Kerberos principal. This property will only be used when there

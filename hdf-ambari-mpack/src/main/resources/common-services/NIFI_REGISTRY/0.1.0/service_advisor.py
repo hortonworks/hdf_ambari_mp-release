@@ -72,6 +72,41 @@ class NIFI_REGISTRY010ServiceAdvisor(service_advisor.ServiceAdvisor):
     def getServiceConfigurationRecommendations(self, configurations, clusterData, services, hosts):
         Logger.info("Class: %s, Method: %s. get Service Configurations Recommendations. " % (self.__class__.__name__, inspect.stack()[0][3]))
 
+        if "ranger-env" in services["configurations"] and "ranger-nifi-registry-plugin-properties" in services["configurations"] and \
+                "ranger-nifi-registry-plugin-enabled" in services["configurations"]["ranger-env"]["properties"]:
+            putNiFiRegistryRangerPluginProperty = self.putProperty(configurations, "ranger-nifi-registry-plugin-properties", services)
+            rangerEnvNiFiRegistryPluginProperty = services["configurations"]["ranger-env"]["properties"]["ranger-nifi-registry-plugin-enabled"]
+            putNiFiRegistryRangerPluginProperty("ranger-nifi-registry-plugin-enabled", rangerEnvNiFiRegistryPluginProperty)
+
+            if rangerEnvNiFiRegistryPluginProperty.lower() == 'yes' and \
+                    "nifi.registry.authentication" in services["configurations"]["ranger-nifi-registry-plugin-properties"]["properties"] and \
+                    "nifi.registry.ssl.isenabled" in services["configurations"]["nifi-registry-ambari-ssl-config"]["properties"]:
+                nifiRegistryAmbariSSLConfig = 'SSL' if services["configurations"]["nifi-registry-ambari-ssl-config"]["properties"]["nifi.registry.ssl.isenabled"] == 'true' else 'NONE'
+                putNiFiRegistryRangerPluginProperty("nifi.registry.authentication",nifiRegistryAmbariSSLConfig)
+
+        # Recommend Ranger supported service's audit properties
+        ranger_audit_entries = [
+            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.solr', 'target_configname': 'xasecure.audit.destination.solr'},
+            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs', 'target_configname': 'xasecure.audit.destination.hdfs'},
+            {'filename': 'ranger-env', 'configname': 'xasecure.audit.destination.hdfs.dir', 'target_configname': 'xasecure.audit.destination.hdfs.dir'},
+            {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.urls', 'target_configname': 'xasecure.audit.destination.solr.urls'},
+            {'filename': 'ranger-admin-site', 'configname': 'ranger.audit.solr.zookeepers', 'target_configname': 'xasecure.audit.destination.solr.zookeepers'}
+        ]
+
+        for item in ranger_audit_entries:
+            if item['filename'] in services['configurations'] and item['configname'] in services['configurations'][item['filename']]['properties']:
+                if item['filename'] in configurations and item['configname'] in configurations[item['filename']]['properties']:
+                    rangerAuditProperty = configurations[item['filename']]['properties'][item['configname']]
+                else:
+                    rangerAuditProperty = services['configurations'][item['filename']]['properties'][item['configname']]
+                putNifiRegistryRangerAuditProperty = self.putProperty(configurations, "ranger-nifi-registry-audit", services)
+                putNifiRegistryRangerAuditProperty(item['target_configname'], rangerAuditProperty)
+
+        if 'ranger-admin-site' in services['configurations'] and 'ranger.plugins.nifi.registry.serviceuser' in services['configurations']['ranger-admin-site']['properties']:
+            nifi_registry_user = services['configurations']['nifi-registry-env']['properties']['nifi_registry_user']
+            putRangerAdminSiteProperty = self.putProperty(configurations, "ranger-admin-site", services)
+            putRangerAdminSiteProperty("ranger.plugins.nifi-registry.serviceuser", nifi_registry_user)
+
 
     def getServiceConfigurationsValidationItems(self, configurations, recommendedDefaults, services, hosts):
         Logger.info("Class: %s, Method: %s. Validating Service Configuration Items." % (self.__class__.__name__, inspect.stack()[0][3]))

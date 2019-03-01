@@ -6,7 +6,13 @@
   The ASF licenses this file to You under the Apache License, Version 2.0
   (the "License"); you may not use this file except in compliance with
   the License.  You may obtain a copy of the License at
+<<<<<<< HEAD
     http://www.apache.org/licenses/LICENSE-2.0
+=======
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+>>>>>>> RMP-10826 Enable Ranger Plugin for NiFi Registry
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,4 +29,21 @@
     </value-attributes>
     <on-ambari-upgrade add="false"/>
   </property>
+
+  <property>
+    <name>ranger.plugins.nifi-registry.serviceuser</name>
+    <value>nifiregistry</value>
+    <depends-on>
+      <property>
+        <type>nifi-registry-env</type>
+        <name>nifi_registry_user</name>
+      </property>
+    </depends-on>
+  </property>
+
+  <property>
+    <name>ranger.supportedcomponents</name>
+    <value>storm,kafka,nifi,nifi-registry,knox</value>
+  </property>
+
 </configuration>

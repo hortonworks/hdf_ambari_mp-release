@@ -37,6 +37,7 @@ from resource_management.libraries.functions.get_not_managed_resources import ge
 import ambari_simplejson as json # simplejson is much faster comparing to Python 2.6 json module and has the same functions set
 
 import config_utils
+import functools
 
 # server configurations
 config = Script.get_config()
@@ -69,6 +70,7 @@ nifi_registry_install_dir = os.path.join(stack_root, "current", "nifi-registry")
 # params from nifi-registry-ambari-config
 nifi_registry_initial_mem = config['configurations']['nifi-registry-ambari-config']['nifi.registry.initial_mem']
 nifi_registry_max_mem = config['configurations']['nifi-registry-ambari-config']['nifi.registry.max_mem']
+
 
 # note: nifi.registry.port and nifi.registry.port.ssl must be defined in same xml file for quicklinks to work
 nifi_registry_port = config['configurations']['nifi-registry-ambari-config']['nifi.registry.port']
@@ -216,6 +218,8 @@ jdk64_home=config['ambariLevelParams']['java_home']
 
 nifi_registry_authorizer = 'managed-authorizer'
 
+nifi_registry_host_name = config['agentLevelParams']['hostname']
+
 java_home = config['ambariLevelParams']['java_home']
 security_enabled = config['configurations']['cluster-env']['security_enabled']
 smokeuser = config['configurations']['cluster-env']['smokeuser']
@@ -235,3 +239,203 @@ if not stack_support_nifi_toolkit_package and stack_name == "HDP":
 if security_enabled:
     _hostname_lowercase = nifi_registry_host.lower()
     nifi_registry_properties['nifi.registry.kerberos.spnego.principal'] = nifi_registry_properties['nifi.registry.kerberos.spnego.principal'].replace('_HOST',_hostname_lowercase)
+    if 'nifi.registry.kerberos.service.principal' in nifi_registry_properties:
+        nifi_registry_properties['nifi.registry.kerberos.service.principal'] = nifi_registry_properties['nifi.registry.kerberos.service.principal'].replace('_HOST',_hostname_lowercase)
+
+#setup ranger configuration
+
+retryAble = default("/commandParams/command_retry_enabled", False)
+version = default("/commandParams/version", None)
+namenode_hosts = default("/clusterHostInfo/namenode_host", None)
+
+if isinstance(namenode_hosts, list):
+    namenode_host = namenode_hosts[0]
+else:
+    namenode_host = namenode_hosts
+
+
+
+stack_version_unformatted = config['clusterLevelParams']['stack_version']
+stack_version_formatted = format_stack_version(stack_version_unformatted)
+stack_supports_ranger_kerberos = stack_version_formatted and check_stack_feature(StackFeature.RANGER_KERBEROS_SUPPORT, stack_version_formatted)
+stack_supports_ranger_audit_db = stack_version_formatted and check_stack_feature(StackFeature.RANGER_AUDIT_DB_SUPPORT, stack_version_formatted)
+
+ranger_admin_hosts = default("/clusterHostInfo/ranger_admin_hosts", [])
+has_ranger_admin = not len(ranger_admin_hosts) == 0
+xml_configurations_supported = config['configurations']['ranger-env']['xml_configurations_supported']
+
+ambari_server_hostname = config['clusterHostInfo']['ambari_server_host'][0]
+
+# ranger nifi registry properties
+policymgr_mgr_url = config['configurations']['admin-properties']['policymgr_external_url'].rstrip('/')
+
+xa_audit_db_name = config['configurations']['admin-properties']['audit_db_name']
+xa_audit_db_user = config['configurations']['admin-properties']['audit_db_user']
+xa_db_host = config['configurations']['admin-properties']['db_host']
+repo_name = str(config['clusterName']) + '_nifi_registry'
+
+repo_config_username = config['configurations']['ranger-nifi-registry-plugin-properties']['REPOSITORY_CONFIG_USERNAME']
+
+ranger_env = config['configurations']['ranger-env']
+ranger_plugin_properties = config['configurations']['ranger-nifi-registry-plugin-properties']
+policy_user = config['configurations']['ranger-nifi-registry-plugin-properties']['policy_user']
+
+#For curl command in ranger plugin to get db connector
+jdk_location = config['ambariLevelParams']['jdk_location']
+java_share_dir = '/usr/share/java'
+
+ranger_nifi_registry_plugin_is_available = 'ranger-nifi-registry-plugin-properties' in config['configurations']
+if has_ranger_admin and ranger_nifi_registry_plugin_is_available:
+    enable_ranger_nifi_registry = (config['configurations']['ranger-nifi-registry-plugin-properties']['ranger-nifi-registry-plugin-enabled'].lower() == 'yes')
+    xa_audit_db_password = unicode(config['configurations']['admin-properties']['audit_db_password']) if stack_supports_ranger_audit_db else None
+    repo_config_password = unicode(config['configurations']['ranger-nifi-registry-plugin-properties']['REPOSITORY_CONFIG_PASSWORD'])
+    xa_audit_db_flavor = config['configurations']['admin-properties']['DB_FLAVOR'].lower()
+    previous_jdbc_jar_name = None
+
+    if stack_supports_ranger_audit_db:
+        if xa_audit_db_flavor == 'mysql':
+            jdbc_jar_name = default("/ambariLevelParams/custom_mysql_jdbc_name", None)
+            previous_jdbc_jar_name = default("/ambariLevelParams/previous_custom_mysql_jdbc_name", None)
+            audit_jdbc_url = format('jdbc:mysql://{xa_db_host}/{xa_audit_db_name}')
+            jdbc_driver = "com.mysql.jdbc.Driver"
+        elif xa_audit_db_flavor == 'oracle':
+            jdbc_jar_name = default("/ambariLevelParams/custom_oracle_jdbc_name", None)
+            previous_jdbc_jar_name = default("/ambariLevelParams/previous_custom_oracle_jdbc_name", None)
+            colon_count = xa_db_host.count(':')
+            if colon_count in (0, 2):
+                audit_jdbc_url = format('jdbc:oracle:thin:@{xa_db_host}')
+            else:
+                audit_jdbc_url = format('jdbc:oracle:thin:@//{xa_db_host}')
+            jdbc_driver = "oracle.jdbc.OracleDriver"
+        elif xa_audit_db_flavor == 'postgres':
+            jdbc_jar_name = default("/ambariLevelParams/custom_postgres_jdbc_name", None)
+            previous_jdbc_jar_name = default("/ambariLevelParams/previous_custom_postgres_jdbc_name", None)
+            audit_jdbc_url = format('jdbc:postgresql://{xa_db_host}/{xa_audit_db_name}')
+            jdbc_driver = "org.postgresql.Driver"
+        elif xa_audit_db_flavor == 'mssql':
+            jdbc_jar_name = default("/ambariLevelParams/custom_mssql_jdbc_name", None)
+            previous_jdbc_jar_name = default("/ambariLevelParams/previous_custom_mssql_jdbc_name", None)
+            audit_jdbc_url = format('jdbc:sqlserver://{xa_db_host};databaseName={xa_audit_db_name}')
+            jdbc_driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+        elif xa_audit_db_flavor == 'sqla':
+            jdbc_jar_name = default("/ambariLevelParams/custom_sqlanywhere_jdbc_name", None)
+            previous_jdbc_jar_name = default("/ambariLevelParams/previous_custom_sqlanywhere_jdbc_name", None)
+            audit_jdbc_url = format('jdbc:sqlanywhere:database={xa_audit_db_name};host={xa_db_host}')
+            jdbc_driver = "sap.jdbc4.sqlanywhere.IDriver"
+
+    downloaded_custom_connector = format("{tmp_dir}/{jdbc_jar_name}") if stack_supports_ranger_audit_db else None
+    driver_curl_source = format("{jdk_location}/{jdbc_jar_name}") if stack_supports_ranger_audit_db else None
+
+    driver_curl_target = format("{stack_root}/current/nifi-registry/ext/{jdbc_jar_name}") if stack_supports_ranger_audit_db else None
+    previous_jdbc_jar = format("{stack_root}/current/nifi-registry/ext/{previous_jdbc_jar_name}") if stack_supports_ranger_audit_db else None
+
+    ssl_keystore_password = unicode(config['configurations']['ranger-nifi-registry-policymgr-ssl']['xasecure.policymgr.clientssl.keystore.password']) if xml_configurations_supported else None
+    ssl_truststore_password = unicode(config['configurations']['ranger-nifi-registry-policymgr-ssl']['xasecure.policymgr.clientssl.truststore.password']) if xml_configurations_supported else None
+    credential_file = format('/etc/ranger/{repo_name}/cred.jceks') if xml_configurations_supported else None
+
+    ranger_admin_username = config['configurations']['ranger-env']['ranger_admin_username']
+    ranger_admin_password = config['configurations']['ranger-env']['ranger_admin_password']
+
+    #create ranger service's nifi registry client properties
+    nifi_registry_authentication = config['configurations']['ranger-nifi-registry-plugin-properties']['nifi.registry.authentication']
+    ranger_id_owner_for_certificate = config['configurations']['ranger-nifi-registry-plugin-properties']['owner.for.certificate']
+    nifi_registry_id_owner_for_certificate = config['configurations']['ranger-nifi-registry-policymgr-ssl']['owner.for.certificate']
+    regex = r"(CN)=([a-zA-Z0-9\.\-\*\[\]\|\:]*)"
+    match = re.search(regex, nifi_registry_id_owner_for_certificate)
+    common_name_for_certificate = match.group(2) if match else 'NONE'
+
+    if nifi_registry_authentication == 'SSL':
+
+        nifi_registry_ranger_plugin_config = {
+            'nifi.registry.authentication': nifi_registry_authentication,
+            'nifi.registry.url': format("https://{nifi_registry_host_name}:{nifi_registry_ssl_port}/nifi-registry-api/policies/resources"),
+            'nifi.registry.ssl.keystore': config['configurations']['ranger-nifi-registry-plugin-properties']['nifi.registry.ssl.keystore'],
+            'nifi.registry.ssl.keystoreType':config['configurations']['ranger-nifi-registry-plugin-properties']['nifi.registry.ssl.keystoreType'],
+            'nifi.registry.ssl.keystorePassword': config['configurations']['ranger-nifi-registry-plugin-properties']['nifi.registry.ssl.keystorePassword'],
+            'nifi.registry.ssl.truststore': config['configurations']['ranger-nifi-registry-plugin-properties']['nifi.registry.ssl.truststore'],
+            'nifi.registry.ssl.truststoreType': config['configurations']['ranger-nifi-registry-plugin-properties']['nifi.registry.ssl.truststoreType'],
+            'nifi.registry.ssl.truststorePassword': config['configurations']['ranger-nifi-registry-plugin-properties']['nifi.registry.ssl.truststorePassword'],
+            'commonNameForCertificate': common_name_for_certificate
+        }
+    else:
+        nifi_registry_ranger_plugin_config = {
+            'nifi.registry.authentication': nifi_registry_authentication,
+            'nifi.registry.url': format("https://{nifi_registry_host_name}:{nifi_registry_port}/nifi-registry-api/policies/resources"),
+            'commonNameForCertificate': common_name_for_certificate
+        }
+
+    nifi_registry_ranger_plugin_repo = {
+        'isActive': 'true',
+        'config': json.dumps(nifi_registry_ranger_plugin_config),
+        'description': 'nifi-registry repo',
+        'name': repo_name,
+        'repositoryType': 'nifi-registry',
+        'assetType': '5'
+    }
+
+    # used in nifi authorizers
+    ranger_admin_identity = ranger_id_owner_for_certificate
+
+    if stack_supports_ranger_kerberos and security_enabled:
+        nifi_registry_ranger_plugin_config['policy.download.auth.users'] = nifi_registry_user
+        nifi_registry_ranger_plugin_config['tag.download.auth.users'] = nifi_registry_user
+        if 'nifi.registry.kerberos.service.principal' in config['configurations']['nifi-registry-properties']:
+            ranger_nifi_registry_principal = config['configurations']['nifi-registry-properties']['nifi.registry.kerberos.service.principal'].replace('_HOST',_hostname_lowercase)
+        if 'nifi.registry.kerberos.service.keytab.location' in config['configurations']['nifi-registry-properties']:
+            ranger_nifi_registry_keytab = config['configurations']['nifi-registry-properties']['nifi.registry.kerberos.service.keytab.location']
+
+    if stack_supports_ranger_kerberos:
+        nifi_registry_ranger_plugin_config['ambari.service.check.user'] = policy_user
+
+        nifi_registry_ranger_plugin_repo = {
+            'isEnabled': 'true',
+            'configs': nifi_registry_ranger_plugin_config,
+            'description': 'nifi-registry repo',
+            'name': repo_name,
+            'type': 'nifi-registry'
+        }
+
+    xa_audit_db_is_enabled = False
+    ranger_audit_solr_urls = config['configurations']['ranger-admin-site']['ranger.audit.solr.urls']
+
+    if xml_configurations_supported and stack_supports_ranger_audit_db:
+        xa_audit_db_is_enabled = config['configurations']['ranger-nifi-registry-audit']['xasecure.audit.destination.db']
+
+    xa_audit_hdfs_is_enabled = default('/configurations/ranger-nifi-registry-audit/xasecure.audit.destination.hdfs', False)
+
+
+    #For SQLA explicitly disable audit to DB for Ranger
+    if xa_audit_db_flavor == 'sqla':
+        xa_audit_db_is_enabled = False
+
+    if enable_ranger_nifi_registry:
+        nifi_registry_authorizer = 'ranger-authorizer'
+
+has_namenode = not namenode_host == None
+hdfs_user = config['configurations']['hadoop-env']['hdfs_user'] if has_namenode else None
+hdfs_user_keytab = config['configurations']['hadoop-env']['hdfs_user_keytab'] if has_namenode else None
+hdfs_principal_name = config['configurations']['hadoop-env']['hdfs_principal_name'] if has_namenode else None
+hdfs_site = config['configurations']['hdfs-site'] if has_namenode else None
+default_fs = config['configurations']['core-site']['fs.defaultFS'] if has_namenode else None
+hadoop_bin_dir = stack_select.get_hadoop_dir("bin") if has_namenode else None
+hadoop_conf_dir = conf_select.get_hadoop_conf_dir() if has_namenode else None
+
+local_component_list = default("/localComponents", [])
+has_hdfs_client_on_node = 'HDFS_CLIENT' in local_component_list
+
+#create partial functions with common arguments for every HdfsResource call
+#to create/delete hdfs directory/file/copyfromlocal we need to call params.HdfsResource in code
+HdfsResource = functools.partial(
+    HdfsResource,
+    user=hdfs_user,
+    hdfs_resource_ignore_file = "/var/lib/ambari-agent/data/.hdfs_resource_ignore",
+    security_enabled = security_enabled,
+    keytab = hdfs_user_keytab,
+    kinit_path_local = kinit_path_local,
+    hadoop_bin_dir = hadoop_bin_dir,
+    hadoop_conf_dir = hadoop_conf_dir,
+    principal_name = hdfs_principal_name,
+    hdfs_site = hdfs_site,
+    default_fs = default_fs,
+    immutable_paths = get_not_managed_resources()
+)

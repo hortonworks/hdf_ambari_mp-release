@@ -22,6 +22,14 @@
             <name>NIFI_REGISTRY</name>
             <version>0.3.0</version>
             <extends>common-services/NIFI_REGISTRY/0.2.0</extends>
+
+            <configuration-dependencies>
+                <config-type>ranger-nifi-registry-audit</config-type>
+                <config-type>ranger-nifi-registry-plugin-properties</config-type>
+                <config-type>ranger-nifi-registry-policymgr-ssl</config-type>
+                <config-type>ranger-nifi-registry-security</config-type>
+            </configuration-dependencies>
+
         </service>
     </services>
 </metainfo>
