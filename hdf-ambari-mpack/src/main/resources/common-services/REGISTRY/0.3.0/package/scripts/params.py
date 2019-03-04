@@ -117,7 +117,7 @@ if security_enabled:
 #SSL related configs
 if 'registry-ssl-config' in config['configurations']:
   registry_ssl_enabled = config['configurations']['registry-ssl-config']['registry.ssl.isenabled']
-  registry_ssl_port = config['configurations']['registry-common']['registry.ssl.port']
+  registry_ssl_port = config['configurations']['registry-common']['port']
   registry_ssl_adminPort = config['configurations']['registry-common']['registry.ssl.adminPort']
   registry_keyStorePath = config['configurations']['registry-ssl-config']['registry.keyStorePath']
   registry_keyStorePassword = config['configurations']['registry-ssl-config']['registry.keyStorePassword']
