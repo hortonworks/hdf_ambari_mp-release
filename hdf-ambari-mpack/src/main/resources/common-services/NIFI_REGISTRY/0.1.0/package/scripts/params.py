@@ -267,7 +267,10 @@ xml_configurations_supported = config['configurations']['ranger-env']['xml_confi
 ambari_server_hostname = config['clusterHostInfo']['ambari_server_host'][0]
 
 # ranger nifi registry properties
-policymgr_mgr_url = config['configurations']['admin-properties']['policymgr_external_url'].rstrip('/')
+policymgr_mgr_url = config['configurations']['admin-properties']['policymgr_external_url']
+
+if 'admin-properties' in config['configurations'] and 'policymgr_external_url' in config['configurations']['admin-properties'] and policymgr_mgr_url.endswith('/'):
+    policymgr_mgr_url = policymgr_mgr_url.rstrip('/')
 
 xa_audit_db_name = config['configurations']['admin-properties']['audit_db_name']
 xa_audit_db_user = config['configurations']['admin-properties']['audit_db_user']
