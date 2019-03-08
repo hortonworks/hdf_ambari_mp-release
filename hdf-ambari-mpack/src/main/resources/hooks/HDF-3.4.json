@@ -37,7 +37,7 @@
         },
         {
           "service_name": "REGISTRY",
-          "service_version": "0.6.0",
+          "service_version": "0.7.0",
           "applicable_stacks": [
             {
               "stack_name": "HDP",
@@ -84,7 +84,7 @@
         },
         {
           "service_name": "REGISTRY",
-          "service_version": "0.6.0",
+          "service_version": "0.7.0",
           "applicable_stacks": [
             {
               "stack_name": "HDP",
@@ -131,7 +131,7 @@
         },
         {
           "service_name": "REGISTRY",
-          "service_version": "0.6.0",
+          "service_version": "0.7.0",
           "applicable_stacks": [
             {
               "stack_name": "HDP",

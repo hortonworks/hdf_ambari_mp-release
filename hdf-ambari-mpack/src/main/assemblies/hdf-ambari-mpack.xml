@@ -164,7 +164,7 @@
     <!-- Copy HDF-3.4 repooinfo to HDF-3.4 addon services -->
     <file>
       <source>src/main/resources/stacks/HDF/3.4/repos/repoinfo.xml</source>
-      <outputDirectory>hdp-addon-services/HDF/3.4/NIFI/1.8.0/repos</outputDirectory>
+      <outputDirectory>hdp-addon-services/HDF/3.4/NIFI/1.9.0/repos</outputDirectory>
     </file>
     <file>
       <source>src/main/resources/stacks/HDF/3.4/repos/repoinfo.xml</source>
@@ -172,7 +172,7 @@
     </file>
     <file>
       <source>src/main/resources/stacks/HDF/3.4/repos/repoinfo.xml</source>
-      <outputDirectory>hdp-addon-services/HDF/3.4/REGISTRY/0.5.4/repos</outputDirectory>
+      <outputDirectory>hdp-addon-services/HDF/3.4/REGISTRY/0.7.0/repos</outputDirectory>
     </file>
     <file>
       <source>src/main/resources/stacks/HDF/3.4/repos/repoinfo.xml</source>

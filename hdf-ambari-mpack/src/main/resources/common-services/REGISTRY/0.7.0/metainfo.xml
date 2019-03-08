@@ -20,7 +20,7 @@
     <services>
         <service>
             <name>REGISTRY</name>
-            <version>0.6.0</version>
+            <version>0.7.0</version>
             <extends>common-services/REGISTRY/0.5.4</extends>
         </service>
     </services>
