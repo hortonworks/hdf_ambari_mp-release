@@ -19,7 +19,7 @@
 <upgrade xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="upgrade-pack.xsd">
     <target>3.4.*.*</target>
     <target-stack>HDF-3.4</target-stack>
-    <downgrade-allowed>false</downgrade-allowed>
+    <downgrade-allowed>true</downgrade-allowed>
     <type>NON_ROLLING</type>
     <prerequisite-checks/>
 
@@ -76,6 +76,7 @@
 
             <service name="NIFI">
                 <component>NIFI_MASTER</component>
+                <component>NIFI_CA</component>
             </service>
 
             <service name="NIFI_REGISTRY">
@@ -167,21 +168,6 @@
             </execute-stage>
         </group>
 
-        <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
-            <direction>UPGRADE</direction>
-            <skippable>true</skippable>
-
-            <!-- KAFKA -->
-            <execute-stage service="KAFKA" component="KAFKA_BROKER" title="Apply config changes for Kafka PLAINTEXTSASL changes">
-                <task xsi:type="configure" id="hdf_3_3_kafka_plaintext_sasl_config_change"/>
-            </execute-stage>
-
-            <!-- NIFI -->
-            <execute-stage service="NIFI" component="NIFI_MASTER" title="Update NiFi Properties">
-                <task xsi:type="configure" id="hdf_3_3_0_0_update_nifi_properties_configs"/>
-            </execute-stage>
-        </group>
-
         <!--
         After processing this group, the user-specified Kerberos descriptor will be updated to work with
         the new stack-level Kerberos descriptor.
@@ -262,6 +248,7 @@
             <skippable>true</skippable>
             <parallel-scheduler/>
             <service name="NIFI">
+                <component>NIFI_CA</component>
                 <component>NIFI_MASTER</component>
             </service>
         </group>
@@ -435,6 +422,11 @@
 
         <service name="NIFI">
             <component name="NIFI_MASTER">
+                <upgrade>
+                    <task xsi:type="restart-task"/>
+                </upgrade>
+            </component>
+            <component name="NIFI_CA">
                 <upgrade>
                     <task xsi:type="restart-task"/>
                 </upgrade>
