@@ -178,6 +178,7 @@
 
             <service name="NIFI">
                 <component>NIFI_MASTER</component>
+                <component>NIFI_CA</component>
             </service>
 
             <service name="NIFI_REGISTRY">
@@ -185,16 +186,6 @@
             </service>
 
         </group>
-
-
-        <!-- <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
-            <direction>UPGRADE</direction>
-            <skippable>true</skippable> -->
-            <!-- NIFI -->
-            <!-- <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
-                <task xsi:type="configure" id="hdf_3_3_0_0_update_nifi_properties_configs"/>
-            </execute-stage>
-        </group> -->
 
         <group xsi:type="restart" name="NIFI_REGISTRY" title="NIFI_REGISTRY">
             <service-check>false</service-check>
@@ -210,6 +201,7 @@
             <skippable>true</skippable>
             <parallel-scheduler/>
             <service name="NIFI">
+                <component>NIFI_CA</component>
                 <component>NIFI_MASTER</component>
             </service>
         </group>
@@ -389,6 +381,13 @@
 
         <service name="NIFI">
             <component name="NIFI_MASTER">
+                <pre-upgrade/>
+                <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
+                <upgrade>
+                    <task xsi:type="restart-task" />
+                </upgrade>
+            </component>
+            <component name="NIFI_CA">
                 <pre-upgrade/>
                 <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
                 <upgrade>
