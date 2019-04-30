@@ -551,7 +551,7 @@
   </property>
   <property>
     <name>external.kafka.metrics.include.prefix</name>
-    <value>kafka.network.RequestMetrics.ResponseQueueTimeMs.request.OffsetCommit.98percentile,kafka.network.RequestMetrics.ResponseQueueTimeMs.request.Offsets.95percentile,kafka.network.RequestMetrics.ResponseSendTimeMs.request.Fetch.95percentile,kafka.network.RequestMetrics.RequestsPerSec.request</value>
+    <value>kafka.network.RequestMetrics.TotalTimeMs.request.Produce.99percentile,kafka.network.RequestMetrics.TotalTimeMs.request.FetchConsumer.99percentile,kafka.network.RequestMetrics.ResponseQueueTimeMs.request.OffsetCommit.98percentile,kafka.network.RequestMetrics.ResponseQueueTimeMs.request.Offsets.95percentile,kafka.network.RequestMetrics.ResponseSendTimeMs.request.Fetch.95percentile,kafka.network.RequestMetrics.RequestsPerSec.request</value>
     <description>
       These metrics would be included even if the exclude prefix omits them.
     </description>
