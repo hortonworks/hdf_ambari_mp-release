@@ -17,8 +17,8 @@
 -->
 
 <upgrade xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="upgrade-pack.xsd">
-    <target>3.4.*.*</target>
-    <target-stack>HDF-3.4</target-stack>
+    <target>3.2.*.*</target>
+    <target-stack>HDF-3.2</target-stack>
     <skip-failures>false</skip-failures>
     <skip-service-check-failures>false</skip-service-check-failures>
     <type>ROLLING</type>
@@ -80,13 +80,6 @@
             <skippable>true</skippable>
             <service name="KAFKA">
                 <component>KAFKA_BROKER</component>
-            </service>
-        </group>
-
-        <group name="KNOX" title="Knox">
-            <skippable>true</skippable>
-            <service name="KNOX">
-                <component>KNOX_GATEWAY</component>
             </service>
         </group>
 
@@ -178,7 +171,6 @@
 
             <service name="NIFI">
                 <component>NIFI_MASTER</component>
-                <component>NIFI_CA</component>
             </service>
 
             <service name="NIFI_REGISTRY">
@@ -191,36 +183,10 @@
         <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
             <direction>UPGRADE</direction>
             <skippable>true</skippable>
-            <!-- NIFI -->
-            <execute-stage service="NIFI" component="NIFI_MASTER" title="Remove Need Client Auth - NiFi Properties">
-                <task xsi:type="configure" id="hdf_3_3_remove_need_client_auth_nifi_properties"/>
+            <!-- RANGER -->
+            <execute-stage service="RANGER" component="RANGER_ADMIN" title="Ranger Support for Knox">
+                <task xsi:type="configure" id="hdf_3_2_ranger_admin_knox_support"/>
             </execute-stage>
-
-            <execute-stage service="NIFI" component="NIFI_MASTER" title="Remove Need Client Auth - NiFi Ambari SSL Config">
-                <task xsi:type="configure" id="hdf_3_3_remove_need_client_auth_nifi_ambari_ssl_config"/>
-            </execute-stage>
-
-            <execute-stage service="NIFI" component="NIFI_MASTER" title="Update Version config changes for Nifi Master">
-                <task xsi:type="configure" id="hdf_3_4_0_0_update_nifi_properties_version_configs"/>
-            </execute-stage>
-
-            <execute-stage service="NIFI" component="NIFI_MASTER" title="Update Autoload Dir config changes for Nifi Master">
-                <task xsi:type="configure" id="hdf_3_4_0_0_update_nifi_properties_autoloaddir_configs"/>
-            </execute-stage>
-
-            <!-- NIFI_REGISTRY -->
-            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Update config changes for Nifi Registry Ranger extension dir">
-                <task xsi:type="configure" id="hdf_3_4_0_0_update_nifi_registry_properties_ranger_ext"/>
-            </execute-stage>
-
-            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Update config changes for Nifi Registry service principal">
-                <task xsi:type="configure" id="hdf_3_4_0_0_update_nifi_registry_properties_service_principal"/>
-            </execute-stage>
-
-            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Update config changes for Nifi Registry service keytab">
-                <task xsi:type="configure" id="hdf_3_4_0_0_update_nifi_registry_properties_service_keytab"/>
-            </execute-stage>
-
         </group>
 
         <group xsi:type="restart" name="NIFI_REGISTRY" title="NIFI_REGISTRY">
@@ -237,7 +203,6 @@
             <skippable>true</skippable>
             <parallel-scheduler/>
             <service name="NIFI">
-                <component>NIFI_CA</component>
                 <component>NIFI_MASTER</component>
             </service>
         </group>
@@ -288,6 +253,14 @@
                 <service>STREAMLINE</service>
                 <service>NIFI</service>
             </exclude>
+        </group>
+
+
+        <group name="KNOX" title="Knox">
+            <skippable>true</skippable>
+            <service name="KNOX">
+                <component>KNOX_GATEWAY</component>
+            </service>
         </group>
 
         <!--
@@ -356,20 +329,8 @@
 
         <service name="KAFKA">
             <component name="KAFKA_BROKER">
-                <pre-upgrade>
-                    <task xsi:type="configure" id="hdf_3_3_kafka_plaintext_sasl_config_change"/>
-                    <task xsi:type="configure" id="hdf_3_4_add_inter_broker_protocol_version" />
-                    <task xsi:type="configure" id="hdf_3_4_add_skip_log_message_format_version" />
-                </pre-upgrade>
+                <pre-upgrade/>
                 <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
-                <upgrade>
-                    <task xsi:type="restart-task" />
-                </upgrade>
-            </component>
-        </service>
-
-        <service name="KNOX">
-            <component name="KNOX_GATEWAY">
                 <upgrade>
                     <task xsi:type="restart-task" />
                 </upgrade>
@@ -378,10 +339,8 @@
 
         <service name="STORM">
             <component name="NIMBUS">
-                <pre-upgrade>
-                    <task xsi:type="configure" id="hdf_3_4_remove_storm_transformer"/>
-                </pre-upgrade>
-                <pre-downgrade/>
+                <pre-upgrade/>
+                <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
                 <upgrade>
                     <task xsi:type="restart-task" />
                 </upgrade>
@@ -405,9 +364,7 @@
 
         <service name="REGISTRY">
             <component name="REGISTRY_SERVER">
-                <pre-upgrade>
-                    <task xsi:type="configure" id="hdf_3_3_0_0_kerberos_non_browser_user_agents"/>
-                </pre-upgrade>
+                <pre-upgrade/>
                 <pre-downgrade>
                     <task xsi:type="execute" hosts="all">
                         <summary>Stop Registry Server</summary>
@@ -451,13 +408,6 @@
                     <task xsi:type="restart-task" />
                 </upgrade>
             </component>
-            <component name="NIFI_CA">
-                <pre-upgrade/>
-                <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
-                <upgrade>
-                    <task xsi:type="restart-task" />
-                </upgrade>
-            </component>
         </service>
 
         <service name="NIFI_REGISTRY">
@@ -482,8 +432,6 @@
         <service name="RANGER">
             <component name="RANGER_ADMIN">
                 <pre-upgrade>
-                    <task xsi:type="configure" id="hdf_3_3_0_0_ranger_services_heap_size_configuration"/>
-                    <task xsi:type="configure" id="hdf_3_3_0_0_ranger_patch_retry_configuration"/>
                     <task xsi:type="execute" hosts="all">
                         <summary>Stop Ranger Admin</summary>
                         <script>scripts/ranger_admin.py</script>
@@ -503,13 +451,6 @@
 
                     <task xsi:type="configure_function" hosts="all" />
 
-                    <task xsi:type="manual">
-                        <summary>Run Ranger JAVA patches</summary>
-                        <message>Please follow below steps on any Ranger Admin hosts:</message>
-                        <message> - Export RANGER_ADMIN_HOME=/usr/hdf/{{version}}/ranger-admin and JAVA_HOME environment variables.</message>
-                        <message> - Run JAVA patches command using Ranger service process user: /usr/hdf/{{version}}/ranger-admin/db_setup.py -javapatch</message>
-                    </task>
-
                     <task xsi:type="execute" hosts="any">
                         <summary>Applying Ranger java patches</summary>
                         <script>scripts/ranger_admin.py</script>
@@ -517,21 +458,35 @@
                     </task>
                 </pre-upgrade>
 
-                <pre-downgrade />
+                <pre-downgrade/> <!--  no-op to prevent config changes on downgrade -->
 
                 <upgrade>
                     <task xsi:type="restart-task" />
                 </upgrade>
-
             </component>
 
             <component name="RANGER_USERSYNC">
+                <pre-upgrade>
+                    <task xsi:type="server_action" class="org.apache.ambari.server.serveraction.upgrades.RangerUsersyncConfigCalculation">
+                        <summary>Enabling Nested Group Sync for Ranger</summary>
+                    </task>
+                </pre-upgrade>
+                <pre-downgrade />
                 <upgrade>
                     <task xsi:type="restart-task" />
                 </upgrade>
             </component>
 
             <component name="RANGER_TAGSYNC">
+                <upgrade>
+                    <task xsi:type="restart-task" />
+                </upgrade>
+            </component>
+
+        </service>
+
+        <service name="KNOX">
+            <component name="KNOX_GATEWAY">
                 <upgrade>
                     <task xsi:type="restart-task" />
                 </upgrade>

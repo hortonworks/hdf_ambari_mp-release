@@ -85,6 +85,10 @@
         <service name="RANGER">
           <component name="RANGER_ADMIN">
             <changes>
+              <definition xsi:type="configure" id="hdf_3_2_ranger_admin_knox_support">
+                    <type>ranger-admin-site</type>
+                    <set key="ranger.supportedcomponents" value="storm,kafka,nifi,knox"/>
+              </definition>
               <definition xsi:type="configure" id="hdf_3_3_0_0_ranger_services_heap_size_configuration" summary="Upgrading ranger-env configurations for Ranger service components">
                 <type>ranger-env</type>
                 <set key="ranger_admin_max_heap_size" value="1g" if-type="ranger-env" if-key="ranger_admin_max_heap_size" if-key-state="absent"/>
