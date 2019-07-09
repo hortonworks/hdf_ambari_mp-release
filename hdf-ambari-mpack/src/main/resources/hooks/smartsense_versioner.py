@@ -18,7 +18,8 @@ VERSION_REPLACEMENT_PROPERTY = {
   "2.7.0": "${project.version}",
   "2.7.1": "${project.version}",
   "2.7.2": "${project.version}",
-  "2.7.3": "${project.version}"
+  "2.7.3": "${project.version}",
+  "2.7.4": "${project.version}"
 }
 FILES_LIST = [
   "metainfo.xml",
@@ -40,6 +41,7 @@ LOGSEARCH_COMMON_PATH = {
   "2.7.1": "common-services/LOGSEARCH/0.5.0",
   "2.7.2": "common-services/LOGSEARCH/0.5.0",
   "2.7.3": "common-services/LOGSEARCH/0.5.0",
+  "2.7.4": "common-services/LOGSEARCH/0.5.0",
   "2.7.100": "common-services/LOGSEARCH/2.7.100",
 }
 LOGSEARCH_METAINFO_PATH = os.path.join(STACKS_PATH, "HDF", "3.2.b", "services", "LOGSEARCH", "metainfo.xml")
@@ -63,7 +65,7 @@ def replace_in_file(file_path, what, to):
 
 def select_versions():
   ambari_version, _3_digit_ambari_version = get_ambari_version()
-  if _3_digit_ambari_version == "2.7.3":
+  if _3_digit_ambari_version in ("2.7.3", "2.7.4"):
     base_version = "1.5.1"
     suffix = ""
   elif _3_digit_ambari_version == "2.7.100":
