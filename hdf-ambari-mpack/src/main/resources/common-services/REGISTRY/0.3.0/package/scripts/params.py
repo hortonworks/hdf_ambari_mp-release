@@ -256,6 +256,15 @@ bootstrap_storage_initevn_run_cmd = format('export JAVA_HOME={jdk64_home} ; sour
 
 registry_agent_dir = "/var/lib/ambari-agent/data/registry"
 
+ambari_agent_conf_path = "/etc/ambari-agent/conf/ambari-agent.ini"
+import ConfigParser
+config = ConfigParser.ConfigParser()
+config.read('/etc/ambari-agent/conf/ambari-agent.ini')
+current_ambari_agent_user = config.get("agent", "run_as_user")
+if (current_ambari_agent_user != "root"):
+   current_ambari_agent_user = "registry"
+
+
 # oracle ssl properties
 oracle_ssl_enabled = default('/configurations/registry-common/oracle_ssl_enabled', False)
 oracle_ssl_version = config['configurations']['registry-common']['oracle_ssl_version']

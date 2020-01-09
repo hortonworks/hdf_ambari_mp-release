@@ -57,10 +57,10 @@ class RegistryServer(Script):
         except:
           pass
         Execute(params.bootstrap_storage_run_cmd + ' migrate',
-                user="root")
+                user=params.current_ambari_agent_user)
       else:
         Execute(params.bootstrap_storage_run_cmd + ' create',
-                user="root")
+                user=params.current_ambari_agent_user)
     except:
       show_logs(params.registry_log_dir, params.registry_user)
       raise
@@ -74,7 +74,7 @@ class RegistryServer(Script):
       if params.registry_storage_type == 'postgresql':
         database_admin_jdbc_url = database_admin_jdbc_url + '/postgres'
       bootstrap_storage_initevn_db_cmd =  database_admin_jdbc_url + ' ' + params.database_admin_user_name + ' ' + PasswordString(params.database_admin_password) + ' ' + params.registry_storage_connector_user + ' ' + PasswordString(params.registry_storage_connector_password) + ' ' + params.registry_storage_database
-      Execute(params.bootstrap_storage_initevn_run_cmd + ' ' + bootstrap_storage_initevn_db_cmd , user='root')
+      Execute(params.bootstrap_storage_initevn_run_cmd + ' ' + bootstrap_storage_initevn_db_cmd , user=params.current_ambari_agent_user)
     except:
       show_logs(params.registry_log_dir, params.registry_user)
       raise
@@ -122,7 +122,7 @@ class RegistryServer(Script):
     no_op_test = format('ls {status_params.registry_pid_file} >/dev/null 2>&1 && ps -p `cat {status_params.registry_pid_file}` >/dev/null 2>&1')
     try:
       Execute(daemon_cmd,
-              user="root",
+              user=params.current_ambari_agent_user,
               not_if=no_op_test
       )
     except:
