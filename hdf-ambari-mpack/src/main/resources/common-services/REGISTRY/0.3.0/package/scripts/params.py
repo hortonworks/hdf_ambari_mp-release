@@ -254,3 +254,11 @@ bootstrap_storage_intienv_command = os.path.join(registry_home, "bootstrap", "bo
 bootstrap_storage_initevn_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/registry-env.sh ; {bootstrap_storage_intienv_command}')
 
 registry_agent_dir = "/var/lib/ambari-agent/data/registry"
+
+ambari_agent_conf_path = "/etc/ambari-agent/conf/ambari-agent.ini"
+import ConfigParser
+config = ConfigParser.ConfigParser()
+config.read('/etc/ambari-agent/conf/ambari-agent.ini')
+current_ambari_agent_user = config.get("agent", "run_as_user")
+if (current_ambari_agent_user != "root"):
+   current_ambari_agent_user = "registry"
