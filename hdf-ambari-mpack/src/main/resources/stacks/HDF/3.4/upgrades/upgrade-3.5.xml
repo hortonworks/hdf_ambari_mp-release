@@ -187,6 +187,14 @@
 
         </group>
 
+        <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
+            <direction>UPGRADE</direction>
+            <skippable>true</skippable>
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
+                <task xsi:type="configure" id="hdf35_properties"/>
+            </execute-stage>
+        </group>
+
         <group xsi:type="restart" name="NIFI_REGISTRY" title="NIFI_REGISTRY">
             <service-check>false</service-check>
             <skippable>true</skippable>

@@ -168,6 +168,15 @@
             </execute-stage>
         </group>
 
+        <group xsi:type="cluster" name="Upgrade service configs" title="Upgrade service configs">
+            <direction>UPGRADE</direction>
+            <skippable>true</skippable>
+
+            <!-- NIFI -->
+            <execute-stage service="NIFI" component="NIFI_MASTER" title="Update NiFi Properties">
+                <task xsi:type="configure" id="hdf35_properties"/>
+            </execute-stage>
+        </group>
         <!--
         After processing this group, the user-specified Kerberos descriptor will be updated to work with
         the new stack-level Kerberos descriptor.
