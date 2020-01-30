@@ -69,6 +69,7 @@ stack_support_rewrite_uri = check_stack_feature('registry_rewriteuri_filter_supp
 stack_support_allowed_resources = check_stack_feature('registry_allowed_resources_support', version_for_stack_feature_checks)
 stack_support_remove_rootpath = check_stack_feature('registry_remove_rootpath', version_for_stack_feature_checks)
 stack_registry_support_schema_migrate = check_stack_feature('registry_support_schema_migrate', version_for_stack_feature_checks)
+stack_registry_support_schema_repair = check_stack_feature('registry_support_schema_repair', version_for_stack_feature_checks)
 stack_registry_support_db_user_creation = check_stack_feature('registry_support_db_user_creation', version_for_stack_feature_checks)
 
 # When downgrading the 'version' and 'current_version' are both pointing to the downgrade-target version

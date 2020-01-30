@@ -357,12 +357,17 @@
          "name": "registry_support_schema_migrate",
          "description": "Support schema migrate in registry for version 3.1 onwards",
          "min_version": "3.1.0.0"
-       },
-       {
-         "name": "sam_support_schema_migrate",
-         "description": "Support schema migrate in SAM for version 3.1 onwards",
-         "min_version": "3.1.0.0"
-       },
+      },
+      {
+        "name": "registry_support_schema_repair",
+        "description": "Support schema migrate in registry for version 3.5 onwards",
+        "min_version": "3.5.0.0"
+      },
+      {
+        "name": "sam_support_schema_migrate",
+        "description": "Support schema migrate in SAM for version 3.1 onwards",
+        "min_version": "3.1.0.0"
+      },
       {
         "name": "sam_storage_core_in_registry",
         "description": "Storage core module moved to registry",
