@@ -18,7 +18,7 @@
 <configuration supports_final="false">
     <property>
         <name>nifi.version</name>
-        <value>1.11.0.{{stack_version_buildnum}}</value>
+        <value>1.11.1.{{stack_version_buildnum}}</value>
         <on-ambari-upgrade add="true" update="true" delete="false"/>
         <description>The version number of the current release.</description>
     </property>

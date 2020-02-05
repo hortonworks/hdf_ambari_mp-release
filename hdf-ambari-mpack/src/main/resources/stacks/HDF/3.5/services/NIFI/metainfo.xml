@@ -20,8 +20,8 @@
     <services>
         <service>
             <name>NIFI</name>
-            <version>1.11.0.3.5</version>
-            <extends>common-services/NIFI/1.11.0</extends>
+            <version>1.11.1.3.5</version>
+            <extends>common-services/NIFI/1.11.1</extends>
         </service>
     </services>
 </metainfo>

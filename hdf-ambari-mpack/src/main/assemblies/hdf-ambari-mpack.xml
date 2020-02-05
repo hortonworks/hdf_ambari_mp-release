@@ -187,7 +187,7 @@
     <!-- Copy HDF-3.5 repooinfo to HDF-3.5 addon services -->
     <file>
       <source>src/main/resources/stacks/HDF/3.5/repos/repoinfo.xml</source>
-      <outputDirectory>hdp-addon-services/HDF/3.5/NIFI/1.11.0/repos</outputDirectory>
+      <outputDirectory>hdp-addon-services/HDF/3.5/NIFI/1.11.1/repos</outputDirectory>
     </file>
     <file>
       <source>src/main/resources/stacks/HDF/3.5/repos/repoinfo.xml</source>
