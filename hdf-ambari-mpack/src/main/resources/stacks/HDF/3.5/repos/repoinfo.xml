@@ -19,8 +19,8 @@
     <latest>http://public-repo-1.hortonworks.com/HDF/hdf_urlinfo.json</latest>
     <os family="redhat-ppc7">
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/centos7-ppc/3.x/updates/3.4.0.0</baseurl>
-            <repoid>HDF-3.4</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/centos7-ppc/3.x/updates/3.5.0.0</baseurl>
+            <repoid>HDF-3.5</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -31,8 +31,8 @@
     </os>
     <os family="redhat7">
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/centos7/3.x/updates/3.4.0.0</baseurl>
-            <repoid>HDF-3.4</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/centos7/3.x/updates/3.5.0.0</baseurl>
+            <repoid>HDF-3.5</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -43,8 +43,8 @@
     </os>
     <os family="suse12">
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/sles12/3.x/updates/3.4.0.0</baseurl>
-            <repoid>HDF-3.4</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/sles12/3.x/updates/3.5.0.0</baseurl>
+            <repoid>HDF-3.5</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -55,8 +55,8 @@
     </os>
     <os family="debian9">
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/debian9/3.x/updates/3.4.0.0</baseurl>
-            <repoid>HDF-3.4</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/debian9/3.x/updates/3.5.0.0</baseurl>
+            <repoid>HDF-3.5</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -67,8 +67,8 @@
     </os>
     <os family="ubuntu12">
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/ubuntu12/3.x/updates/3.4.0.0</baseurl>
-            <repoid>HDF-3.4</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/ubuntu12/3.x/updates/3.5.0.0</baseurl>
+            <repoid>HDF-3.5</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -79,8 +79,8 @@
     </os>
     <os family="ubuntu14">
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/ubuntu14/3.x/updates/3.4.0.0</baseurl>
-            <repoid>HDF-3.4</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/ubuntu14/3.x/updates/3.5.0.0</baseurl>
+            <repoid>HDF-3.5</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -91,8 +91,8 @@
     </os>
     <os family="ubuntu16">
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/ubuntu16/3.x/updates/3.4.0.0</baseurl>
-            <repoid>HDF-3.4</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/ubuntu16/3.x/updates/3.5.0.0</baseurl>
+            <repoid>HDF-3.5</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
@@ -103,8 +103,8 @@
     </os>
     <os family="amazonlinux2">
         <repo>
-            <baseurl>http://public-repo-1.hortonworks.com/HDF/amazonlinux2/3.x/updates/3.4.0.0</baseurl>
-            <repoid>HDF-3.4</repoid>
+            <baseurl>http://public-repo-1.hortonworks.com/HDF/amazonlinux2/3.x/updates/3.5.0.0</baseurl>
+            <repoid>HDF-3.5</repoid>
             <reponame>HDF</reponame>
         </repo>
         <repo>
