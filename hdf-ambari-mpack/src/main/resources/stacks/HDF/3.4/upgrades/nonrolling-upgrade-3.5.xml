@@ -176,6 +176,9 @@
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Update NiFi Properties">
                 <task xsi:type="configure" id="hdf35_properties"/>
             </execute-stage>
+            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Update NiFi Registry Properties">
+                <task xsi:type="configure" id="nifi_registry_hdf35_properties"/>
+            </execute-stage>
         </group>
         <!--
         After processing this group, the user-specified Kerberos descriptor will be updated to work with

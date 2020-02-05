@@ -193,6 +193,9 @@
             <execute-stage service="NIFI" component="NIFI_MASTER" title="Update config changes for Nifi Master">
                 <task xsi:type="configure" id="hdf35_properties"/>
             </execute-stage>
+            <execute-stage service="NIFI_REGISTRY" component="NIFI_REGISTRY_MASTER" title="Update NiFi Registry Properties">
+                <task xsi:type="configure" id="nifi_registry_hdf35_properties"/>
+            </execute-stage>
         </group>
 
         <group xsi:type="restart" name="NIFI_REGISTRY" title="NIFI_REGISTRY">

@@ -33,6 +33,23 @@
                 </changes>
             </component>
         </service>
+
+        <service name="NIFI_REGISTRY">
+            <component name="NIFI_REGISTRY_MASTER">
+                <changes>
+                    <!-- Update these configs in nifi-properties. -->
+                    <definition xsi:type="configure" id="nifi_registry_hdf35_properties">
+                        <type>nifi-registry-providers-env</type>
+                        <replace key="content" find="&lt;/flowPersistenceProvider&gt;" replace-with="&lt;/flowPersistenceProvider&gt;
+    &lt;extensionBundlePersistenceProvider&gt;
+        &lt;class&gt;org.apache.nifi.registry.provider.extension.FileSystemBundlePersistenceProvider&lt;/class&gt;
+        &lt;property name=&quot;Extension Bundle Storage Directory&quot;&gt;{{nifi_registry_internal_dir}}/extension_bundles&lt;/property&gt;
+    &lt;/extensionBundlePersistenceProvider&gt;
+    " />
+                    </definition>
+                </changes>
+            </component>
+        </service>
     </services>
 
 </upgrade-config-changes>
