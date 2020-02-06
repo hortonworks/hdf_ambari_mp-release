@@ -69,6 +69,7 @@ stack_support_rewrite_uri = check_stack_feature('registry_rewriteuri_filter_supp
 stack_support_allowed_resources = check_stack_feature('registry_allowed_resources_support', version_for_stack_feature_checks)
 stack_support_remove_rootpath = check_stack_feature('registry_remove_rootpath', version_for_stack_feature_checks)
 stack_registry_support_schema_migrate = check_stack_feature('registry_support_schema_migrate', version_for_stack_feature_checks)
+stack_registry_support_schema_repair = check_stack_feature('registry_support_schema_repair', version_for_stack_feature_checks)
 stack_registry_support_db_user_creation = check_stack_feature('registry_support_db_user_creation', version_for_stack_feature_checks)
 
 # When downgrading the 'version' and 'current_version' are both pointing to the downgrade-target version
@@ -254,3 +255,12 @@ bootstrap_storage_intienv_command = os.path.join(registry_home, "bootstrap", "bo
 bootstrap_storage_initevn_run_cmd = format('export JAVA_HOME={jdk64_home} ; source {conf_dir}/registry-env.sh ; {bootstrap_storage_intienv_command}')
 
 registry_agent_dir = "/var/lib/ambari-agent/data/registry"
+
+# oracle ssl properties
+oracle_ssl_enabled = default('/configurations/registry-common/oracle_ssl_enabled', False)
+oracle_ssl_version = config['configurations']['registry-common']['oracle_ssl_version']
+oracle_ssl_server_dn_match = str(default('/configurations/registry-common/oracle_ssl_server_dn_match', True)).lower()
+oracle_ssl_trust_store = config['configurations']['registry-common']['oracle_ssl_trust_store']
+oracle_ssl_trust_store_type = config['configurations']['registry-common']['oracle_ssl_trust_store_type']
+oracle_ssl_key_store = config['configurations']['registry-common']['oracle_ssl_key_store']
+oracle_ssl_key_store_type = config['configurations']['registry-common']['oracle_ssl_key_store_type']

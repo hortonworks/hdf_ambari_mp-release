@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<configuration supports_final="false">
+    <property>
+        <name>nifi.version</name>
+        <value>1.11.1.{{stack_version_buildnum}}</value>
+        <on-ambari-upgrade add="true" update="true" delete="false"/>
+        <description>The version number of the current release.</description>
+    </property>
+    <property>
+        <name>nifi.security.user.oidc.additional.scopes</name>
+        <value></value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description>Comma separated scopes that are sent to OpenId Connect Provider in addition to openid and email</description>
+    </property>
+    <property>
+        <name>nifi.security.user.oidc.claim.identifying.userv</name>
+        <value></value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description>Claim that identifies the user to be logged in; default is email. May need to be requested via the nifi.security.user.oidc.additional.scopes before usage. by the OpenId Connect Provider according to the specification. If this value is HS256, HS384, or HS512, NiFi will attempt to validate HMAC protected tokens using the specified client secret. If this value is none, NiFi will attempt to validate unsecured/plain tokens. Other values for this algorithm will attempt to parse as an RSA or EC algorithm to be used in conjunction with the JSON Web Key (JWK) provided through the jwks_uri in the metadata found at the discovery URL.</description>
+    </property>
+    <property>
+        <name>nifi.analytics.predict.enabled</name>
+        <value>false</value>
+        <on-ambari-upgrade add="true"/>
+        <description>This indicates whether prediction should be enabled for the cluster.</description>
+    </property>
+    <property>
+        <name>nifi.analytics.predict.interval</name>
+        <value>3 min</value>
+        <on-ambari-upgrade add="true"/>
+        <description>This indicates a time interval for which analytical predictions (queue saturation, e.g.) should be made.</description>
+    </property>
+    <property>
+        <name>nifi.analytics.connection.model.implementation</name>
+        <value>org.apache.nifi.controller.status.analytics.models.OrdinaryLeastSquares</value>
+        <on-ambari-upgrade add="true"/>
+        <description>This is the implementation class for the status analytics model used to make connection predictions.</description>
+    </property>
+    <property>
+        <name>nifi.analytics.connection.model.score.name</name>
+        <value>rSquared</value>
+        <on-ambari-upgrade add="true"/>
+        <description>This is the name of the scoring type that should be used to evaluate model.</description>
+    </property>
+    <property>
+        <name>nifi.analytics.connection.model.score.threshold</name>
+        <value>.9</value>
+        <on-ambari-upgrade add="true"/>
+        <description>This is the threshold for the scoring value (where model score should be above given threshold).</description>
+    </property>
+</configuration>

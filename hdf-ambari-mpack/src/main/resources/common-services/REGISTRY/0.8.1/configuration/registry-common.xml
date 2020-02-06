@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<configuration>
+  <property>
+    <name>oracle_ssl_enabled</name>
+    <value>false</value>
+    <display-name>Enable Oracle SSL</display-name>
+    <description>Check if Oracle SSL need to be enabled.</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>oracle_ssl_version</name>
+    <value>1</value>
+    <display-name>Oracle SSL version</display-name>
+    <description>Oracle SSL version.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>oracle_ssl_server_dn_match</name>
+    <value>true</value>
+    <display-name>Oracle SSL DN match</display-name>
+    <description>Oracle SSL DN match.</description>
+    <value-attributes>
+      <type>boolean</type>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>oracle_ssl_trust_store</name>
+    <value></value>
+    <display-name>Oracle SSL truststore path</display-name>
+    <description>Oracle SSL  truststore path.</description>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>oracle_ssl_trust_store_type</name>
+    <value>SSO</value>
+    <display-name>Oracle SSL truststore type</display-name>
+    <description>Oracle SSL truststore type.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>oracle_ssl_key_store</name>
+    <value></value>
+    <display-name>Oracle SSL keystore path</display-name>
+    <description>Oracle SSL keystore path.</description>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
+    <name>oracle_ssl_key_store_type</name>
+    <value>SSO</value>
+    <display-name>Oracle SSL keystore type</display-name>
+    <description>Oracle SSL keystore type.</description>
+    <on-ambari-upgrade add="true"/>
+  </property>
+</configuration>

@@ -27,7 +27,7 @@ from switch_addon_services import switch_addon_services
 def main():
   file_path = os.path.realpath(__file__)
   hooks_dir = os.path.dirname(file_path)
-  hdf33_config_path = os.path.join(hooks_dir, "HDF-3.4.json")
+  hdf33_config_path = os.path.join(hooks_dir, "HDF-3.5.json")
   switch_addon_services(hdf33_config_path)
   return 0
 

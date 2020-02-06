@@ -125,6 +125,15 @@ storageProviderConfiguration:
       dataSourceClassName: "{{registry_storage_java_class}}"
     db.type: "{{registry_storage_type}}"
     queryTimeoutInSecs: {{registry_storage_query_timeout}}
+{% if oracle_ssl_enabled %}
+    connection.properties:
+      oracle.net.ssl_version: "{{ oracle_ssl_version }}"
+      oracle.net.ssl_server_dn_match: "{{ oracle_ssl_server_dn_match }}"
+      javax.net.ssl.trustStore: "{{ oracle_ssl_trust_store }}"
+      javax.net.ssl.trustStoreType: "{{ oracle_ssl_trust_store_type }}"
+      javax.net.ssl.keyStore: "{{ oracle_ssl_key_store }}"
+      javax.net.ssl.keyStoreType: "{{ oracle_ssl_key_store_type }}"
+{%endif%}
   providerClass: com.hortonworks.registries.storage.impl.jdbc.JdbcStorageManager
 
 swagger:

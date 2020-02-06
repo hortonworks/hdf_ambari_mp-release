@@ -109,6 +109,11 @@
       <outputDirectory>hooks</outputDirectory>
       <filtered>true</filtered>
     </file>
+    <file>
+      <source>src/main/resources/hooks/HDF-3.5.json</source>
+      <outputDirectory>hooks</outputDirectory>
+      <filtered>true</filtered>
+    </file>
     <!-- Copy HDF-3.0 repooinfo to HDF-3.0 addon services -->
     <file>
       <source>src/main/resources/stacks/HDF/3.0/repos/repoinfo.xml</source>
@@ -177,6 +182,24 @@
     <file>
       <source>src/main/resources/stacks/HDF/3.4/repos/repoinfo.xml</source>
       <outputDirectory>hdp-addon-services/HDF/3.4/STREAMLINE/0.6.0/repos</outputDirectory>
+    </file>
+
+    <!-- Copy HDF-3.5 repooinfo to HDF-3.5 addon services -->
+    <file>
+      <source>src/main/resources/stacks/HDF/3.5/repos/repoinfo.xml</source>
+      <outputDirectory>hdp-addon-services/HDF/3.5/NIFI/1.11.1/repos</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/resources/stacks/HDF/3.5/repos/repoinfo.xml</source>
+      <outputDirectory>hdp-addon-services/HDF/3.5/NIFI_REGISTRY/0.5.0/repos</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/resources/stacks/HDF/3.5/repos/repoinfo.xml</source>
+      <outputDirectory>hdp-addon-services/HDF/3.5/REGISTRY/0.8.1/repos</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/resources/stacks/HDF/3.5/repos/repoinfo.xml</source>
+      <outputDirectory>hdp-addon-services/HDF/3.5/STREAMLINE/0.6.0/repos</outputDirectory>
     </file>
 
   </files>    
