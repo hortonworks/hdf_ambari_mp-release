@@ -50,10 +50,12 @@ class RegistryServer(Script):
     try:
       #If Current version >= 3.1, migrate else create
       if params.stack_registry_support_schema_migrate:
-        # starting from 3.5 we need to call repair as well
-        if params.stack_registry_support_schema_repair:
+        # try to repair every migrate, ignore failures if not supported
+        try:
           Execute(params.bootstrap_storage_run_cmd + ' repair',
                   user="root")
+        except:
+          pass
         Execute(params.bootstrap_storage_run_cmd + ' migrate',
                 user="root")
       else:

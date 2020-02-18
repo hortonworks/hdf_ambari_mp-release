@@ -68,6 +68,18 @@
                         <set key="nifi.cluster.load.balance.comms.timeout" value="30s" if-type="nifi-properties" if-key="nifi.cluster.load.balance.comms.timeout" if-key-state="absent"/>
                     </definition>
 
+                    <definition xsi:type="configure" id="hdf35_properties">
+                        <type>nifi-properties</type>
+                        <set key="nifi.version" value="1.11.1.{{stack_version_buildnum}}"/>
+                        <set key="nifi.analytics.predict.enabled" value="false"/>
+                        <set key="nifi.analytics.predict.interval" value="3 min"/>
+                        <set key="nifi.analytics.connection.model.implementation" value="org.apache.nifi.controller.status.analytics.models.OrdinaryLeastSquares"/>
+                        <set key="nifi.analytics.connection.model.score.name" value="rSquared"/>
+                        <set key="nifi.analytics.connection.model.score.threshold" value=".9"/>
+                        <set key="nifi.analytics.query.interval" value="5"/>
+                        <set key="nifi.security.user.oidc.additional.scopes" value=""/>
+                        <set key="nifi.security.user.oidc.claim.identifying.user" value=""/>
+                    </definition>
                 </changes>
             </component>
         </service>
@@ -89,6 +101,17 @@
                     <definition xsi:type="configure" id="hdf_3_4_0_0_update_nifi_registry_properties_service_keytab">
                         <type>nifi-registry-properties</type>
                         <set key="nifi.registry.kerberos.service.keytab.location" value=""/>
+                    </definition>
+
+                    <!-- Update these configs in nifi-properties. -->
+                    <definition xsi:type="configure" id="nifi_registry_hdf35_properties">
+                        <type>nifi-registry-providers-env</type>
+                        <replace key="content" find="&lt;/flowPersistenceProvider&gt;" replace-with="&lt;/flowPersistenceProvider&gt;
+    &lt;extensionBundlePersistenceProvider&gt;
+        &lt;class&gt;org.apache.nifi.registry.provider.extension.FileSystemBundlePersistenceProvider&lt;/class&gt;
+        &lt;property name=&quot;Extension Bundle Storage Directory&quot;&gt;{{nifi_registry_internal_dir}}/extension_bundles&lt;/property&gt;
+    &lt;/extensionBundlePersistenceProvider&gt;
+    " />
                     </definition>
                 </changes>
             </component>

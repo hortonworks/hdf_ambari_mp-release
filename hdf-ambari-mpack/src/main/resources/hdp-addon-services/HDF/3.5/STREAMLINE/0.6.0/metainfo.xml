@@ -43,7 +43,7 @@
                     <osFamily>redhat7,centos7-ppc,sles12,debian9,amazonlinux2,ubuntu12,ubuntu14,ubuntu16</osFamily>
                     <packages>
                         <package>
-                            <name>streamline_3_4_*</name>
+                            <name>streamline_3_5_*</name>
                         </package>
                     </packages>
                 </osSpecific>
