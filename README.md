@@ -52,6 +52,7 @@ ambari-server install-mpack --mpack=/path/to/hdf-ambari-mpack-${HDF_MPACK_VERSIO
 ambari-server install-mpack --mpack=target/hdf-ambari-mpack-0.1.0.0-1.tar.gz --purge --verbose
 ```
 - Start ambari-server
+
 ```
 ambari-server start
 ```
