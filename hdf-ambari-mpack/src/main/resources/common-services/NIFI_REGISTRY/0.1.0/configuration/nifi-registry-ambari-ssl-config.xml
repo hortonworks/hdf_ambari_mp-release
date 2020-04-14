@@ -132,7 +132,7 @@
             <type>boolean</type>
         </value-attributes>
         <display-name>Clients need to authenticate?</display-name>
-        <description>Specifies whether or not connecting clients must authenticate themselves. Specifically this property is used by the NiFi cluster protocol. If the Truststore properties are not set, this must be false. Otherwise, a value of true indicates that nodes in the cluster will be authenticated and must have certificates that are trusted by the Truststores.</description>
+        <description>When this property is checked (true), NiFi Registry will require and only support mutual TLS authentication. Even if an alternative authentication method like kerberos or ldap-provider is property configured, NiFi will not allow them to be used. Leaving this unchecked (false), NiFi-Registry will "want" a client certificate, but if one is not presented by the client, any alternative method configured will be attempted.</description>
     </property>
 
     <property>

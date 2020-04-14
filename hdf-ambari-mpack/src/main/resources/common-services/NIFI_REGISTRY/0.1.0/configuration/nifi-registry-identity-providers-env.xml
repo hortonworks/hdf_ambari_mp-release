@@ -20,8 +20,8 @@
 
     <property>
         <name>content</name>
-        <display-name>Template for login-identity-providers.xml</display-name>
-        <description>This is the jinja template for login-identity-providers.xml</description>
+        <display-name>Template for identity-providers.xml</display-name>
+        <description>This is the jinja template for identity-providers.xml</description>
         <value>
 &lt;!--
   ~ Licensed to the Apache Software Foundation (ASF) under one or more
