@@ -71,9 +71,33 @@
         <description>This is the threshold for the scoring value (where model score should be above given threshold).</description>
     </property>
     <property>
-      <name>nifi.analytics.query.interval</name>
-      <value>5 mins</value>
-      <on-ambari-upgrade add="true"/>
-      <description>The time interval to query for past observations (e.g. the last 3 minutes of snapshots). The default value is 5 mins. NOTE: This value should be at least 3 times greater than nifi.components.status.snapshot.frequency to ensure enough observations are retrieved for predictions.</description>
+        <name>nifi.analytics.query.interval</name>
+        <value>5 mins</value>
+        <on-ambari-upgrade add="true"/>
+        <description>The time interval to query for past observations (e.g. the last 3 minutes of snapshots). The default value is 5 mins. NOTE: This value should be at least 3 times greater than nifi.components.status.snapshot.frequency to ensure enough observations are retrieved for predictions.</description>
+    </property>
+    <property>
+        <name>nifi.provenance.repository.implementation</name>
+        <value>org.apache.nifi.provenance.WriteAheadProvenanceRepository</value>
+        <on-ambari-upgrade add="true"/>
+        <description>The Provenance Repository implementation. The default value is org.apache.nifi.provenance.WriteAheadProvenanceRepository and should not be changed.</description>
+    </property>
+    <property>
+        <name>nifi.provenance.repository.max.storage.time</name>
+        <value>30 days</value>
+        <on-ambari-upgrade add="true"/>
+        <description>The maximum amount of time to keep data provenance information. The default value is 30 days.</description>
+    </property>
+    <property>
+        <name>nifi.provenance.repository.max.storage.size</name>
+        <value>10 GB</value>
+        <on-ambari-upgrade add="true"/>
+        <description>The maximum amount of data provenance information to store at a time. The default is 10 GB.</description>
+    </property>
+    <property>
+        <name>nifi.provenance.repository.rollover.time</name>
+        <value>10 mins</value>
+        <on-ambari-upgrade add="true"/>
+        <description>The amount of time to wait before rolling over the latest data provenance information so that it is available in the User Interface. The default value is 10 mins.</description>
     </property>
 </configuration>
