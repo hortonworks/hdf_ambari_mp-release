@@ -70,4 +70,10 @@
         <on-ambari-upgrade add="true"/>
         <description>This is the threshold for the scoring value (where model score should be above given threshold).</description>
     </property>
+    <property>
+      <name>nifi.analytics.query.interval</name>
+      <value>5 mins</value>
+      <on-ambari-upgrade add="true"/>
+      <description>The time interval to query for past observations (e.g. the last 3 minutes of snapshots). The default value is 5 mins. NOTE: This value should be at least 3 times greater than nifi.components.status.snapshot.frequency to ensure enough observations are retrieved for predictions.</description>
+    </property>
 </configuration>
