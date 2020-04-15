@@ -135,6 +135,12 @@ class Master(Script):
     if os.path.isfile(status_params.nifi_node_pid_file):
       sudo.unlink(status_params.nifi_node_pid_file)
 
+  def killIllegalNifiProcess(self):
+    path = os.path.abspath(__file__)
+    path = path.replace("nifi.py", "kill_illegal_nifi_processes.sh")
+    Execute (path + " \"grep '[o]rg.apache.nifi.bootstrap.RunNiFi run'\"")
+    Execute (path + " \"grep '[o]rg.apache.nifi.NiFi' | grep '[D]app=NiFi'\"")
+
   def start(self, env, upgrade_type=None):
     import params
     import status_params
@@ -143,6 +149,7 @@ class Master(Script):
     self.configure(env, is_starting = True)
     setup_ranger_nifi(upgrade_type=None)
 
+    self.killIllegalNifiProcess()
     Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh start >> ' + params.nifi_node_log_file, user=params.nifi_user)
     #If nifi pid file not created yet, wait a bit
     if not os.path.isfile(status_params.nifi_pid_dir+'/nifi.pid'):
