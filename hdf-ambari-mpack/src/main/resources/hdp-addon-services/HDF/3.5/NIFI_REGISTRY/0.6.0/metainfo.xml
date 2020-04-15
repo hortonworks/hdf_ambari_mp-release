@@ -21,8 +21,8 @@
     <services>
         <service>
             <name>NIFI_REGISTRY</name>
-            <version>0.5.0</version>
-            <extends>common-services/NIFI_REGISTRY/0.5.0</extends>
+            <version>0.6.0</version>
+            <extends>common-services/NIFI_REGISTRY/0.6.0</extends>
 
             <components>
                 <component>

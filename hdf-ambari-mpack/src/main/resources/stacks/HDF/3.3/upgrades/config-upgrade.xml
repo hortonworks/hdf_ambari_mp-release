@@ -70,7 +70,7 @@
 
                     <definition xsi:type="configure" id="hdf35_properties">
                         <type>nifi-properties</type>
-                        <set key="nifi.version" value="1.11.1.{{stack_version_buildnum}}"/>
+                        <set key="nifi.version" value="1.11.4.{{stack_version_buildnum}}"/>
                         <set key="nifi.analytics.predict.enabled" value="false"/>
                         <set key="nifi.analytics.predict.interval" value="3 min"/>
                         <set key="nifi.analytics.connection.model.implementation" value="org.apache.nifi.controller.status.analytics.models.OrdinaryLeastSquares"/>

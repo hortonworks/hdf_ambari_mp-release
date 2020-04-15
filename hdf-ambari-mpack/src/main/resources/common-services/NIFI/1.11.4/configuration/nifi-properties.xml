@@ -15,13 +15,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<metainfo>
-    <schemaVersion>2.0</schemaVersion>
-    <services>
-        <service>
-            <name>NIFI</name>
-            <version>1.11.4.3.5</version>
-            <extends>common-services/NIFI/1.11.1</extends>
-        </service>
-    </services>
-</metainfo>
+<configuration supports_final="false">
+    <property>
+        <name>nifi.version</name>
+        <value>1.11.4.{{stack_version_buildnum}}</value>
+        <on-ambari-upgrade add="true" update="true" delete="false"/>
+        <description>The version number of the current release.</description>
+    </property>
+</configuration>
