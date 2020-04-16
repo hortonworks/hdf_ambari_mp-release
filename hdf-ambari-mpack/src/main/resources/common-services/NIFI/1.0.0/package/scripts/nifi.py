@@ -102,6 +102,8 @@ class Master(Script):
          content=Template("nifi.conf.j2")
     )
 
+    File(os.path.join(self.basedir, 'files', 'kill_illegal_nifi_processes.sh'), mode=0755)
+
     #determine whether or not a cluster already exists based on zookeeper entries and determine if this is the first start of this node
     #if so authorizations and flow file will not be writen
     if not sudo.path_isfile(params.nifi_flow_config_dir+'/flow.xml.gz') and nifi_toolkit_util_common.existing_cluster(params):
@@ -135,9 +137,8 @@ class Master(Script):
     if os.path.isfile(status_params.nifi_node_pid_file):
       sudo.unlink(status_params.nifi_node_pid_file)
 
-  def killIllegalNifiProcess(self):
-    path = os.path.abspath(__file__)
-    path = path.replace("nifi.py", "kill_illegal_nifi_processes.sh")
+  def kill_illegal_nifi_process(self):
+    path = os.path.abspath(os.path.join(self.basedir, 'files', 'kill_illegal_nifi_processes.sh'))
     Execute (path + " \"grep '[o]rg.apache.nifi.bootstrap.RunNiFi run'\"")
     Execute (path + " \"grep '[o]rg.apache.nifi.NiFi' | grep '[D]app=NiFi'\"")
 
@@ -149,7 +150,7 @@ class Master(Script):
     self.configure(env, is_starting = True)
     setup_ranger_nifi(upgrade_type=None)
 
-    self.killIllegalNifiProcess()
+    self.kill_illegal_nifi_process()
     Execute ('export JAVA_HOME='+params.jdk64_home+';'+params.bin_dir+'/nifi.sh start >> ' + params.nifi_node_log_file, user=params.nifi_user)
     #If nifi pid file not created yet, wait a bit
     if not os.path.isfile(status_params.nifi_pid_dir+'/nifi.pid'):
