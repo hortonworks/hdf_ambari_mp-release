@@ -32,7 +32,7 @@
         <description>Comma separated scopes that are sent to OpenId Connect Provider in addition to openid and email</description>
     </property>
     <property>
-        <name>nifi.security.user.oidc.claim.identifying.userv</name>
+        <name>nifi.security.user.oidc.claim.identifying.user</name>
         <value></value>
         <value-attributes>
             <empty-value-valid>true</empty-value-valid>
@@ -99,5 +99,173 @@
         <value>10 mins</value>
         <on-ambari-upgrade add="true"/>
         <description>The amount of time to wait before rolling over the latest data provenance information so that it is available in the User Interface. The default value is 10 mins.</description>
+    </property>
+    <property>
+        <name>nifi.cluster.flow.election.max.wait.time</name>
+        <value>10 mins</value>
+        <on-ambari-upgrade add="true"/>
+        <description>Specifies the amount of time to wait before electing a Flow as the "correct" Flow. If the number of Nodes that have voted is equal to the number specified by the nifi.cluster.flow.election.max.candidates property, the cluster will not wait this long. The default is 10 mins. Note that the time starts as soon as the first vote is cast.</description>
+    </property>
+    <property>
+        <name>nifi.cluster.node.connection.timeout</name>
+        <value>50 secs</value>
+        <on-ambari-upgrade add="true"/>
+        <description>When connecting to another node in the cluster, specifies how long this node should wait before considering the connection a failure. The default value is 50 secs.</description>
+    </property>
+    <property>
+        <name>nifi.cluster.node.max.concurrent.requests</name>
+        <value>300</value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description>The maximum number of concurrent replicated web requests in the cluster.</description>
+    </property>
+    <property>
+        <name>nifi.cluster.node.protocol.max.threads</name>
+        <value>50</value>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <on-ambari-upgrade add="true"/>
+        <description></description>
+    </property>
+    <property>
+        <name>nifi.cluster.node.protocol.threads</name>
+        <value>20</value>
+        <on-ambari-upgrade add="true"/>
+        <description>The number of threads used for the node protocol. The default value is 10.</description>
+    </property>
+    <property>
+        <name>nifi.cluster.node.read.timeout</name>
+        <value>50 secs</value>
+        <on-ambari-upgrade add="true"/>
+        <description>When communicating with another node in the cluster, specifies how long this node should wait to receive information from the remote node before considering the communication with the node a failure. The default value is 50 secs.</description>
+    </property>
+    <property>
+        <name>nifi.provenance.repository.index.threads</name>
+        <value>2</value>
+        <on-ambari-upgrade add="true"/>
+        <description>The number of threads to use for indexing Provenance events so that they are searchable. The default value is 2. For flows that operate on a very high number of FlowFiles, the indexing of Provenance events could become a bottleneck. If this is the case, a bulletin will appear, indicating that "The rate of the dataflow is exceeding the provenance recording rate. Slowing down flow to accommodate." If this happens, increasing the value of this property may increase the rate at which the Provenance Repository is able to process these records, resulting in better overall throughput.</description>
+    </property>
+    <property>
+        <name>nifi.remote.input.http.transaction.ttl</name>
+        <value>60 sec</value>
+        <on-ambari-upgrade add="true"/>
+        <description>Specify how long a transaction can stay alive on server. If a Site-to-Site client didn’t proceed to next action for this period of time, the transaction is discarded from remote NiFi instance. For example, a client creates a transaction but doesn’t send or receive flow files, or send or received flow files but doesn’t confirm that transaction. By default, it is set to 60 sec.</description>
+    </property>
+    <property>
+        <name>nifi.zookeeper.session.timeout</name>
+        <value>35 secs</value>
+        <on-ambari-upgrade add="true"/>
+        <description>How long to wait after losing a connection to ZooKeeper before the session is expired. The default is 35 secs.
+        </description>
+    </property>
+    <property>
+        <name>nifi.content.repository.encryption.key</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <description></description>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+    </property>
+    <property>
+        <name>nifi.content.repository.encryption.key.id</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description></description>
+    </property>
+    <property>
+        <name>nifi.content.repository.encryption.key.provider.implementation</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description></description>
+    </property>
+    <property>
+        <name>nifi.content.repository.encryption.key.provider.location</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description></description>
+    </property>
+    <property>
+        <name>nifi.flowfile.repository.encryption.key</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description></description>
+    </property>
+    <property>
+        <name>nifi.flowfile.repository.encryption.key.id</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description></description>
+    </property>
+    <property>
+        <name>nifi.flowfile.repository.encryption.key.provider.implementation</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description></description>
+    </property>
+    <property>
+        <name>nifi.flowfile.repository.encryption.key.provider.location</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description></description>
+    </property>
+    <property>
+        <name>nifi.provenance.repository.journal.count</name>
+        <on-ambari-upgrade delete="true"/>
+    </property>
+    <property>
+        <name>nifi.provenance.repository.warm.cache.frequency</name>
+        <on-ambari-upgrade delete="true"/>
+    </property>
+    <property>
+        <name>nifi.zookeeper.auth.type</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description></description>
+    </property>
+    <property>
+        <name>nifi.zookeeper.kerberos.removeHostFromPrincipal</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description></description>
+    </property>
+    <property>
+        <name>nifi.zookeeper.kerberos.removeRealmFromPrincipal</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
+        <description></description>
     </property>
 </configuration>

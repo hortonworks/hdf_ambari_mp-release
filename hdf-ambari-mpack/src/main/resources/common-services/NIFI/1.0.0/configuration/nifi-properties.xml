@@ -779,6 +779,10 @@ If archiving is enabled (see nifi.content.repository.archive.enabled below), the
   </property>
   <property>
     <name>nifi.cluster.firewall.file</name>
+    <value></value>
+    <value-attributes>
+      <empty-value-valid>true</empty-value-valid>
+    </value-attributes>
     <on-ambari-upgrade add="true"/>
     <description>The location of the node firewall file. This is a file that may be used to list all the nodes that are allowed to connect to the cluster. It provides an additional layer of security. This value is blank by default, meaning that no firewall file is to be used.</description>
   </property>
