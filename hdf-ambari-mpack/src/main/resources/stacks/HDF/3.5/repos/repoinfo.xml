@@ -24,7 +24,7 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS-1.1.0.22/repos/centos7-ppc</baseurl>
+            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS/1.1.0.22/repos/centos7-ppc</baseurl>
             <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
@@ -36,7 +36,7 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS-1.1.0.22/repos/centos7</baseurl>
+            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS/1.1.0.22/repos/centos7</baseurl>
             <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
@@ -48,7 +48,7 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS-1.1.0.22/repos/sles12</baseurl>
+            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS/1.1.0.22/repos/sles12</baseurl>
             <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
@@ -60,7 +60,7 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS-1.1.0.22/repos/debian9</baseurl>
+            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS/1.1.0.22/repos/debian9</baseurl>
             <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
@@ -72,7 +72,7 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS-1.1.0.22/repos/ubuntu12</baseurl>
+            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS/1.1.0.22/repos/ubuntu12</baseurl>
             <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
@@ -84,7 +84,7 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS-1.1.0.22/repos/ubuntu14</baseurl>
+            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS/1.1.0.22/repos/ubuntu14</baseurl>
             <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
@@ -96,7 +96,7 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS-1.1.0.22/repos/ubuntu16</baseurl>
+            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS/1.1.0.22/repos/ubuntu16</baseurl>
             <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
@@ -108,7 +108,7 @@
             <reponame>HDF</reponame>
         </repo>
         <repo>
-            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS-1.1.0.22/repos/amazonlinux2</baseurl>
+            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS/1.1.0.22/repos/amazonlinux2</baseurl>
             <repoid>HDP-UTILS-1.1.0.22</repoid>
             <reponame>HDP-UTILS</reponame>
         </repo>
