@@ -112,7 +112,7 @@ class NifiRegistryServiceCheck(Script):
             for pwd_key, pwd_value in (('-ksp', keystorePasswd), ('-kp', keyPasswd), ('-tsp', truststorePasswd)):
                 if pwd_value:  # omit empty and None passwords
                     args.append(pwd_key)
-                    args.append(pwd_value)
+                    args.append(nifi_toolkit_util_common.escape_password_for_bash_usage_and_wrap_it(pwd_value))
 
             command = 'ambari-sudo.sh JAVA_HOME=' + jdk64_home + ' ' + tls_toolkit_script + ' ' + ' '.join(args)
 
