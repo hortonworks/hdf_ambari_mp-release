@@ -378,6 +378,12 @@ def populate_ssl_properties(old_prop, new_prop, params, service):
   return new_prop
 
 
+def escape_password_for_bash_usage(originalPassword):
+  return originalPassword.replace("'","'\\''")
+
+def escape_password_for_bash_usage_and_wrap_it(originalPassword):
+  return "'" + escape_password_for_bash_usage(originalPassword) + "'"
+
 # done
 def get_nifi_ca_client_dict(config, params, service):
   if not config or len(config) == 0:
@@ -474,15 +480,8 @@ def run_toolkit_client(ca_client_dict, config_dir, jdk64_home, java_options, use
   ca_client_script = get_toolkit_script('tls-toolkit.sh', toolkit_tmp_dir, stack_version_buildnum)
   File(ca_client_script, mode=0755)
   if no_client_file:
-    ca_client_json_dump = json.dumps(ca_client_dict)
-    cert_command = (
-                     'echo \'%(ca_client_json_dump)s\''
-                     ' | ambari-sudo.sh'
-                     ' JAVA_HOME="%(jdk64_home)s"'
-                     ' JAVA_OPTS="%(java_options)s"'
-                     ' %(ca_client_script)s'
-                     ' client -f /dev/stdout --configJsonIn /dev/stdin'
-                   ) % locals()
+    ca_client_json_dump = escape_password_for_bash_usage(json.dumps(ca_client_dict))
+    cert_command = "echo \'" + ca_client_json_dump + "'" + "| ambari-sudo.sh JAVA_HOME=\"" + jdk64_home +  "\" JAVA_OPTS=\"" + java_options + "\" " + ca_client_script + " client -f /dev/stdout --configJsonIn /dev/stdin"
     code, out = shell.call(cert_command, quiet=True, logoutput=False)
     if code > 0:
       raise Fail("Call to tls-toolkit encountered error: {0}".format(out))
