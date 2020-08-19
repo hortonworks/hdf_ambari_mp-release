@@ -279,6 +279,7 @@ class Master(Script):
     encrypt_config_script = nifi_toolkit_util.get_toolkit_script('encrypt-config.sh')
     encrypt_config_script_prefix = ('JAVA_HOME='+jdk64_home,encrypt_config_script)
     File(encrypt_config_script, mode=0755)
+    os.system("\chmod -R 755 " + nifi_toolkit_util.get_nifi_dir())
 
     if is_starting:
       last_master_key_password = None

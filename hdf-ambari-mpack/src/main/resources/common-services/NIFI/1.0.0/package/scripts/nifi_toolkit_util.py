@@ -47,6 +47,9 @@ def overlay(config_dict, overlay_dict):
     if (k not in config_dict) or not(overlay_dict[k] == config_dict[k]):
       config_dict[k] = v
 
+def get_nifi_dir():
+  return files_dir.replace("/package/files", "")
+
 def get_toolkit_script(scriptName, scriptDir = files_dir):
   nifiToolkitDir = None
   for dir in os.listdir(scriptDir):
