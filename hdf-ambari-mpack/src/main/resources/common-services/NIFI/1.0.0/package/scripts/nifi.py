@@ -139,6 +139,9 @@ class Master(Script):
     import params
     import status_params
 
+    #Make sure that nifi is able to write his own directory
+    shell.call(['chown', params.nifi_user + ':' + params.nifi_group,'-R', params.nifi_node_dir + '/'], sudo=True)
+
     nifi_toolkit_util_common.copy_toolkit_scripts(params.toolkit_files_dir, params.toolkit_tmp_dir, params.nifi_user, params.nifi_group, upgrade_type, service=nifi_toolkit_util_common.NIFI)
     self.configure(env, is_starting = True)
     setup_ranger_nifi(upgrade_type=None)
