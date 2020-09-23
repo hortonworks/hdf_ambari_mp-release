@@ -40,7 +40,7 @@
             </components>
             <osSpecifics>
                 <osSpecific>
-                    <osFamily>redhat7,centos7-ppc,sles12,debian9,amazonlinux2,ubuntu12,ubuntu14,ubuntu16</osFamily>
+                    <osFamily>redhat7,centos7-ppc,sles12,debian9,amazonlinux2,ubuntu12,ubuntu14,ubuntu16,ubuntu18</osFamily>
                     <packages>
                         <package>
                             <name>streamline_3_5_*</name>

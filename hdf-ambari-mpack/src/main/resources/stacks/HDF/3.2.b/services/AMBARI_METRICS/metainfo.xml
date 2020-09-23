@@ -192,7 +192,7 @@
           </packages>
         </osSpecific>
         <osSpecific>
-          <osFamily>ubuntu16,debian9</osFamily>
+          <osFamily>ubuntu16,ubuntu18,debian9</osFamily>
           <packages>
             <package>
               <name>ambari-metrics-assembly</name>

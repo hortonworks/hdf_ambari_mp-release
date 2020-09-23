@@ -101,6 +101,18 @@
             <reponame>HDP-UTILS</reponame>
         </repo>
     </os>
+    <os family="ubuntu18">
+        <repo>
+            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDF/ubuntu18/3.x/updates/3.5.2.0</baseurl>
+            <repoid>HDF-3.5</repoid>
+            <reponame>HDF</reponame>
+        </repo>
+        <repo>
+            <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDP-UTILS/1.1.0.22/repos/ubuntu18</baseurl>
+            <repoid>HDP-UTILS-1.1.0.22</repoid>
+            <reponame>HDP-UTILS</reponame>
+        </repo>
+    </os>
     <os family="amazonlinux2">
         <repo>
             <baseurl>https://&lt;username&gt;:&lt;password&gt;@archive.cloudera.com/p/HDF/amazonlinux2/3.x/updates/3.5.2.0</baseurl>
