@@ -22,4 +22,59 @@
         <on-ambari-upgrade add="true" update="true" delete="false"/>
         <description>The version number of the current release.</description>
     </property>
+
+    <property>
+        <name>nifi.cluster.protocol.heartbeat.missable.max</name>
+        <value>8</value>
+        <on-ambari-upgrade add="true"/>
+        <description>Maximum number of heartbeats a Cluster Coordinator can miss for a node in the cluster before the Cluster Coordinator updates the node status to Disconnected. The default value is 8.</description>
+    </property>
+
+    <property>
+        <name>nifi.web.max.content.size</name>
+        <value></value>
+        <on-ambari-upgrade add="true"/>
+        <description>The maximum size (HTTP Content-Length) for PUT and POST requests. No default value is set for backward compatibility. Providing a value for this property enables the Content-Length filter on all incoming API requests (except Site-to-Site and cluster communications). A suggested value is 20 MB.</description>
+    </property>
+
+    <property>
+        <name>nifi.web.max.requests.per.second</name>
+        <value>30000</value>
+        <on-ambari-upgrade add="true"/>
+        <description>The maximum number of requests from a connection per second. Requests in excess of this are first delayed, then throttled.</description>
+    </property>
+
+    <property>
+        <name>nifi.web.should.send.server.version</name>
+        <value>true</value>
+        <on-ambari-upgrade add="true"/>
+        <description>Selects whether Jetty server version is exposed in HTTP responses. Default is true</description>
+    </property>
+
+    <property>
+        <name>nifi.flowfile.repository.retain.orphaned.flowfiles</name>
+        <value>true</value>
+        <on-ambari-upgrade add="true"/>
+        <description>Selects whether flowfile repository should keep orphaned flowfiles. Default is true</description>
+    </property>
+
+    <property>
+        <name>nifi.swap.in.period</name>
+        <on-ambari-upgrade delete="true"/>
+    </property>
+
+    <property>
+        <name>nifi.swap.in.threads</name>
+        <on-ambari-upgrade delete="true"/>
+    </property>
+
+    <property>
+        <name>nifi.swap.out.period</name>
+        <on-ambari-upgrade delete="true"/>
+    </property>
+
+    <property>
+        <name>nifi.swap.out.threads</name>
+        <on-ambari-upgrade delete="true"/>
+    </property>
 </configuration>
