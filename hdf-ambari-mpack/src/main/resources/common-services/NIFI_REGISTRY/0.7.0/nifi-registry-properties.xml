@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<configuration>
+
+    <property>
+        <name>nifi.registry.extension.dir.aws</name>
+        <value>{{nifi_registry_install_dir}}/ext/aws/lib</value>
+        <on-ambari-upgrade add="true"/>
+        <description>A full path to a directory containing JARs for the NiFi Registry AWS extension.</description>
+    </property>
+
+    <property>
+        <name>nifi.registry.extensions.working.directory</name>
+        <value>{{nifi_registry_internal_dir}}/work/extensions</value>
+        <on-ambari-upgrade add="true"/>
+        <description>The location of the extensions working directory.</description>
+    </property>
+</configuration>

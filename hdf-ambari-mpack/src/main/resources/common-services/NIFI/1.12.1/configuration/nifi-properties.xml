@@ -32,7 +32,10 @@
 
     <property>
         <name>nifi.web.max.content.size</name>
-        <value></value>
+        <value/>
+        <value-attributes>
+            <empty-value-valid>true</empty-value-valid>
+        </value-attributes>
         <on-ambari-upgrade add="true"/>
         <description>The maximum size (HTTP Content-Length) for PUT and POST requests. No default value is set for backward compatibility. Providing a value for this property enables the Content-Length filter on all incoming API requests (except Site-to-Site and cluster communications). A suggested value is 20 MB.</description>
     </property>
