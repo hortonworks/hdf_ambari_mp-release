@@ -94,6 +94,8 @@ def kafka(upgrade_type=None):
         break
       i=i+1
 
+    kafka_server_config['broker.rack']=rack
+
     Directory(kafka_data_dirs,
               mode=0755,
               cd_access='a',
