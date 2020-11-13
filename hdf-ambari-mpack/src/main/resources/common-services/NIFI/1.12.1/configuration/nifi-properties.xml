@@ -100,4 +100,11 @@
         <name>nifi.web.war.directory</name>
         <on-ambari-upgrade delete="true"/>
     </property>
+
+    <property>
+        <name>nifi.security.allow.anonymous.authentication</name>
+        <value>true</value>
+        <on-ambari-upgrade add="true"/>
+        <description>Whether anonymous authentication is allowed when running over HTTPS. If set to true, client certificates are not required to connect via TLS.</description>
+    </property>
 </configuration>
