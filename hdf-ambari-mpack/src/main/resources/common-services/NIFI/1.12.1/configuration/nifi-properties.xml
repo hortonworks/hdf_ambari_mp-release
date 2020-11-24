@@ -62,46 +62,6 @@
     </property>
 
     <property>
-        <name>nifi.content.claim.max.flow.files</name>
-        <on-ambari-upgrade delete="true"/>
-    </property>
-
-    <property>
-        <name>nifi.flowfile.repository.partitions</name>
-        <on-ambari-upgrade delete="true"/>
-    </property>
-
-    <property>
-        <name>nifi.provenance.repository.debug.frequency</name>
-        <on-ambari-upgrade delete="true"/>
-    </property>
-
-    <property>
-        <name>nifi.swap.in.period</name>
-        <on-ambari-upgrade delete="true"/>
-    </property>
-
-    <property>
-        <name>nifi.swap.in.threads</name>
-        <on-ambari-upgrade delete="true"/>
-    </property>
-
-    <property>
-        <name>nifi.swap.out.period</name>
-        <on-ambari-upgrade delete="true"/>
-    </property>
-
-    <property>
-        <name>nifi.swap.out.threads</name>
-        <on-ambari-upgrade delete="true"/>
-    </property>
-
-    <property>
-        <name>nifi.web.war.directory</name>
-        <on-ambari-upgrade delete="true"/>
-    </property>
-
-    <property>
         <name>nifi.security.allow.anonymous.authentication</name>
         <value>true</value>
         <on-ambari-upgrade add="true"/>
