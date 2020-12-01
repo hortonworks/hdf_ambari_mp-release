@@ -7,47 +7,7 @@
                     <!-- Update these configs in nifi-properties. -->
                     <definition xsi:type="configure" id="hdf35_properties">
                         <type>nifi-properties</type>
-                        <set key="nifi.version" value="1.12.1.{{stack_version_buildnum}}"/>
-                    </definition>
-
-                    <definition xsi:type="configure" id="hdf35_properties_remove_hdf_3_5_remove_nifi_content_claim_max_flow_files">
-                        <type>nifi-properties</type>
-                        <transfer operation="delete" delete-key="nifi.content.claim.max.flow.files" />
-                    </definition>
-
-                    <definition xsi:type="configure" id="hdf35_properties_remove_hdf_3_5_remove_nifi_flowfile_repository_partitions">
-                        <type>nifi-properties</type>
-                        <transfer operation="delete" delete-key="nifi.flowfile.repository.partitions" />
-                    </definition>
-
-                    <definition xsi:type="configure" id="hdf35_properties_remove_hdf_3_5_remove_nifi_provenance_repository_debug_frequency">
-                        <type>nifi-properties</type>
-                        <transfer operation="delete" delete-key="nifi.provenance.repository.debug.frequency" />
-                    </definition>
-
-                    <definition xsi:type="configure" id="hdf35_properties_remove_hdf_3_5_remove_nifi_swap_in_period">
-                        <type>nifi-properties</type>
-                        <transfer operation="delete" delete-key="nifi.swap.in.period" />
-                    </definition>
-
-                    <definition xsi:type="configure" id="hdf35_properties_remove_hdf_3_5_remove_nifi_swap_in_threads">
-                        <type>nifi-properties</type>
-                        <transfer operation="delete" delete-key="nifi.swap.in.threads" />
-                    </definition>
-
-                    <definition xsi:type="configure" id="hdf35_properties_remove_hdf_3_5_remove_nifi_swap_out_period">
-                        <type>nifi-properties</type>
-                        <transfer operation="delete" delete-key="nifi.swap.out.period" />
-                    </definition>
-
-                    <definition xsi:type="configure" id="hdf35_properties_remove_hdf_3_5_remove_nifi_swap_out_threads">
-                        <type>nifi-properties</type>
-                        <transfer operation="delete" delete-key="nifi.swap.out.threads" />
-                    </definition>
-
-                    <definition xsi:type="configure" id="hdf35_properties_remove_hdf_3_5_remove_nifi_web_war_directory">
-                        <type>nifi-properties</type>
-                        <transfer operation="delete" delete-key="nifi.web.war.directory" />
+                        <set key="nifi.version" value="1.11.4.{{stack_version_buildnum}}"/>
                     </definition>
                 </changes>
             </component>
