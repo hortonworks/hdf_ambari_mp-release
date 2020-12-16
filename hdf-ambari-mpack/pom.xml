@@ -15,19 +15,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.ambari</groupId>
   <artifactId>hdf-ambari-mpack</artifactId>
   <packaging>pom</packaging>
-  <version>3.4.0.0-1</version>
+  <version>3.4.1.114-1</version>
   <name>HDF Ambari Management Pack</name>
   <url>http://ambari.apache.org/</url>
   <properties>
-    <minAmbariVersion>2.7.0</minAmbariVersion>
+    <minAmbariVersion>2.5.1.0</minAmbariVersion>
     <maxAmbariVersion>2.7.3</maxAmbariVersion>
-    <nifiversion>1.7.0.3.2.0.0-520</nifiversion>
+    <nifiversion>1.9.0.3.4.1.114-1</nifiversion>
     <buildnumber-maven-plugin-version>1.4</buildnumber-maven-plugin-version>
   </properties>
   <build>
